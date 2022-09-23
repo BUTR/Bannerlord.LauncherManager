@@ -1,0 +1,110 @@
+{
+  "name": "@butr/vortexextensionnative",
+  "version": "1.0.0",
+  "description": "Package of native bindings bundled with TS declarations",
+  "main": "dist/main/lib/index.js",
+  "typings": "dist/main/lib/index.d.ts",
+  "module": "dist/module/lib/index.js",
+  "gypfile": true,
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:BUTR/Bannerlord.VortexExtension.git"
+  },
+  "keywords": [
+    "bannerlord",
+    "modulemanager"
+  ],
+  "author": "BUTR",
+  "license": "MIT",
+  "homepage": "https://github.com/BUTR/Bannerlord.VortexExtension#readme",
+  "bugs": {
+    "url": "https://github.com/BUTR/Bannerlord.VortexExtension/issues"
+  },
+  "scripts": {
+    "build": "run-s build:*",
+    "build:native": "dotnet publish -r win-x64 --self-contained -c Release ../Bannerlord.VortexExtension.Native",
+    "build:copy-native-1": "copyfiles -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll .",
+    "build:copy-native-2": "copyfiles -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.lib .",
+    "build:copy-native-3": "copyfiles -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/publish/steam_api64.dll .",
+    "build:copy-native-4": "copyfiles -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/publish/steam_appid.txt .",
+    "build:copy-native-5": "copyfiles -f ../Bannerlord.VortexExtension.Native/Bannerlord.FetchVersion.Native.h .",
+    "build:copy-native-6": "copyfiles -f ../Bannerlord.VortexExtension.Native/Bannerlord.ModuleManager.Native.h .",
+    "build:copy-native-7": "copyfiles -f ../Bannerlord.VortexExtension.Native/Bannerlord.VortexExtension.Native.h .",
+    "build:bindings": "node-gyp rebuild",
+    "build:main": "tsc -p tsconfig.json",
+    "build:module": "tsc -p tsconfig.module.json",
+    "build:copy-1": "copyfiles -f Bannerlord.VortexExtension.Native.dll dist/",
+    "build:copy-2": "copyfiles -f steam_api64.dll dist/",
+    "build:copy-3": "copyfiles -f steam_appid.txt dist/",
+    "build:copy-4": "copyfiles -f build/Release/vortexextension.node dist/",
+    "build:copy-5": "copyfiles -f src/test/Version.xml dist/main/test/bin/Win64_Shipping_Client/",
+    "build:copy-6": "copyfiles -f src/test/Version.xml dist/module/test/bin/Win64_Shipping_Client/",
+    "clean": "",
+    "test": "run-s build test:*",
+    "test:spelling": "cspell \"{README.md,.github/*.md,src/**/*.ts,src/**/*.js}\"",
+    "test:unit": "nyc ava",
+    "watch:build": "tsc -p tsconfig.json -w",
+    "watch:test": "nyc --silent ava --watch",
+    "cov": "run-s build test:unit cov:html cov:lcov && open-cli coverage/index.html",
+    "cov:html": "nyc report --reporter=html",
+    "cov:lcov": "nyc report --reporter=lcov",
+    "cov:send": "run-s cov:lcov && codecov",
+    "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
+    "doc": "run-s doc:html && open-cli dist/docs/index.html",
+    "doc:html": "typedoc src/ --exclude **/*.spec.* --exclude **/_*.* --out dist/docs",
+    "doc:json": "typedoc src/ --exclude **/*.spec.* --exclude **/_*.* --json dist/docs/typedoc.json"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "devDependencies": {
+    "@ava/typescript": "^1.1.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@types/node": "^18.7.9",
+    "ava": "^3.15.0",
+    "codecov": "^3.8.2",
+    "copyfiles": "^2.4.1",
+    "cspell": "^5.13.1",
+    "node-addon-api": "^5.0.0",
+    "node-gyp": "^9.1.0",
+    "npm-run-all": "^4.1.5",
+    "nyc": "^15.1.0",
+    "open-cli": "^7.0.1",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.23.7",
+    "typescript": "^4.7.4"
+  },
+  "files": [
+    "dist/main/index.*",
+    "dist/main/lib",
+    "dist/module/index.*",
+    "dist/module/lib",
+    "dist/Bannerlord.VortexExtension.Native.dll",
+    "dist/vortexextension.node",
+    "dist/steam_api64.dll",
+    "dist/steam_appid.txt",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "ava": {
+    "failFast": true,
+    "timeout": "60s",
+    "typescript": {
+      "rewritePaths": {
+        "src/": "dist/main/"
+      }
+    },
+    "files": [
+      "!dist/module/**"
+    ]
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "exclude": [
+      "**/_*.*",
+      "**/Version.xml",
+      "**/*.spec.*"
+    ]
+  }
+}

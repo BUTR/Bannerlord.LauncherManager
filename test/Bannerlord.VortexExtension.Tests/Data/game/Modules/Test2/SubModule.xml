@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/BUTR/Bannerlord.XmlSchemas/master/SubModule.xsd" >
+  <Id value="Test2" />
+  <Name value="Test2" />
+  <Version value="v2.2.2.85" />
+  <Official value="false" />
+  <DefaultModule value="false" />
+  <SingleplayerModule value="true" />
+  <MultiplayerModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <DependedModules>
+    <DependedModule Id="Test" />
+  </DependedModules>
+  <SubModules>
+    <SubModule>
+      <Name value="Test2" />
+      <DLLName value="Test2.dll" />
+      <SubModuleClassType value="Test2.SubModule" />
+    </SubModule>
+  </SubModules>
+</Module>

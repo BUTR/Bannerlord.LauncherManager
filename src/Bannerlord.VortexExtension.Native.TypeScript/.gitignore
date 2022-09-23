@@ -1,0 +1,17 @@
+.nyc_output
+build
+dist
+node_modules
+src/lib/dotnet.*
+src/test/**/**.js
+!src/test/**/_**.js
+!src/**/**.spec.js
+coverage
+*.tgz
+*.log
+Bannerlord.FetchVersion.Native.*
+Bannerlord.ModuleManager.Native.*
+Bannerlord.VortexExtension.Native.*
+Common.Native.*
+steam_api64.dll
+steam_appid.txt

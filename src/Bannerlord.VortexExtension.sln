@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension", "Bannerlord.VortexExtension\Bannerlord.VortexExtension.csproj", "{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EBC69772-7E45-4996-844B-EB7D6D456E26}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C8EDF62A-BBD6-475C-AA91-7F2F560E89C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.Tests", "..\test\Bannerlord.VortexExtension.Tests\Bannerlord.VortexExtension.Tests.csproj", "{187F7140-F60E-4B54-8D9E-36B743625069}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.Native", "Bannerlord.VortexExtension.Native\Bannerlord.VortexExtension.Native.csproj", "{092F3FB1-0028-4F59-B4AC-AAA90AE91287}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{187F7140-F60E-4B54-8D9E-36B743625069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{187F7140-F60E-4B54-8D9E-36B743625069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{187F7140-F60E-4B54-8D9E-36B743625069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{187F7140-F60E-4B54-8D9E-36B743625069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{092F3FB1-0028-4F59-B4AC-AAA90AE91287}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{092F3FB1-0028-4F59-B4AC-AAA90AE91287}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{092F3FB1-0028-4F59-B4AC-AAA90AE91287}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{092F3FB1-0028-4F59-B4AC-AAA90AE91287}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF} = {EBC69772-7E45-4996-844B-EB7D6D456E26}
+		{187F7140-F60E-4B54-8D9E-36B743625069} = {C8EDF62A-BBD6-475C-AA91-7F2F560E89C2}
+		{092F3FB1-0028-4F59-B4AC-AAA90AE91287} = {EBC69772-7E45-4996-844B-EB7D6D456E26}
+	EndGlobalSection
+EndGlobal
