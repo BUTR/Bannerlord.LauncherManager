@@ -21,7 +21,7 @@
     "url": "https://github.com/BUTR/Bannerlord.VortexExtension/issues"
   },
   "scripts": {
-    "install": "",
+    "install": "echo",
     "build": "run-s build:*",
     "build:native": "dotnet publish -r win-x64 --self-contained -c Release ../Bannerlord.VortexExtension.Native",
     "build:copy-native-1": "copyfiles -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll .",
