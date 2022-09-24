@@ -1,0 +1,66 @@
+name: Publish Native NPM
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/publish-native-ts.yml'
+      - 'src/Bannerlord.VortexExtension/**.*'
+      - 'src/Bannerlord.VortexExtension.Native/**.*'
+      - 'src/Bannerlord.VortexExtension.Native.TypeScript/**.*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish on NPM and GPR
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@master
+        with:
+          dotnet-version: 7.x.x
+          include-prerelease: true
+
+      - uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: src/Bannerlord.VortexExtension.Native.TypeScript/package-lock.json
+
+      - run: |
+          cd ./src/Bannerlord.VortexExtension.Native.TypeScript && `
+          npm version $(node -p "require('./package.json').version = `
+          require('./package.json').version.split('.')[0]+'.' + `
+          require('./package.json').version.split('.')[1]+'.' + `
+          $(git rev-list --no-merges --count master)") --no-git-tag-version --allow-same-version;
+
+      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm ci
+
+      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm run build
+
+      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm run test
+
+      - uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+          scope: '@butr'
+
+      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_NPM_TOKEN }}
+
+      - uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+          scope: '@butr'
+
+      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}

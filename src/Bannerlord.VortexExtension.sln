@@ -10,6 +10,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.Native", "Bannerlord.VortexExtension.Native\Bannerlord.VortexExtension.Native.csproj", "{092F3FB1-0028-4F59-B4AC-AAA90AE91287}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{FA205CE3-25C8-4140-A0B9-843AC92340C6}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\publish-native-ts.yml = ..\.github\workflows\publish-native-ts.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
