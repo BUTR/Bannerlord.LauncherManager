@@ -65,7 +65,6 @@ namespace Bannerlord.VortexExtension.Native
 
 
         [UnmanagedCallersOnly(EntryPoint = "bmm_are_all_dependencies_of_module_present")]
-        [return: MarshalAs(UnmanagedType.U1)]
         public static return_value_bool* AreAllDependenciesOfModulePresent(param_json* p_source, param_json* p_module)
         {
 #if LOGGING

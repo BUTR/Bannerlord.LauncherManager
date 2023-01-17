@@ -431,7 +431,7 @@ namespace Bannerlord.VortexExtension.Native
             return returnResult;
         }
 
-        private static ReadOnlySpan<char> ReadFileContent(VortexExtensionHandlerNative handler, ReadOnlySpan<char> filePath)
+        private static string? ReadFileContent(VortexExtensionHandlerNative handler, ReadOnlySpan<char> filePath)
         {
 #if LOGGING
             Logger.Log($"Received callback to {nameof(ReadFileContent)}! filePath: {filePath}");
@@ -440,6 +440,7 @@ namespace Bannerlord.VortexExtension.Native
             fixed (char* pFilePath = filePath)
             {
                 using var result = SafeStructMallocHandle.Create(handler.D_ReadFileContent(handler.OwnerPtr, (param_string*) pFilePath));
+                if (result.IsNull) return null;
                 using var content = result.ValueAsString();
                 var returnResult = new string(content);
 #if LOGGING
@@ -458,6 +459,7 @@ namespace Bannerlord.VortexExtension.Native
             fixed (char* pDirectoryPath = directoryPath)
             {
                 using var result = SafeStructMallocHandle.Create(handler.D_ReadDirectoryFileList(handler.OwnerPtr, (param_string*) pDirectoryPath));
+                if (result.IsNull) return Array.Empty<string>();
                 using var fileList = result.ValueAsJson();
                 var returnResult = Utils.DeserializeJson<string[]>(fileList, _customSourceGenerationContext.StringArray);
 #if LOGGING

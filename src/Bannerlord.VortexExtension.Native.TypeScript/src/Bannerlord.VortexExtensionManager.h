@@ -276,8 +276,13 @@ namespace Bannerlord::VortexExtension
             const auto env = manager->Env();
             const auto filePath = String::New(env, p_file_path);
 
-            const auto result = manager->FReadFileContent({filePath}).As<String>();
-            return Create(return_value_string{nullptr, Copy(result.Utf16Value())});
+            const auto result = manager->FReadFileContent({filePath});
+            if (result.IsNull())
+            {
+                return Create(return_value_string{nullptr, nullptr});
+            }
+
+            return Create(return_value_string{nullptr, Copy(result.As<String>().Utf16Value())});
         }
         catch (const std::exception &e)
         {
@@ -293,8 +298,13 @@ namespace Bannerlord::VortexExtension
             const auto env = manager->Env();
             const auto directoryPath = String::New(env, p_directory_path);
 
-            const auto result = manager->FReadDirectoryFileList({directoryPath}).As<Object>();
-            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
+            const auto result = manager->FReadDirectoryFileList({directoryPath});
+            if (result.IsNull())
+            {
+                return Create(return_value_json{nullptr, nullptr});
+            }
+
+            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
         catch (const std::exception &e)
         {

@@ -20,7 +20,8 @@ namespace Bannerlord.VortexExtension.Native
 
         protected override bool ReleaseHandle()
         {
-            NativeMemory.Free(handle.ToPointer());
+            if (handle != IntPtr.Zero)
+                NativeMemory.Free(handle.ToPointer());
             return true;
         }
     }

@@ -12,6 +12,6 @@ namespace Bannerlord.VortexExtension
     public delegate ReadOnlySpan<char> TranslateStringDelegate(ReadOnlySpan<char> text);
     public delegate void SendNotificationDelegate(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs);
     public delegate ReadOnlySpan<char> GetInstallPathDelegate();
-    public delegate ReadOnlySpan<char> ReadFileContentDelegate(ReadOnlySpan<char> filePath);
-    public delegate string[] ReadDirectoryFileListDelegate(ReadOnlySpan<char> directoryPath);
+    public delegate string? ReadFileContentDelegate(ReadOnlySpan<char> filePath);
+    public delegate string[]? ReadDirectoryFileListDelegate(ReadOnlySpan<char> directoryPath);
 }

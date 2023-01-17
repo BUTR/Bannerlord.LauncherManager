@@ -113,14 +113,14 @@ namespace Bannerlord.VortexExtension
             return D_GetInstallPath();
         }
 
-        public ReadOnlySpan<char> ReadFileContent(ReadOnlySpan<char> filePath)
+        public string? ReadFileContent(ReadOnlySpan<char> filePath)
         {
             ThrowIfNoCallbacksRegistered();
 
             return D_ReadFileContent(filePath);
         }
 
-        public string[] ReadDirectoryFileList(ReadOnlySpan<char> directoryPath)
+        public string[]? ReadDirectoryFileList(ReadOnlySpan<char> directoryPath)
         {
             ThrowIfNoCallbacksRegistered();
 

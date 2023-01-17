@@ -19,7 +19,8 @@ namespace Bannerlord.VortexExtension.Native
 
         protected override bool ReleaseHandle()
         {
-            NativeMemory.Free(handle.ToPointer());
+            if (handle != IntPtr.Zero)
+                NativeMemory.Free(handle.ToPointer());
             return true;
         }
     }
@@ -29,6 +30,8 @@ namespace Bannerlord.VortexExtension.Native
         public static implicit operator TStruct*(SafeStructMallocHandle<TStruct> handle) => (TStruct*) handle.handle.ToPointer();
 
         public TStruct* Value => this;
+
+        public bool IsNull => Value == null;
 
         public void ValueAsVoid()
         {

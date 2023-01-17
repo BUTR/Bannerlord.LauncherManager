@@ -45,8 +45,9 @@ namespace Bannerlord.VortexExtension
             {
                 var path = Path.Combine(destinationPath, file);
                 var xml = ReadFileContent(path);
+                if (xml is null) throw new Exception(); // TODO:
                 var doc = new XmlDocument();
-                doc.LoadXml(xml.ToString());
+                doc.LoadXml(xml);
                 var module = ModuleInfoExtended.FromXml(doc);
 
                 var subModuleFileIdx = file.IndexOf(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase);

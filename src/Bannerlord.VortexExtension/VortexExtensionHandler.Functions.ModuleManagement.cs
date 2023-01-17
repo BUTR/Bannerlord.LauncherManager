@@ -24,13 +24,13 @@ namespace Bannerlord.VortexExtension
             foreach (var modulePath in GetModulePaths())
             {
                 var subModulePath = Path.Combine(modulePath, Constants.SubModuleName);
-                if (ReadFileContent(subModulePath) is { IsEmpty: false } content)
+                if (ReadFileContent(subModulePath) is { } content)
                 {
                     ModuleInfoExtended? moduleInfoExtended;
                     try
                     {
                         var xml = new XmlDocument();
-                        xml.LoadXml(content.ToString());
+                        xml.LoadXml(content);
                         moduleInfoExtended = ModuleInfoExtended.FromXml(xml);
                     }
                     catch (Exception e)

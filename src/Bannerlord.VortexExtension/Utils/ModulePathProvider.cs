@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Bannerlord.VortexExtension
@@ -20,7 +21,9 @@ namespace Bannerlord.VortexExtension
         public IEnumerable<string> GetModulePaths()
         {
             var installPath = _handler.GetInstallPath().ToString();
-            foreach (var moduleFolder in _handler.ReadDirectoryFileList(Path.Combine(installPath, Constants.ModulesFolder)))
+            var directories = _handler.ReadDirectoryFileList(Path.Combine(installPath, Constants.ModulesFolder));
+            if (directories is null) yield break;
+            foreach (var moduleFolder in directories)
             {
                 yield return moduleFolder;
             }
@@ -45,7 +48,9 @@ namespace Bannerlord.VortexExtension
             var steamApps = installPath.Substring(0, installPath.IndexOf("common"));
             var workshopDir = Path.Combine(steamApps, "workshop", "content", "261550");
 
-            foreach (var moduleFolder in _handler.ReadDirectoryFileList(workshopDir))
+            var directories = _handler.ReadDirectoryFileList(workshopDir);
+            if (directories is null) throw new Exception();
+            foreach (var moduleFolder in directories)
             {
                 yield return moduleFolder;
             }
