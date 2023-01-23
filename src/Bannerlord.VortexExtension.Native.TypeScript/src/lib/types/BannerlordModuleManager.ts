@@ -96,7 +96,7 @@ export interface IBannerlordModuleManager {
     getDependentModulesOf(source: Array<ModuleInfoExtended>, module: ModuleInfoExtended): Array<ModuleInfoExtended>;
     getDependentModulesOfWithOptions(source: Array<ModuleInfoExtended>, module: ModuleInfoExtended, options: ModuleSorterOptions): Array<ModuleInfoExtended>;
 
-    validateModuleDependenciesDeclarations(module: ModuleInfoExtended): Array<ModuleIssue>;
+    validateLoadOrder(source: Array<ModuleInfoExtended>, targetModule: ModuleInfoExtended): Array<ModuleIssue>;
     validateModule(modules: Array<ModuleInfoExtended>, targetModule: ModuleInfoExtended, manager: IValidationManager): Array<ModuleIssue>;
 
     enableModule(modules: Array<ModuleInfoExtended>, targetModule: ModuleInfoExtended, manager: IEnableDisableManager): Array<ModuleIssue>;

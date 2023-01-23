@@ -4,6 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/node_modules/node-addon-api",
                 "~/AppData/Local/node-gyp/Cache/16.16.0/include/node/"
             ]
         }

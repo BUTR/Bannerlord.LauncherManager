@@ -2,8 +2,6 @@
     "targets": [
         {
             "target_name": "vortexextension",
-            "cflags!": [ "-fno-exceptions" ],
-            "cflags_cc!": [ "-fno-exceptions" ],
             "sources": [
                 "<(module_root_dir)/src/main.cpp",
             ],

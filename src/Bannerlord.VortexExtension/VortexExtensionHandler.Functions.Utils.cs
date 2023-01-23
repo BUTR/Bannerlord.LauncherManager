@@ -1,8 +1,8 @@
 ﻿using Bannerlord.VortexExtension.Models;
 
-using System.Linq;
-
 using FetchBannerlordVersion;
+
+using System.Linq;
 
 namespace Bannerlord.VortexExtension
 {

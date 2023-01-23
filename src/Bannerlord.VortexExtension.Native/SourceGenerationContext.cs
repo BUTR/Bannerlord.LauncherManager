@@ -1,7 +1,8 @@
-﻿using System;
-using System.Text.Json.Serialization;
-using Bannerlord.ModuleManager;
+﻿using Bannerlord.ModuleManager;
 using Bannerlord.VortexExtension.Models;
+
+using System;
+using System.Text.Json.Serialization;
 
 namespace Bannerlord.VortexExtension.Native
 {

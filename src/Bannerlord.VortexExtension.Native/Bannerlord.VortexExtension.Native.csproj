@@ -1,45 +1,56 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);NATIVEAOT;LOGGING</DefineConstants>
   </PropertyGroup>
-  
   <PropertyGroup>
-    <TrimMode>link</TrimMode>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <StripSymbols>true</StripSymbols>
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-
-    <IlcTrimMetadata>true</IlcTrimMetadata>
-    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
-    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
-    <IlcInvariantGlobalization>true</IlcInvariantGlobalization>
-    <!--
-    <IlcDisableUnhandledExceptionExperience>true</IlcDisableUnhandledExceptionExperience>
+    <PublishAot>true</PublishAot>
+    <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
-    <UseSystemResourceKeys>false</UseSystemResourceKeys>
-    <IlcDisableReflection>true</IlcDisableReflection>
-    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <NativeLib>Shared</NativeLib>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
     <DebuggerSupport>false</DebuggerSupport>
-    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
-    -->
-
-    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <EventSourceSupport>false</EventSourceSupport>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-  </PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
 
+    <StripSymbols>true</StripSymbols>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="7.0.0-rc.1.22426.10" />
+    <None Update="Bannerlord.FetchVersion.Native.h">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Bannerlord.ModuleManager.Native.h">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Bannerlord.VortexExtension.Native.h">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="$(PkgBUTR_NativeAOT_Shared_Source)\include\butrnativeaotshared\Common.Native.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bannerlord.VortexExtension\Bannerlord.VortexExtension.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BUTR.NativeAOT.Shared.Source" Version="1.0.10" GeneratePathProperty="true" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
+
+  <Target Name="CopyHeaders" AfterTargets="AfterBuild">
+    <Copy SourceFiles="$(PkgBUTR_NativeAOT_Shared_Source)\include\butrnativeaotshared\Common.Native.h" DestinationFolder="$(OutputPath)" />
+  </Target>
 
 </Project>

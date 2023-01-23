@@ -1,4 +1,5 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
@@ -7,6 +8,7 @@ namespace Bannerlord.VortexExtension.Native
 {
     public static partial class Bindings
     {
+        //[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         private static readonly JsonSerializerOptions _options = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -18,6 +20,6 @@ namespace Bannerlord.VortexExtension.Native
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin),
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false) }
         };
-        private static readonly SourceGenerationContext _customSourceGenerationContext = new(_options);
+        internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(_options);
     }
 }

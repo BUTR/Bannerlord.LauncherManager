@@ -8,11 +8,8 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Bannerlord.ModuleManager.Source" Version="4.0.146" />
-    <PackageReference Include="FetchBannerlordVersion" Version="1.0.6.5" />
-    <!--
-    <PackageReference Include="Bannerlord.ModuleManager" Version="4.0.123" />
-    -->
+    <PackageReference Include="Bannerlord.ModuleManager.Source" Version="5.0.170" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="FetchBannerlordVersion" Version="1.0.6.12" />
   </ItemGroup>
 
 </Project>

@@ -23,46 +23,6 @@ namespace Utils
         return parse.Call(jsonObject, {json}).As<Object>();
     }
 
-    char16_t *Copy(const std::u16string str)
-    {
-        const auto src = str.c_str();
-        const auto srcChar16Length = str.length();
-        const auto srcByteLength = srcChar16Length * sizeof(char16_t);
-        const auto size = srcByteLength + sizeof(char16_t);
-
-        auto dst = (char16_t *)malloc(size);
-        if (dst == nullptr)
-        {
-            throw std::bad_alloc();
-        }
-        std::memmove(dst, src, srcByteLength);
-        dst[srcChar16Length] = '\0';
-        return dst;
-    }
-
-    std::unique_ptr<char16_t[], deleter<char16_t>> CopyWithFree(const std::u16string str)
-    {
-        return std::unique_ptr<char16_t[], deleter<char16_t>>(Copy(str));
-    }
-
-    const char16_t *NoCopy(const std::u16string str) noexcept
-    {
-        return str.c_str();
-    }
-
-    template <typename T>
-    T *Create(const T val)
-    {
-        const auto size = (size_t)sizeof(T);
-        auto dst = (T *)malloc(size);
-        if (dst == nullptr)
-        {
-            throw std::bad_alloc();
-        }
-        std::memcpy(dst, &val, sizeof(T));
-        return dst;
-    }
-
     void ThrowOrReturn(Env env, return_value_void *val)
     {
         const del_void del{val};

@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using BUTR.NativeAOT.Shared;
+
+using System.Runtime.InteropServices;
 
 namespace Bannerlord.VortexExtension.Native
 {
@@ -24,15 +26,6 @@ namespace Bannerlord.VortexExtension.Native
     internal unsafe delegate return_value_string* N_ReadFileContentDelegate(void* p_owner, param_string* p_file_path);
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     internal unsafe delegate return_value_json* N_ReadDirectoryFileList(void* p_owner, param_string* p_directory_path);
-
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate return_value_bool* N_IsSelected(void* p_owner, param_string* p_module_id);
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate return_value_bool* N_GetSelected(void* p_owner, param_string* p_module_id);
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate return_value_void* N_SetSelected(void* p_owner, param_string* p_module_id, [MarshalAs(UnmanagedType.U1)] bool value);
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate return_value_bool* N_GetDisabled(void* p_owner, param_string* p_module_id);
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    internal unsafe delegate return_value_void* N_SetDisabled(void* p_owner, param_string* p_module_id, [MarshalAs(UnmanagedType.U1)] bool value);
+    internal unsafe delegate return_value_json* N_ReadDirectoryList(void* p_owner, param_string* p_directory_path);
 }

@@ -2,10 +2,12 @@
 #define VE_VORTEXEXTENSIONMANAGER_GUARD_H_
 
 #include "utils.h"
+#include "Common.Native.h"
 #include "Bannerlord.VortexExtension.Native.h"
 #include <codecvt>
 
 using namespace Napi;
+using namespace Common;
 using namespace Utils;
 
 namespace Bannerlord::VortexExtension
@@ -25,6 +27,7 @@ namespace Bannerlord::VortexExtension
         FunctionReference FGetInstallPath;
         FunctionReference FReadFileContent;
         FunctionReference FReadDirectoryFileList;
+        FunctionReference FReadDirectoryList;
 
         static Object Init(Napi::Env env, Object exports);
 
@@ -109,6 +112,7 @@ namespace Bannerlord::VortexExtension
         this->FGetInstallPath.Unref();
         this->FReadFileContent.Unref();
         this->FReadDirectoryFileList.Unref();
+        this->FReadDirectoryList.Unref();
         Bannerlord::VortexExtension::ve_dispose_handler(this->_pInstance);
     }
 
@@ -135,7 +139,7 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto profileId = String::New(env, p_profile_id);
+            const auto profileId = String::New(env, Copy(p_profile_id));
             const auto result = manager->FGetProfileById({profileId}).As<Object>();
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
         }
@@ -168,9 +172,9 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto gameId = String::New(env, p_game_id);
-            const auto executable = String::New(env, p_executable);
-            const auto gameParameters = JSONParse(env, String::New(env, p_game_parameters));
+            const auto gameId = String::New(env, Copy(p_game_id));
+            const auto executable = String::New(env, Copy(p_executable));
+            const auto gameParameters = JSONParse(env, String::New(env, Copy(p_game_parameters)));
 
             manager->FSetGameParameters({gameId, executable, gameParameters}).As<Object>();
             return Create(return_value_void{nullptr});
@@ -204,7 +208,7 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto loadOrder = JSONParse(env, String::New(env, p_load_order));
+            const auto loadOrder = JSONParse(env, String::New(env, Copy(p_load_order)));
             manager->FSetLoadOrder({loadOrder});
             return Create(return_value_void{nullptr});
         }
@@ -221,8 +225,8 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto text = String::New(env, p_text);
-            const auto ns = String::New(env, p_ns);
+            const auto text = String::New(env, Copy(p_text));
+            const auto ns = String::New(env, Copy(p_ns));
             const auto result = manager->FTranslateString({text, ns}).As<String>();
             return Create(return_value_string{nullptr, Copy(result.Utf16Value())});
         }
@@ -239,9 +243,9 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto id = String::New(env, p_id);
-            const auto type = String::New(env, p_type);
-            const auto message = String::New(env, p_message);
+            const auto id = String::New(env, Copy(p_id));
+            const auto type = String::New(env, Copy(p_type));
+            const auto message = String::New(env, Copy(p_message));
             const auto displayMs_ = Number::New(env, displayMs);
             manager->FSendNotification({id, type, message, displayMs_}).As<Object>();
             return Create(return_value_void{nullptr});
@@ -274,7 +278,7 @@ namespace Bannerlord::VortexExtension
         {
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
-            const auto filePath = String::New(env, p_file_path);
+            const auto filePath = String::New(env, Copy(p_file_path));
 
             const auto result = manager->FReadFileContent({filePath});
             if (result.IsNull())
@@ -296,9 +300,31 @@ namespace Bannerlord::VortexExtension
         {
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
-            const auto directoryPath = String::New(env, p_directory_path);
+            const auto directoryPath = String::New(env, Copy(p_directory_path));
 
             const auto result = manager->FReadDirectoryFileList({directoryPath});
+            if (result.IsNull())
+            {
+                return Create(return_value_json{nullptr, nullptr});
+            }
+
+            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+        }
+    }
+    static return_value_json *readDirectoryList(const void *p_owner, const char16_t *p_directory_path) noexcept
+    {
+        try
+        {
+            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto env = manager->Env();
+            const auto directoryPath = String::New(env, Copy(p_directory_path));
+
+            const auto result = manager->FReadDirectoryList({directoryPath});
             if (result.IsNull())
             {
                 return Create(return_value_json{nullptr, nullptr});
@@ -325,6 +351,8 @@ namespace Bannerlord::VortexExtension
         this->FSendNotification = Persistent(info[7].As<Function>());
         this->FGetInstallPath = Persistent(info[8].As<Function>());
         this->FReadFileContent = Persistent(info[9].As<Function>());
+        this->FReadDirectoryFileList = Persistent(info[10].As<Function>());
+        this->FReadDirectoryList = Persistent(info[11].As<Function>());
 
         ThrowOrReturn(env, Bannerlord::VortexExtension::ve_register_callbacks(this->_pInstance,
                                                                               get_active_profile,
@@ -337,7 +365,8 @@ namespace Bannerlord::VortexExtension
                                                                               sendNotification,
                                                                               getInstallPath,
                                                                               readFileContent,
-                                                                              readDirectoryFileList));
+                                                                              readDirectoryFileList,
+                                                                              readDirectoryList));
     }
 
     Value VortexExtensionManager::GetGameVersion(const CallbackInfo &info)

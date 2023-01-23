@@ -1,10 +1,9 @@
 import * as types from './types';
 
-const vortexextension: types.ICommon & types.IBannerlordModuleManager & types.IFetchBannerlordVersion = require('./../../vortexextension.node');
-//vortexextension.init();
+const vortexextension: types.IExtension = require('./../../vortexextension.node');
 
 export const createVortexExtensionManager = (): types.VortexExtensionManager => {
-    return new (vortexextension as any).VortexExtensionManager();
+    return new vortexextension.VortexExtensionManager();
 }
 
 export class BannerlordModuleManager {
@@ -30,8 +29,8 @@ export class BannerlordModuleManager {
         return vortexextension.getDependentModulesOfWithOptions(source, module, options);
     }
 
-    static validateModuleDependenciesDeclarations(module: types.ModuleInfoExtended): types.ModuleIssue[] {
-        return vortexextension.validateModuleDependenciesDeclarations(module);
+    static validateLoadOrder(source: types.ModuleInfoExtended[], targetModule: types.ModuleInfoExtended): types.ModuleIssue[] {
+        return vortexextension.validateLoadOrder(source, targetModule);
     }
 
     static validateModule(modules: types.ModuleInfoExtended[], targetModule: types.ModuleInfoExtended, manager: types.IValidationManager): types.ModuleIssue[] {

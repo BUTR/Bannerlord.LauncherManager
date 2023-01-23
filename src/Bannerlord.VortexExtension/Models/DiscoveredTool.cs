@@ -1,4 +1,4 @@
-/*
+﻿/*
 namespace Bannerlord.VortexExtension.Models
 {
     public record DiscoveredTool : Tool

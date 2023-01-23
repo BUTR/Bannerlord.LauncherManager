@@ -42,6 +42,7 @@ namespace Bannerlord::VortexExtension {
             , return_value_string* (__cdecl *p_get_install_path)(const void* p_owner)
             , return_value_string* (__cdecl *p_read_file_content)(const void* p_owner, const param_string* p_file_path)
             , return_value_json* (__cdecl *p_read_directory_file_list)(const void* p_owner, const param_string* p_directory_path)
+            , return_value_json* (__cdecl *p_read_directory_list)(const void* p_owner, const param_string* p_directory_path)
         );
 
 #ifdef __cplusplus

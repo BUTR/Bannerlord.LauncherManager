@@ -1,6 +1,10 @@
 import { types } from "vortex-api";
 import { ModuleInfoExtended } from "./BannerlordModuleManager";
 
+export interface IVortexExtension {
+  VortexExtensionManager: new () => VortexExtensionManager
+}
+
 export interface ILoadOrderEntry<T = any> {
   pos: number;
   enabled: boolean;
@@ -29,6 +33,7 @@ export type VortexExtensionManager = {
     getInstallPath: () => string,
     readFileContent: (filePath: string) => string | null,
     readDirectoryFileList: (directoryPath: string) => string[] | null,
+    readDirectoryList: (directoryPath: string) => string[] | null,
   ): void;
 
   getGameVersion(): string;

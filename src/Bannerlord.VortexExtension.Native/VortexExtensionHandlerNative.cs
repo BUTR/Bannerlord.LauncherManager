@@ -18,6 +18,7 @@ namespace Bannerlord.VortexExtension.Native
         public N_GetInstallPathDelegate D_GetInstallPath = (_) => throw new CallbacksNotRegisteredException();
         public N_ReadFileContentDelegate D_ReadFileContent = (_, _) => throw new CallbacksNotRegisteredException();
         public N_ReadDirectoryFileList D_ReadDirectoryFileList = (_, _) => throw new CallbacksNotRegisteredException();
+        public N_ReadDirectoryList D_ReadDirectoryList = (_, _) => throw new CallbacksNotRegisteredException();
 
         public void* OwnerPtr { get; }
         public void* HandlePtr { get; }

@@ -9,17 +9,18 @@ namespace Bannerlord.VortexExtension
     public partial class VortexExtensionHandler
     {
         private bool _callbacksRegistered;
-        private GetActiveProfileDelegate D_GetActiveProfile;
-        private GetProfileByIdDelegate D_GetProfileById;
-        private GetActiveGameIdDelegate D_GetActiveGameId;
-        private SetGameParametersDelegate D_SetGameParameters;
-        private GetLoadOrderDelegate D_GetLoadOrder;
-        private SetLoadOrderDelegate D_SetLoadOrder;
-        private TranslateStringDelegate D_TranslateString;
-        private SendNotificationDelegate D_SendNotification;
-        private GetInstallPathDelegate D_GetInstallPath;
-        private ReadFileContentDelegate D_ReadFileContent;
-        private ReadDirectoryFileListDelegate D_ReadDirectoryFileList;
+        private GetActiveProfileDelegate D_GetActiveProfile = () => throw new CallbacksNotRegisteredException();
+        private GetProfileByIdDelegate D_GetProfileById = (_) => throw new CallbacksNotRegisteredException();
+        private GetActiveGameIdDelegate D_GetActiveGameId = () => throw new CallbacksNotRegisteredException();
+        private SetGameParametersDelegate D_SetGameParameters = (_, _) => throw new CallbacksNotRegisteredException();
+        private GetLoadOrderDelegate D_GetLoadOrder = () => throw new CallbacksNotRegisteredException();
+        private SetLoadOrderDelegate D_SetLoadOrder = (_) => throw new CallbacksNotRegisteredException();
+        private TranslateStringDelegate D_TranslateString = (_) => throw new CallbacksNotRegisteredException();
+        private SendNotificationDelegate D_SendNotification = (_, _, _, _) => throw new CallbacksNotRegisteredException();
+        private GetInstallPathDelegate D_GetInstallPath = () => throw new CallbacksNotRegisteredException();
+        private ReadFileContentDelegate D_ReadFileContent = (_) => throw new CallbacksNotRegisteredException();
+        private ReadDirectoryFileListDelegate D_ReadDirectoryFileList = (_) => throw new CallbacksNotRegisteredException();
+        private ReadDirectoryListDelegate D_ReadDirectoryList = (_) => throw new CallbacksNotRegisteredException();
 
         public void RegisterCallbacks(
             GetActiveProfileDelegate getActiveProfile
@@ -33,6 +34,7 @@ namespace Bannerlord.VortexExtension
             , GetInstallPathDelegate getInstallPath
             , ReadFileContentDelegate readFileContent
             , ReadDirectoryFileListDelegate readDirectoryFileList
+            , ReadDirectoryListDelegate readDirectoryList
         )
         {
             D_GetActiveProfile = getActiveProfile;
@@ -46,6 +48,7 @@ namespace Bannerlord.VortexExtension
             D_GetInstallPath = getInstallPath;
             D_ReadFileContent = readFileContent;
             D_ReadDirectoryFileList = readDirectoryFileList;
+            D_ReadDirectoryList = readDirectoryList;
             _callbacksRegistered = true;
         }
 
@@ -125,6 +128,13 @@ namespace Bannerlord.VortexExtension
             ThrowIfNoCallbacksRegistered();
 
             return D_ReadDirectoryFileList(directoryPath);
+        }
+
+        public string[]? ReadDirectoryList(ReadOnlySpan<char> directoryPath)
+        {
+            ThrowIfNoCallbacksRegistered();
+
+            return D_ReadDirectoryList(directoryPath);
         }
 
         private void ThrowIfNoCallbacksRegistered()

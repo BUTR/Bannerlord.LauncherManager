@@ -4,11 +4,9 @@
   <Id value="Test2" />
   <Name value="Test2" />
   <Version value="v2.2.2.85" />
-  <Official value="false" />
   <DefaultModule value="false" />
-  <SingleplayerModule value="true" />
-  <MultiplayerModule value="false" />
   <ModuleCategory value="Singleplayer" />
+  <ModuleType value="Community"/>
   <DependedModules>
     <DependedModule Id="Test" />
   </DependedModules>

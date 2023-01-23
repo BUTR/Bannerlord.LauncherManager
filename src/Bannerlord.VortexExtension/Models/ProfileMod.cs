@@ -1,4 +1,4 @@
-namespace Bannerlord.VortexExtension.Models
+﻿namespace Bannerlord.VortexExtension.Models
 {
     public sealed record ProfileMod
     {

@@ -64,6 +64,14 @@
     "xthread": "cpp",
     "fstream": "cpp",
     "xtime": "cpp",
-    "cassert": "cpp"
+    "cassert": "cpp",
+    "atomic": "cpp",
+    "bit": "cpp",
+    "cctype": "cpp",
+    "clocale": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp",
+    "iterator": "cpp",
+    "stop_token": "cpp"
   }
 }

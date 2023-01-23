@@ -7,7 +7,6 @@ using namespace Napi;
 
 Object InitAll(const Env env, const Object exports)
 {
-  // Common::Init(env, exports);
   Bannerlord::FetchVersion::Init(env, exports);
   Bannerlord::ModuleManager::Init(env, exports);
   Bannerlord::VortexExtension::Init(env, exports);

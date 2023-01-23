@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Bannerlord.ModuleManager;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using Bannerlord.ModuleManager;
 
 namespace Bannerlord.VortexExtension
 {
@@ -35,7 +36,7 @@ namespace Bannerlord.VortexExtension
                     }
                     catch (Exception e)
                     {
-                        throw new Exception($"content: {content}", e);
+                        throw new Exception($"modulePath: {modulePath}, content: {content}", e);
                     }
                     if (moduleInfoExtended is not null)
                         yield return moduleInfoExtended;

@@ -1,12 +1,13 @@
+﻿using System;
 using System.Collections.Generic;
 
 namespace Bannerlord.VortexExtension.Models
 {
     public sealed record Profile
     {
-        public string Id { get; set; }
-        public string GameId { get; set; }
-        public string Name { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string GameId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public Dictionary<string, ProfileMod> ModState { get; set; } = new();
         public ulong LastActivated { get; set; }
         public bool? PendingRemove { get; set; }

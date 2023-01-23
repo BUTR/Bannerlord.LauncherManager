@@ -1,7 +1,8 @@
 import test from 'ava';
 
 import { harmonyXml, uiExtenderExXml, invalidXml } from './_data';
-import { BannerlordModuleManager, types } from '../lib';
+import { IEnableDisableManager, IValidationManager } from '../lib/types';
+import { BannerlordModuleManager } from '../lib';
 
 test('sort', async (t) => {
   const invalid = BannerlordModuleManager.getModuleInfo(invalidXml);
@@ -9,13 +10,13 @@ test('sort', async (t) => {
     t.fail();
     return;
   }
-  const uiExtenderEx = BannerlordModuleManager.getModuleInfo(uiExtenderExXml);
-  if (uiExtenderEx === null || uiExtenderEx === undefined) {
+  const harmony = BannerlordModuleManager.getModuleInfo(harmonyXml);
+  if (harmony === null || harmony === undefined) {
     t.fail();
     return;
   }
-  const harmony = BannerlordModuleManager.getModuleInfo(harmonyXml);
-  if (harmony === null || harmony === undefined) {
+  const uiExtenderEx = BannerlordModuleManager.getModuleInfo(uiExtenderExXml);
+  if (uiExtenderEx === null || uiExtenderEx === undefined) {
     t.fail();
     return;
   }
@@ -35,34 +36,22 @@ test('sort', async (t) => {
     return;
   }
 
-  const validationResult = BannerlordModuleManager.validateModuleDependenciesDeclarations(harmony);
+  const validationResult = BannerlordModuleManager.validateLoadOrder(sorted, harmony);
   if (validationResult === null || !Array.isArray(validationResult)) {
     t.fail();
     return;
   }
 
-  const validationResult2 = BannerlordModuleManager.validateModuleDependenciesDeclarations(uiExtenderEx);
-  if (validationResult2 === null || !Array.isArray(validationResult2)) {
-    t.fail();
-    return;
-  }
-
-  const validationResult3 = BannerlordModuleManager.validateModuleDependenciesDeclarations(invalid);
-  if (validationResult3 === null || !Array.isArray(validationResult3) || validationResult3.length != 1) {
-    t.fail();
-    return;
-  }
-
   let isSelectedCalled = false;
-  const validationManager: types.IValidationManager = {
+  const validationManager: IValidationManager = {
     isSelected: function (moduleId: string): boolean {
       isSelectedCalled = true;
       if (moduleId == "") { return true; }
       return false;
     }
   };
-  const validationResult4 = BannerlordModuleManager.validateModule(unsortedInvalid, uiExtenderEx, validationManager);
-  if (validationResult4 === null || !Array.isArray(validationResult4)) {
+  const validationResult1 = BannerlordModuleManager.validateModule(unsortedInvalid, uiExtenderEx, validationManager);
+  if (validationResult1 === null || !Array.isArray(validationResult1)) {
     t.fail();
     return;
   }
@@ -71,17 +60,17 @@ test('sort', async (t) => {
     return;
   }
 
-  const validationResult5 = BannerlordModuleManager.validateModule(unsortedInvalid, invalid, validationManager);
-  if (validationResult5 === null || !Array.isArray(validationResult5) || validationResult5.length != 1) {
+  const validationResult2 = BannerlordModuleManager.validateModule(unsortedInvalid, invalid, validationManager);
+  if (validationResult2 === null || !Array.isArray(validationResult2) || validationResult2.length != 1) {
     t.fail();
     return;
   }
 
   let getSelectedCalled = false;
   let setSelectedCalled = false;
-  /*let getDisabledCalled = false;
-  let setDisabledCalled = false;*/
-  const enableDisableManager: types.IEnableDisableManager = {
+  //let getDisabledCalled = false;
+  //let setDisabledCalled = false;
+  const enableDisableManager: IEnableDisableManager = {
     getSelected: function (moduleId: string): boolean {
       getSelectedCalled = true;
       if (moduleId == "") { return true; }
@@ -92,18 +81,19 @@ test('sort', async (t) => {
       if (moduleId == "" && value) { return; }
     },
     getDisabled: function (moduleId: string): boolean {
-      /*getDisabledCalled = true;*/
+      //getDisabledCalled = true;
       if (moduleId == "") { return true; }
       return false;
     },
     setDisabled: function (moduleId: string, value: boolean): void {
-      /*setDisabledCalled = true;*/
+      //setDisabledCalled = true;
       if (moduleId == "" && value) { return; }
     },
   };
   BannerlordModuleManager.enableModule(unsorted, uiExtenderEx, enableDisableManager);
   BannerlordModuleManager.disableModule(unsorted, uiExtenderEx, enableDisableManager);
-  if (!getSelectedCalled || !setSelectedCalled/* || !getDisabledCalled || !setDisabledCalled*/) {
+  //if (!getSelectedCalled || !setSelectedCalled || !getDisabledCalled || !setDisabledCalled) {
+  if (!getSelectedCalled || !setSelectedCalled) {
     t.fail();
     return;
   }
@@ -113,4 +103,6 @@ test('sort', async (t) => {
   t.deepEqual(sorted.length, 2);
   t.deepEqual(sorted[0].id, harmony.id);
   t.deepEqual(sorted[1].id, uiExtenderEx.id);
+
+  t.pass();
 });

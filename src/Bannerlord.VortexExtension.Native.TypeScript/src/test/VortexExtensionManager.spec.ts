@@ -1,13 +1,13 @@
 import test from 'ava';
 import fs from 'fs';
+import path from 'path';
 import { IProfile, NotificationType } from 'vortex-api/lib/types/api';
-
 import { createVortexExtensionManager } from '../lib/';
 import { ILoadOrder, ILoadOrderEntry } from '../lib/types';
 
 test('sort', async (t) => {
   const gameId = 'mountandblade2bannerlord';
-  const gamePath = "D:\\SteamLibrary\\steamapps\\common\\Mount & Blade II Bannerlord";
+  const gamePath = __dirname;
   let profile: IProfile = {
     id: '123',
     gameId: gameId,
@@ -51,10 +51,12 @@ test('sort', async (t) => {
     let expectedLoadOrder: ILoadOrder = {
       'Bannerlord.Harmony': {
         pos: 1,
+        name: 'Harmony',
         enabled: true
       } as ILoadOrderEntry,
       'Bannerlord.UIExtenderEx': {
         pos: 2,
+        name: 'UIExtenderEx',
         enabled: true
       } as ILoadOrderEntry,
     };
@@ -78,7 +80,13 @@ test('sort', async (t) => {
   };
   const readDirectoryFileList = (directoryPath: string): string[] | null => {
     if (fs.existsSync(directoryPath)) {
-      return fs.readdirSync(directoryPath);
+      return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isFile()).map(x => path.join(directoryPath, x.name));
+    }
+    return null;
+  };
+  const readDirectoryList = (directoryPath: string): string[] | null => {
+    if (fs.existsSync(directoryPath)) {
+      return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isDirectory()).map(x => path.join(directoryPath, x.name));
     }
     return null;
   };
@@ -93,7 +101,8 @@ test('sort', async (t) => {
     sendNotification,
     getInstallPath,
     readFileContent,
-    readDirectoryFileList);
+    readDirectoryFileList,
+    readDirectoryList);
 
   const version = manager.getGameVersion();
   if (version === undefined) {
@@ -109,9 +118,5 @@ test('sort', async (t) => {
 
   manager.sort();
 
-  const tt = 6;
-  if (tt === undefined) {
-    t.fail();
-    return;
-  }
+  t.pass();
 });

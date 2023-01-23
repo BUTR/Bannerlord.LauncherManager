@@ -9,7 +9,7 @@ namespace Bannerlord.VortexExtension
         IEnumerable<string> GetModulePaths();
     }
 
-    public class MainModuleProvider: IModulePathProvider
+    public class MainModuleProvider : IModulePathProvider
     {
         private readonly VortexExtensionHandler _handler;
 
@@ -21,8 +21,9 @@ namespace Bannerlord.VortexExtension
         public IEnumerable<string> GetModulePaths()
         {
             var installPath = _handler.GetInstallPath().ToString();
-            var directories = _handler.ReadDirectoryFileList(Path.Combine(installPath, Constants.ModulesFolder));
-            if (directories is null) yield break;
+            var directories = _handler.ReadDirectoryList(Path.Combine(installPath, Constants.ModulesFolder));
+            if (directories is null) throw new DirectoryNotFoundException($"installPath: {installPath}. Modules directory not found!");
+            //if (directories is null) yield break;
             foreach (var moduleFolder in directories)
             {
                 yield return moduleFolder;
@@ -30,7 +31,7 @@ namespace Bannerlord.VortexExtension
         }
     }
 
-    public class SteamModuleProvider: IModulePathProvider
+    public class SteamModuleProvider : IModulePathProvider
     {
         private readonly VortexExtensionHandler _handler;
 
@@ -49,7 +50,8 @@ namespace Bannerlord.VortexExtension
             var workshopDir = Path.Combine(steamApps, "workshop", "content", "261550");
 
             var directories = _handler.ReadDirectoryFileList(workshopDir);
-            if (directories is null) throw new Exception();
+            if (directories is null) throw new DirectoryNotFoundException($"installPath: {installPath}. Steam's Modules directory not found!");
+            //if (directories is null) yield break;
             foreach (var moduleFolder in directories)
             {
                 yield return moduleFolder;

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Bannerlord.ModuleManager;
+using Bannerlord.VortexExtension.Models;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Bannerlord.ModuleManager;
-using Bannerlord.VortexExtension.Models;
 
 namespace Bannerlord.VortexExtension
 {
@@ -22,7 +23,8 @@ namespace Bannerlord.VortexExtension
         {
             return new LoadOrder(modules.Select((x, i) => new
             {
-                Module = x, LoadOrder = new LoadOrderEntry
+                Module = x,
+                LoadOrder = new LoadOrderEntry
                 {
                     Pos = i + 1,
                     Enabled = true,

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/BUTR/Bannerlord.XmlSchemas/master/SubModule.xsd" >
+  <Id value="Bannerlord.Harmony" />
+  <Name value="Harmony" />
+  <Version value="v2.2.2.0" />
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <ModuleType value ="Community" />
+  <Url value="https://www.nexusmods.com/mountandblade2bannerlord/mods/2006" />
+  <DependedModules />
+  <ModulesToLoadAfterThis>
+    <Module Id="Native" />
+    <Module Id="SandBoxCore" />
+    <Module Id="Sandbox" />
+    <Module Id="StoryMode" />
+    <Module Id="CustomBattle" />
+  </ModulesToLoadAfterThis>
+  <!-- Community Dependency Metadata -->
+  <!-- https://github.com/BUTR/Bannerlord.BUTRLoader#for-modders -->
+  <DependedModuleMetadatas>
+    <DependedModuleMetadata id="Native" order="LoadAfterThis" optional="true" />
+    <DependedModuleMetadata id="SandBoxCore" order="LoadAfterThis" optional="true" />
+    <DependedModuleMetadata id="Sandbox" order="LoadAfterThis" optional="true" />
+    <DependedModuleMetadata id="StoryMode" order="LoadAfterThis" optional="true" />
+    <DependedModuleMetadata id="CustomBattle" order="LoadAfterThis" optional="true" />
+  </DependedModuleMetadatas>
+  <!-- Community Dependency Metadata -->
+  <SubModules>
+    <SubModule>
+      <Name value="Harmony" />
+      <DLLName value="Bannerlord.Harmony.dll" />
+      <SubModuleClassType value="Bannerlord.Harmony.SubModule" />
+      <Tags/>
+    </SubModule>
+  </SubModules>
+</Module>

@@ -14,4 +14,6 @@ test('sort', async (t) => {
 
   const versionType = FetchBannerlordVersion.getVersionType(path, dllName);
   t.is(versionType, 4);
+
+  t.pass();
 });

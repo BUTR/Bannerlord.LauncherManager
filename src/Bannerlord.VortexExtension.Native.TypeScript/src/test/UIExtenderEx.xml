@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/BUTR/Bannerlord.XmlSchemas/master/SubModule.xsd" >
+  <Id value="Bannerlord.UIExtenderEx" />
+  <Name value="UIExtenderEx" />
+  <Version value="v2.6.0" />
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <ModuleType value="Community" />
+  <Url value="https://www.nexusmods.com/mountandblade2bannerlord/mods/2102" />
+  <DependedModules>
+    <DependedModule Id="Bannerlord.Harmony" DependentVersion="v2.2.2" />
+  </DependedModules>
+  <ModulesToLoadAfterThis>
+    <Module Id="Native" />
+    <Module Id="SandBoxCore" />
+    <Module Id="Sandbox" />
+    <Module Id="StoryMode" />
+    <Module Id="CustomBattle" />
+  </ModulesToLoadAfterThis>
+  <!-- Community Dependency Metadata -->
+  <!-- https://github.com/BUTR/Bannerlord.BUTRLoader#for-modders -->
+  <DependedModuleMetadatas>
+    <DependedModuleMetadata id="Bannerlord.Harmony" order="LoadBeforeThis" version="v2.2.2" />
+
+    <DependedModuleMetadata id="Native" order="LoadAfterThis" version="v1.0.0.*" optional="true" />
+    <DependedModuleMetadata id="SandBoxCore" order="LoadAfterThis" version="v1.0.0.*" optional="true" />
+    <DependedModuleMetadata id="Sandbox" order="LoadAfterThis" version="v1.0.0.*" optional="true" />
+    <DependedModuleMetadata id="StoryMode" order="LoadAfterThis" version="v1.0.0.*" optional="true" />
+    <DependedModuleMetadata id="CustomBattle" order="LoadAfterThis" version="v1.0.0.*" optional="true" />
+  </DependedModuleMetadatas>
+  <!-- Community Metadata -->
+  <SubModules>
+    <!--
+    <SubModule>
+      <Name value="UIExtenderEx" />
+      <DLLName value="Bannerlord.UIExtenderEx.dll" />
+      <SubModuleClassType value="Bannerlord.UIExtenderEx.MCMSubModuleWrapper" />
+      <Tags />
+    </SubModule>
+    <SubModule>
+      <Name value="UIExtenderEx" />
+      <DLLName value="Bannerlord.UIExtenderEx.dll" />
+      <SubModuleClassType value="Bannerlord.UIExtenderEx.MCMImplementationSubModuleWrapper" />
+      <Tags />
+    </SubModule>
+    -->
+    <SubModule>
+      <Name value="UIExtenderEx" />
+      <DLLName value="Bannerlord.UIExtenderEx.dll" />
+      <SubModuleClassType value="Bannerlord.UIExtenderEx.SubModule" />
+      <Tags>
+        <Tag key="DumpXML" value="false" />
+      </Tags>
+    </SubModule>
+    <SubModule>
+      <Name value="UIExtenderEx UI Patch" />
+      <DLLName value="Bannerlord.UIExtenderEx.dll" />
+      <SubModuleClassType value="Bannerlord.UIExtenderEx.UIPatchSubModule" />
+      <Tags />
+    </SubModule>
+  </SubModules>
+</Module>
