@@ -28,7 +28,9 @@ namespace Bannerlord.VortexExtension
                 $"_MODULES_*{string.Join("*", modules.Where(x => x.Value.Enabled).OrderBy(x => x.Value.Pos).Select(x => x.Key))}*_MODULES_"
             };
 
-            SetGameParameters(Constants.BannerlordExecutable, parameters);
+            SetGameParameters(modules.Any(x => x is { Key: "Bannerlord.BLSE", Value.Enabled: true })
+                ? Constants.BLSEExecutable
+                : Constants.BannerlordExecutable, parameters);
         }
     }
 }

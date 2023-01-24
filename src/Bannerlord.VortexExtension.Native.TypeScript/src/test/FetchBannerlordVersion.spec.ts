@@ -2,7 +2,7 @@ import test from 'ava';
 
 import { FetchBannerlordVersion } from '../lib';
 
-test('sort', async (t) => {
+test('Main', async (t) => {
   const path = __dirname;
   const dllName = 'TaleWorlds.Library.dll';
 

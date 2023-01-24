@@ -5,7 +5,7 @@ import { IProfile, NotificationType } from 'vortex-api/lib/types/api';
 import { createVortexExtensionManager } from '../lib/';
 import { ILoadOrder, ILoadOrderEntry } from '../lib/types';
 
-test('sort', async (t) => {
+test('Main', async (t) => {
   const gameId = 'mountandblade2bannerlord';
   const gamePath = __dirname;
   let profile: IProfile = {

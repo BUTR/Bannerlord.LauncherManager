@@ -1,18 +1,13 @@
 ﻿using Bannerlord.ModuleManager;
 using Bannerlord.VortexExtension.Models;
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Xml;
 
 namespace Bannerlord.VortexExtension
 {
     public partial class VortexExtensionHandler
     {
-
-
         public IReadOnlyCollection<ModuleInfoExtended> GetFromLoadOrder(LoadOrder loadOrder)
         {
             var ids = loadOrder.Select(x => x.Key).ToHashSet();

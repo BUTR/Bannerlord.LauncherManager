@@ -22,6 +22,14 @@ namespace Bannerlord.VortexExtension.Models
                 "Bannerlord.BUTRLoader.dll"
             }
         };
+        public static SupportedResult AsSupportedWithBLSE { get; } = new()
+        {
+            Supported = true,
+            RequiredFiles = new()
+            {
+                "Bannerlord.BUTRLoader.dll"
+            }
+        };
 
         public bool Supported { get; set; }
         public List<string> RequiredFiles { get; set; } = new();

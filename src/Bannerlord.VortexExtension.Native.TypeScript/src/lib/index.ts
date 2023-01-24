@@ -7,6 +7,7 @@ export const createVortexExtensionManager = (): types.VortexExtensionManager => 
 }
 
 export class BannerlordModuleManager {
+    /* istanbul ignore next */
     private constructor() { }
 
     static sort(unsorted: types.ModuleInfoExtended[]): types.ModuleInfoExtended[] {
@@ -59,6 +60,7 @@ export class BannerlordModuleManager {
 }
 
 export class FetchBannerlordVersion {
+    /* istanbul ignore next */
     private constructor() { }
 
     static getChangeSet(gameFolderPath: string, libAssembly: string): number {

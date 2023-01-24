@@ -43,10 +43,10 @@ namespace Bannerlord.VortexExtension
         public IEnumerable<string> GetModulePaths()
         {
             var installPath = _handler.GetInstallPath().ToString();
-            if (!installPath.ToLower().Contains("steamapps"))
+            if (!installPath.ToLower().Contains("steamapps", StringComparison.OrdinalIgnoreCase))
                 yield break;
 
-            var steamApps = installPath.Substring(0, installPath.IndexOf("common"));
+            var steamApps = installPath.Substring(0, installPath.IndexOf("common", StringComparison.Ordinal));
             var workshopDir = Path.Combine(steamApps, "workshop", "content", "261550");
 
             var directories = _handler.ReadDirectoryFileList(workshopDir);

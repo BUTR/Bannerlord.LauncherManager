@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualBasic.CompilerServices;
-
-namespace Bannerlord.VortexExtension.Models
+﻿namespace Bannerlord.VortexExtension.Models
 {
     public enum LockedState
     {
