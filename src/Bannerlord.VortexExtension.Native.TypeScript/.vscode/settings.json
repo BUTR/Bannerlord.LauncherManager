@@ -72,6 +72,7 @@
     "compare": "cpp",
     "concepts": "cpp",
     "iterator": "cpp",
-    "stop_token": "cpp"
+    "stop_token": "cpp",
+    "cuchar": "cpp"
   }
 }

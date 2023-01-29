@@ -57,6 +57,19 @@ export class BannerlordModuleManager {
     static compareVersions(x: types.ApplicationVersion, y: types.ApplicationVersion): number {
         return vortexextension.compareVersions(x, y);
     }
+
+    static getDependenciesAll(module: types.ModuleInfoExtended): types.DependentModuleMetadata[] {
+        return vortexextension.getDependenciesAll(module);
+    }
+    static getDependenciesToLoadBeforeThis(module: types.ModuleInfoExtended): types.DependentModuleMetadata[] {
+        return vortexextension.getDependenciesToLoadBeforeThis(module);
+    }
+    static getDependenciesToLoadAfterThis(module: types.ModuleInfoExtended): types.DependentModuleMetadata[] {
+        return vortexextension.getDependenciesToLoadAfterThis(module);
+    }
+    static getDependenciesIncompatibles(module: types.ModuleInfoExtended): types.DependentModuleMetadata[] {
+        return vortexextension.getDependenciesIncompatibles(module);
+    }
 }
 
 export class FetchBannerlordVersion {

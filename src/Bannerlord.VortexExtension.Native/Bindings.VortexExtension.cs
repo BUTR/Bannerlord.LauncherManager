@@ -409,7 +409,7 @@ namespace Bannerlord.VortexExtension.Native
                 if (result.IsNull) return Array.Empty<string>();
                 using var fileList = result.ValueAsJson();
 
-                var returnResult = fileList.IsInvalid ? null :Utils.DeserializeJson(fileList, CustomSourceGenerationContext.StringArray);
+                var returnResult = fileList.IsInvalid ? null : Utils.DeserializeJson(fileList, CustomSourceGenerationContext.StringArray);
                 Logger.LogOutputManaged(returnResult!);
                 return returnResult;
             }

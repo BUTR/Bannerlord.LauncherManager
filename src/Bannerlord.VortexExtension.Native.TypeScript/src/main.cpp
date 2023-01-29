@@ -1,6 +1,6 @@
-#include "Bannerlord.FetchVersion.h"
-#include "Bannerlord.ModuleManager.h"
-#include "Bannerlord.VortexExtensionManager.h"
+#include "Bannerlord.FetchVersion.hpp"
+#include "Bannerlord.ModuleManager.hpp"
+#include "Bannerlord.VortexExtensionManager.hpp"
 #include <napi.h>
 
 using namespace Napi;

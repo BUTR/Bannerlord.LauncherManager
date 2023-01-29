@@ -1,7 +1,7 @@
-#ifndef VE_FETCHBLVERSION_GUARD_H_
-#define VE_FETCHBLVERSION_GUARD_H_
+#ifndef VE_FETCHBLVERSION_GUARD_HPP_
+#define VE_FETCHBLVERSION_GUARD_HPP_
 
-#include "utils.h"
+#include "utils.hpp"
 #include "Common.Native.h"
 #include "Bannerlord.FetchVersion.Native.h"
 #include <codecvt>

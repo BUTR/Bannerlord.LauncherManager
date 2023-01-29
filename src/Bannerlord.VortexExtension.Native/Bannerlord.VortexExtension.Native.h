@@ -3,11 +3,10 @@
 
 #include "Common.Native.h"
 
+#ifdef __cplusplus
 using namespace Common;
 
 namespace Bannerlord::VortexExtension {
-
-#ifdef __cplusplus
     extern "C" {
 #endif
 
@@ -47,8 +46,7 @@ namespace Bannerlord::VortexExtension {
 
 #ifdef __cplusplus
     }
-#endif
-
 }
+#endif
 
 #endif

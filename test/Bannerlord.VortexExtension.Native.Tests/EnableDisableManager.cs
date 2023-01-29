@@ -11,10 +11,10 @@ internal class EnableDisableManager
         var manager = Unsafe.AsRef<EnableDisableManager>(owner);
         return return_value_bool.AsValue(manager.GetSelected(Utils2.ToSpan(moduleId).ToString()));
     }
-    public static unsafe return_value_void* SetSelected(void* owner, param_string* moduleId, bool value)
+    public static unsafe return_value_void* SetSelected(void* owner, param_string* moduleId, byte value)
     {
         var manager = Unsafe.AsRef<EnableDisableManager>(owner);
-        manager.SetSelected(Utils2.ToSpan(moduleId).ToString(), value);
+        manager.SetSelected(Utils2.ToSpan(moduleId).ToString(), value == 1);
         return return_value_void.AsValue();
     }
     public static unsafe return_value_bool* GetDisabled(void* owner, param_string* moduleId)
@@ -22,10 +22,10 @@ internal class EnableDisableManager
         var manager = Unsafe.AsRef<EnableDisableManager>(owner);
         return return_value_bool.AsValue(manager.GetDisabled(Utils2.ToSpan(moduleId).ToString()));
     }
-    public static unsafe return_value_void* SetDisabled(void* owner, param_string* moduleId, bool value)
+    public static unsafe return_value_void* SetDisabled(void* owner, param_string* moduleId, byte value)
     {
         var manager = Unsafe.AsRef<EnableDisableManager>(owner);
-        manager.SetDisabled(Utils2.ToSpan(moduleId).ToString(), value);
+        manager.SetDisabled(Utils2.ToSpan(moduleId).ToString(), value == 1);
         return return_value_void.AsValue();
     }
 

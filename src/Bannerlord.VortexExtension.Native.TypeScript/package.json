@@ -22,7 +22,7 @@
   },
   "scripts": {
     "install": "echo",
-    "clean": "shx rm *.7z && shx rm -rf ./build && shx rm -rf ./dist",
+    "clean": "shx rm *.tgz *.h *.dll *.lib & shx rm -rf ./build ./dist ./coverage ./.nyc_output",
     "native:0": "dotnet publish -r win-x64 --self-contained -c Release ../Bannerlord.VortexExtension.Native",
     "native:1": "shx cp -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll .",
     "native:2": "shx cp -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.lib .",
@@ -31,7 +31,7 @@
     "native:5": "shx cp -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/Bannerlord.ModuleManager.Native.h .",
     "native:6": "shx cp -f ../Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/Bannerlord.VortexExtension.Native.h .",
     "build": "run-s native:* && run-s build:*",
-    "build-ts": "run-p build:*",
+    "build-ts": "run-s build:*",
     "build-native": "run-s native:*",
     "build:bindings": "node-gyp rebuild",
     "build:main": "tsc -p tsconfig.json",
@@ -50,6 +50,7 @@
     "build:copy-11": "shx mkdir -p dist/module/test/Modules/Bannerlord.UIExtenderEx/",
     "build:copy-12": "shx cp src/test/Harmony.xml dist/module/test/Modules/Bannerlord.Harmony/SubModule.xml",
     "build:copy-13": "shx cp src/test/UIExtenderEx.xml dist/module/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml",
+    "test-no-build": "run-s test:spelling test:unit",
     "test": "run-s build test:*",
     "test:spelling": "cspell \"{README.md,.github/*.md,src/**/*.ts,src/**/*.js}\"",
     "test:unit": "nyc ava",
@@ -71,7 +72,7 @@
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/node": "^18.7.9",
-    "ava": "^4.3.3",
+    "ava": "^3.15.0",
     "codecov": "^3.8.2",
     "cspell": "^6.19.2",
     "node-addon-api": "^5.0.0",
@@ -83,6 +84,9 @@
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.7",
     "typescript": "^4.7.4"
+  },
+  "overrides": {
+    "got": "^11.8.5"
   },
   "files": [
     "dist/main/index.*",
@@ -98,7 +102,7 @@
     "README.md"
   ],
   "ava": {
-    "failFast": true,
+    "failFast": false,
     "timeout": "60s",
     "typescript": {
       "rewritePaths": {

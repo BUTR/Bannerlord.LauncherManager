@@ -15,7 +15,7 @@ namespace Bannerlord.VortexExtension.Native
             IncludeFields = false,
             WriteIndented = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin),
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
         };
         internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(_options);
     }

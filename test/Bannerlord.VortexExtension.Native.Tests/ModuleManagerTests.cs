@@ -32,9 +32,9 @@ public partial class ModuleManagerTests
     private static unsafe partial return_value_json* bmm_validate_module(void* p_owner, param_json* p_modules, param_json* p_target_module, delegate*<void*, param_string*, return_value_bool*> p_is_selected);
 
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
-    private static unsafe partial return_value_void* bmm_enable_module(void* p_owner, param_json* p_modules, param_json* p_target_module, delegate*<void*, param_string*, return_value_bool*> p_get_selected, delegate*<void*, param_string*, bool, return_value_void*> p_set_selected, delegate*<void*, param_string*, return_value_bool*> p_get_disabled, delegate*<void*, param_string*, bool, return_value_void*> p_set_disabled);
+    private static unsafe partial return_value_void* bmm_enable_module(void* p_owner, param_json* p_modules, param_json* p_target_module, delegate*<void*, param_string*, return_value_bool*> p_get_selected, delegate*<void*, param_string*, byte, return_value_void*> p_set_selected, delegate*<void*, param_string*, return_value_bool*> p_get_disabled, delegate*<void*, param_string*, byte, return_value_void*> p_set_disabled);
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
-    private static unsafe partial return_value_void* bmm_disable_module(void* p_owner, param_json* p_modules, param_json* p_target_module, delegate*<void*, param_string*, return_value_bool*> p_get_selected, delegate*<void*, param_string*, bool, return_value_void*> p_set_selected, delegate*<void*, param_string*, return_value_bool*> p_get_disabled, delegate*<void*, param_string*, bool, return_value_void*> p_set_disabled);
+    private static unsafe partial return_value_void* bmm_disable_module(void* p_owner, param_json* p_modules, param_json* p_target_module, delegate*<void*, param_string*, return_value_bool*> p_get_selected, delegate*<void*, param_string*, byte, return_value_void*> p_set_selected, delegate*<void*, param_string*, return_value_bool*> p_get_disabled, delegate*<void*, param_string*, byte, return_value_void*> p_set_disabled);
 
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static unsafe partial return_value_json* bmm_get_module_info(param_string* p_xml_content);
@@ -43,6 +43,15 @@ public partial class ModuleManagerTests
 
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static unsafe partial return_value_int32* bmm_compare_versions(param_json* p_x, param_json* p_y);
+
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial return_value_json* bmm_get_dependencies_all(param_json* p_module);
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial return_value_json* bmm_get_dependencies_load_before_this(param_json* p_module);
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial return_value_json* bmm_get_dependencies_load_after_this(param_json* p_module);
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial return_value_json* bmm_get_dependencies_incompatibles(param_json* p_module);
 
     private const string InvalidXml = """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -166,20 +175,20 @@ public partial class ModuleManagerTests
     [Test]
     public unsafe void Test_SubModule()
     {
-        var (subModuleError, subModule) = GetResult<ModuleInfoExtended>(bmm_get_sub_module_info((param_string*) Utils.Copy(HarmonySubModuleXml)));
+        var (subModuleError, subModule) = GetResult<ModuleInfoExtended>(bmm_get_sub_module_info((param_string*) Copy(HarmonySubModuleXml)));
         Assert.That(subModuleError, Is.Empty);
     }
 
     [Test]
     public unsafe void Test_Main()
     {
-        var (invalidError, invalid) = GetResult<ModuleInfoExtended>(bmm_get_module_info((param_string*) Utils.Copy(InvalidXml)));
+        var (invalidError, invalid) = GetResult<ModuleInfoExtended>(bmm_get_module_info((param_string*) Copy(InvalidXml)));
         Assert.That(invalidError, Is.Empty);
-        var (harmonyError, harmony) = GetResult<ModuleInfoExtended>(bmm_get_module_info((param_string*) Utils.Copy(HarmonyXml)));
+        var (harmonyError, harmony) = GetResult<ModuleInfoExtended>(bmm_get_module_info((param_string*) Copy(HarmonyXml)));
         Assert.That(harmonyError, Is.Empty);
         Assert.That(harmony, Is.Not.Null);
         Assert.That(harmony!.Id, Is.EqualTo("Bannerlord.Harmony"));
-        var (uiExtenderError, uiExtenderEx) = GetResult<ModuleInfoExtended>(bmm_get_module_info((param_string*) Utils.Copy(UIExtenderExXml)));
+        var (uiExtenderError, uiExtenderEx) = GetResult<ModuleInfoExtended>(bmm_get_module_info((param_string*) Copy(UIExtenderExXml)));
         Assert.That(uiExtenderError, Is.Empty);
         Assert.That(uiExtenderEx, Is.Not.Null);
         Assert.That(uiExtenderEx!.Id, Is.EqualTo("Bannerlord.UIExtenderEx"));
@@ -228,5 +237,18 @@ public partial class ModuleManagerTests
             Unsafe.AsPointer(ref enableDisableManager), ToJson(unsorted), ToJson(uiExtenderEx),
             &EnableDisableManager.GetSelected, &EnableDisableManager.SetSelected, &EnableDisableManager.GetDisabled, &EnableDisableManager.SetDisabled));
         Assert.That(disableResultError, Is.Empty);
+
+        var (dependenciesAllError, dependenciesAll) = GetResult<DependentModuleMetadata[]>(bmm_get_dependencies_all(ToJson(uiExtenderEx)));
+        Assert.That(dependenciesAllError, Is.Empty);
+        Assert.That(dependenciesAll!.Length, Is.EqualTo(6));
+        var (dependenciesLoadBeforeError, dependenciesLoadBefore) = GetResult<DependentModuleMetadata[]>(bmm_get_dependencies_load_before_this(ToJson(uiExtenderEx)));
+        Assert.That(dependenciesLoadBeforeError, Is.Empty);
+        Assert.That(dependenciesLoadBefore!.Length, Is.EqualTo(1));
+        var (dependenciesLoadAfterError, dependenciesLoadAfter) = GetResult<DependentModuleMetadata[]>(bmm_get_dependencies_load_after_this(ToJson(uiExtenderEx)));
+        Assert.That(dependenciesLoadAfterError, Is.Empty);
+        Assert.That(dependenciesLoadAfter!.Length, Is.EqualTo(5));
+        var (dependenciesIncompatiblesError, dependenciesIncompatibles) = GetResult<DependentModuleMetadata[]>(bmm_get_dependencies_incompatibles(ToJson(uiExtenderEx)));
+        Assert.That(dependenciesIncompatiblesError, Is.Empty);
+        Assert.That(dependenciesIncompatibles!.Length, Is.EqualTo(0));
     }
 }

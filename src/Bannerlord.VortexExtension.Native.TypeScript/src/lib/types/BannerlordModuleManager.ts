@@ -20,12 +20,12 @@ export interface ApplicationVersion {
     changeSet: number;
 }
 export enum ApplicationVersionType {
-    Alpha,
-    Beta,
-    EarlyAccess,
-    Release,
-    Development,
-    Invalid
+    Alpha = 0,
+    Beta = 1,
+    EarlyAccess = 2,
+    Release = 3,
+    Development = 4,
+    Invalid = 5
 }
 export interface SubModuleInfoExtended {
     name: string;
@@ -106,4 +106,9 @@ export interface IBannerlordModuleManager {
     getSubModuleInfo(xml: string): SubModuleInfoExtended | undefined;
 
     compareVersions(x: ApplicationVersion, y: ApplicationVersion): number;
+
+    getDependenciesAll(module: ModuleInfoExtended): DependentModuleMetadata[];
+    getDependenciesToLoadBeforeThis(module: ModuleInfoExtended): DependentModuleMetadata[];
+    getDependenciesToLoadAfterThis(module: ModuleInfoExtended): DependentModuleMetadata[];
+    getDependenciesIncompatibles(module: ModuleInfoExtended): DependentModuleMetadata[];
 }

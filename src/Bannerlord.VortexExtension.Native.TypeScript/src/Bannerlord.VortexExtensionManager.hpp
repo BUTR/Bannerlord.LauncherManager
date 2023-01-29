@@ -1,7 +1,7 @@
-#ifndef VE_VORTEXEXTENSIONMANAGER_GUARD_H_
-#define VE_VORTEXEXTENSIONMANAGER_GUARD_H_
+#ifndef VE_VORTEXEXTENSIONMANAGER_GUARD_HPP_
+#define VE_VORTEXEXTENSIONMANAGER_GUARD_HPP_
 
-#include "utils.h"
+#include "utils.hpp"
 #include "Common.Native.h"
 #include "Bannerlord.VortexExtension.Native.h"
 #include <codecvt>
@@ -139,7 +139,7 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto profileId = String::New(env, Copy(p_profile_id));
+            const auto profileId = String::New(env, p_profile_id);
             const auto result = manager->FGetProfileById({profileId}).As<Object>();
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
         }
@@ -172,8 +172,8 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto gameId = String::New(env, Copy(p_game_id));
-            const auto executable = String::New(env, Copy(p_executable));
+            const auto gameId = String::New(env, p_game_id);
+            const auto executable = String::New(env, p_executable);
             const auto gameParameters = JSONParse(env, String::New(env, Copy(p_game_parameters)));
 
             manager->FSetGameParameters({gameId, executable, gameParameters}).As<Object>();
@@ -208,7 +208,7 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto loadOrder = JSONParse(env, String::New(env, Copy(p_load_order)));
+            const auto loadOrder = JSONParse(env, String::New(env, p_load_order));
             manager->FSetLoadOrder({loadOrder});
             return Create(return_value_void{nullptr});
         }
@@ -225,8 +225,8 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto text = String::New(env, Copy(p_text));
-            const auto ns = String::New(env, Copy(p_ns));
+            const auto text = String::New(env, p_text);
+            const auto ns = String::New(env, p_ns);
             const auto result = manager->FTranslateString({text, ns}).As<String>();
             return Create(return_value_string{nullptr, Copy(result.Utf16Value())});
         }
@@ -243,9 +243,9 @@ namespace Bannerlord::VortexExtension
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
 
-            const auto id = String::New(env, Copy(p_id));
-            const auto type = String::New(env, Copy(p_type));
-            const auto message = String::New(env, Copy(p_message));
+            const auto id = String::New(env, p_id);
+            const auto type = String::New(env, p_type);
+            const auto message = String::New(env, p_message);
             const auto displayMs_ = Number::New(env, displayMs);
             manager->FSendNotification({id, type, message, displayMs_}).As<Object>();
             return Create(return_value_void{nullptr});
@@ -278,7 +278,7 @@ namespace Bannerlord::VortexExtension
         {
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
-            const auto filePath = String::New(env, Copy(p_file_path));
+            const auto filePath = String::New(env, p_file_path);
 
             const auto result = manager->FReadFileContent({filePath});
             if (result.IsNull())
@@ -300,7 +300,7 @@ namespace Bannerlord::VortexExtension
         {
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
-            const auto directoryPath = String::New(env, Copy(p_directory_path));
+            const auto directoryPath = String::New(env, p_directory_path);
 
             const auto result = manager->FReadDirectoryFileList({directoryPath});
             if (result.IsNull())
@@ -322,7 +322,7 @@ namespace Bannerlord::VortexExtension
         {
             const auto manager = (VortexExtensionManager *)p_owner;
             const auto env = manager->Env();
-            const auto directoryPath = String::New(env, Copy(p_directory_path));
+            const auto directoryPath = String::New(env, p_directory_path);
 
             const auto result = manager->FReadDirectoryList({directoryPath});
             if (result.IsNull())

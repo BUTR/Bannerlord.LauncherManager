@@ -16,11 +16,11 @@ namespace Bannerlord.VortexExtension.Native
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate return_value_bool* N_GetSelected(void* p_owner, param_string* p_module_id);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate return_value_void* N_SetSelected(void* p_owner, param_string* p_module_id, [MarshalAs(UnmanagedType.U1)] bool value);
+        private delegate return_value_void* N_SetSelected(void* p_owner, param_string* p_module_id, byte value);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate return_value_bool* N_GetDisabled(void* p_owner, param_string* p_module_id);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate return_value_void* N_SetDisabled(void* p_owner, param_string* p_module_id, [MarshalAs(UnmanagedType.U1)] bool value);
+        private delegate return_value_void* N_SetDisabled(void* p_owner, param_string* p_module_id, byte value);
 
         private static readonly ApplicationVersionComparer _applicationVersionComparer = new();
 
@@ -133,10 +133,7 @@ namespace Bannerlord.VortexExtension.Native
 
 
         [UnmanagedCallersOnly(EntryPoint = "bmm_validate_module")]
-        public static return_value_json* ValidateModule(
-            void* p_owner,
-            param_json* p_modules,
-            param_json* p_target_module,
+        public static return_value_json* ValidateModule(void* p_owner, param_json* p_modules, param_json* p_target_module,
             delegate* unmanaged[Cdecl]<return_value_bool*, void*, param_string*> p_is_selected)
         {
             Logger.LogInput(p_modules, p_target_module);
@@ -189,14 +186,11 @@ namespace Bannerlord.VortexExtension.Native
 
 
         [UnmanagedCallersOnly(EntryPoint = "bmm_enable_module")]
-        public static return_value_void* EnableModule(
-            void* p_owner,
-            param_json* p_module,
-            param_json* p_target_module,
+        public static return_value_void* EnableModule(void* p_owner, param_json* p_module, param_json* p_target_module,
             delegate* unmanaged[Cdecl]<return_value_bool*, void*, param_string*> p_get_selected,
-            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, bool> p_set_selected,
+            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, byte> p_set_selected,
             delegate* unmanaged[Cdecl]<return_value_bool*, void*, param_string*> p_get_disabled,
-            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, bool> p_set_disabled)
+            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, byte> p_set_disabled)
         {
             Logger.LogInput(p_module, p_target_module);
             try
@@ -227,7 +221,7 @@ namespace Bannerlord.VortexExtension.Native
                     {
                         Logger.LogInputChar(pModuleId);
 
-                        SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, value)).ValueAsVoid();
+                        SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, (byte) (value ? 1 : 0))).ValueAsVoid();
                         Logger.LogOutput();
                     }
                 }, module =>
@@ -248,7 +242,7 @@ namespace Bannerlord.VortexExtension.Native
                     {
                         Logger.LogInputChar(pModuleId);
 
-                        SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, value)).ValueAsVoid();
+                        SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, (byte) (value ? 1 : 0))).ValueAsVoid();
                         Logger.LogOutput();
                     }
                 });
@@ -264,14 +258,11 @@ namespace Bannerlord.VortexExtension.Native
         }
 
         [UnmanagedCallersOnly(EntryPoint = "bmm_disable_module")]
-        public static return_value_void* DisableModule(
-            void* p_owner,
-            param_json* p_module,
-            param_json* p_target_module,
+        public static return_value_void* DisableModule(void* p_owner, param_json* p_module, param_json* p_target_module,
             delegate* unmanaged[Cdecl]<return_value_bool*, void*, param_string*> p_get_selected,
-            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, bool> p_set_selected,
+            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, byte> p_set_selected,
             delegate* unmanaged[Cdecl]<return_value_bool*, void*, param_string*> p_get_disabled,
-            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, bool> p_set_disabled)
+            delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, byte> p_set_disabled)
         {
             Logger.LogInput(p_module, p_target_module);
             try
@@ -302,7 +293,7 @@ namespace Bannerlord.VortexExtension.Native
                     {
                         Logger.LogInputChar(pModuleId);
 
-                        SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, value)).ValueAsVoid();
+                        SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, (byte) (value ? 1 : 0))).ValueAsVoid();
                         Logger.LogOutput();
                     }
                 }, module =>
@@ -323,7 +314,7 @@ namespace Bannerlord.VortexExtension.Native
                     {
                         Logger.LogInputChar(pModuleId);
 
-                        SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, value)).ValueAsVoid();
+                        SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, (byte) (value ? 1 : 0))).ValueAsVoid();
                         Logger.LogOutput();
                     }
                 });
@@ -411,6 +402,84 @@ namespace Bannerlord.VortexExtension.Native
             {
                 Logger.LogException(e);
                 return return_value_int32.AsError(Utils.Copy(e.ToString()));
+            }
+        }
+
+
+        [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_all")]
+        public static return_value_json* GetDependenciesAll(param_json* p_module)
+        {
+            Logger.LogInput(p_module);
+            try
+            {
+                var module = Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
+
+                var result = module.DependenciesAllDistinct().ToArray();
+
+                Logger.LogOutputManaged(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return return_value_json.AsError(Utils.Copy(e.ToString()));
+            }
+        }
+        [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_before_this")]
+        public static return_value_json* GetDependenciesLoadBeforeThis(param_json* p_module)
+        {
+            Logger.LogInput(p_module);
+            try
+            {
+                var module = Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
+
+                var result = module.DependenciesLoadBeforeThisDistinct().ToArray();
+
+                Logger.LogOutputManaged(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return return_value_json.AsError(Utils.Copy(e.ToString()));
+            }
+        }
+        [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_after_this")]
+        public static return_value_json* GetDependenciesLoadAfterThis(param_json* p_module)
+        {
+            Logger.LogInput(p_module);
+            try
+            {
+                var module = Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
+
+                var result = module.DependenciesLoadAfterThisDistinct().ToArray();
+
+                Logger.LogOutputManaged(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return return_value_json.AsError(Utils.Copy(e.ToString()));
+            }
+        }
+        [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_incompatibles")]
+        public static return_value_json* GetDependenciesIncompatibles(param_json* p_module)
+        {
+            Logger.LogInput(p_module);
+            try
+            {
+                var module = Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
+
+                var result = module.DependenciesIncompatiblesDistinct().ToArray();
+
+                Logger.LogOutputManaged(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return return_value_json.AsError(Utils.Copy(e.ToString()));
             }
         }
     }

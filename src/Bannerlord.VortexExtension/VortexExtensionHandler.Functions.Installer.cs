@@ -50,6 +50,7 @@ namespace Bannerlord.VortexExtension
                 var doc = new XmlDocument();
                 doc.LoadXml(xml);
                 var module = ModuleInfoExtended.FromXml(doc);
+                if (module is null) return new List<InstallInstruction>();
 
                 var subModuleFileIdx = file.IndexOf(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase);
                 var moduleBasePath = file.Substring(0, subModuleFileIdx);

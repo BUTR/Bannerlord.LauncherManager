@@ -3,11 +3,10 @@
 
 #include "Common.Native.h"
 
+#ifdef __cplusplus
 using namespace Common;
 
 namespace Bannerlord::FetchVersion {
-
-#ifdef __cplusplus
     extern "C" {
 #endif
 
@@ -22,8 +21,7 @@ namespace Bannerlord::FetchVersion {
 
 #ifdef __cplusplus
     }
-#endif
-
 }
+#endif
 
 #endif

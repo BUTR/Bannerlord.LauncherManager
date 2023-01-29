@@ -1,6 +1,7 @@
 ﻿using BUTR.NativeAOT.Shared;
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,8 +12,15 @@ using static BUTR.NativeAOT.Shared.Utils;
 
 namespace Bannerlord.VortexExtension.Native.Tests;
 
-public static class Utils2
+public static partial class Utils2
 {
+    private const string DllPath = "../../../../../src/Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll";
+
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial void* alloc(nuint size);
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial void dealloc(void* ptr);
+
     private static readonly JsonSerializerOptions Options = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.Never,
@@ -24,6 +32,16 @@ public static class Utils2
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
     };
     internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(Options);
+
+    public static unsafe char* Copy(in ReadOnlySpan<char> str)
+    {
+        var size = (uint) ((str.Length + 1) * 2);
+
+        var dst = (char*) alloc(new UIntPtr(size));
+        str.CopyTo(new Span<char>(dst, str.Length));
+        dst[str.Length] = '\0';
+        return dst;
+    }
 
     public static unsafe ReadOnlySpan<char> ToSpan(char* value) => new SafeStringMallocHandle(value).ToSpan();
     public static unsafe ReadOnlySpan<char> ToSpan(param_string* value) => new SafeStringMallocHandle((char*) value).ToSpan();
