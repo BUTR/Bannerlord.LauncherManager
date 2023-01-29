@@ -14,7 +14,7 @@ using namespace Bannerlord::FetchVersion;
 namespace Bannerlord::FetchVersion
 {
 
-    const Value GetChangeSetWrapped(const CallbackInfo &info)
+    Value GetChangeSetWrapped(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto gameFolderPath = info[0].As<String>();
@@ -27,7 +27,7 @@ namespace Bannerlord::FetchVersion
         return ThrowOrReturnUInt32(env, result);
     }
 
-    const Value GetVersionWrapped(const CallbackInfo &info)
+    Value GetVersionWrapped(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto gameFolderPath = info[0].As<String>();
@@ -40,7 +40,7 @@ namespace Bannerlord::FetchVersion
         return ThrowOrReturnString(env, result);
     }
 
-    const Value GetVersionTypeWrapped(const CallbackInfo &info)
+    Value GetVersionTypeWrapped(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto gameFolderPath = info[0].As<String>();
@@ -53,7 +53,7 @@ namespace Bannerlord::FetchVersion
         return ThrowOrReturnUInt32(env, result);
     }
 
-    const Object Init(Env env, Object exports)
+    Object Init(const Env env, const Object exports)
     {
         exports.Set("getChangeSet", Function::New(env, GetChangeSetWrapped));
 

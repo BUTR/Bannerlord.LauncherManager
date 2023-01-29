@@ -29,7 +29,7 @@ namespace Bannerlord::VortexExtension
         FunctionReference FReadDirectoryFileList;
         FunctionReference FReadDirectoryList;
 
-        static Object Init(Napi::Env env, Object exports);
+        static Object Init(const Napi::Env env, const Object exports);
 
         VortexExtensionManager(const CallbackInfo &info);
         ~VortexExtensionManager();
@@ -49,12 +49,12 @@ namespace Bannerlord::VortexExtension
     };
 
     // Initialize native add-on
-    Napi::Object Init(Napi::Env env, Napi::Object exports)
+    Napi::Object Init(const Napi::Env env, const Napi::Object exports)
     {
         return VortexExtensionManager::Init(env, exports);
     }
 
-    Object VortexExtensionManager::Init(Napi::Env env, Object exports)
+    Object VortexExtensionManager::Init(const Napi::Env env, const Object exports)
     {
         // This method is used to hook the accessor and method callbacks
         const auto func = DefineClass(env, "VortexExtensionManager",
@@ -70,7 +70,7 @@ namespace Bannerlord::VortexExtension
                                           InstanceMethod<&VortexExtensionManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
-        auto *constructor = new FunctionReference();
+        auto *const constructor = new FunctionReference();
 
         // Create a persistent reference to the class constructor. This will allow
         // a function called on a class prototype and a function
@@ -116,11 +116,11 @@ namespace Bannerlord::VortexExtension
         Bannerlord::VortexExtension::ve_dispose_handler(this->_pInstance);
     }
 
-    static return_value_json *get_active_profile(const void *p_owner) noexcept
+    static return_value_json *get_active_profile(void *const p_owner)
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetActiveProfile({}).As<Object>();
@@ -132,11 +132,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_json *getProfileById(const void *p_owner, const char16_t *p_profile_id) noexcept
+    static return_value_json *getProfileById(void *const p_owner, const char16_t *const p_profile_id) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto profileId = String::New(env, p_profile_id);
@@ -149,11 +149,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_string *getActiveGameId(const void *p_owner) noexcept
+    static return_value_string *getActiveGameId(void *const p_owner) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetActiveGameId({}).As<String>();
@@ -165,11 +165,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_void *setGameParameters(const void *p_owner, const char16_t *p_game_id, const char16_t *p_executable, const char16_t *p_game_parameters) noexcept
+    static return_value_void *setGameParameters(void *const p_owner, const char16_t *const p_game_id, const char16_t *const p_executable, const char16_t *const p_game_parameters) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto gameId = String::New(env, p_game_id);
@@ -185,12 +185,12 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_json *getLoadOrder(const void *p_owner) noexcept
+    static return_value_json *getLoadOrder(void *const p_owner) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
-            const auto env = manager->Env();
+            const auto const manager = static_cast<VortexExtensionManager *const>(p_owner);
+            const auto const env = manager->Env();
 
             const auto result = manager->FGetLoadOrder({}).As<Object>();
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
@@ -201,11 +201,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_void *setLoadOrder(const void *p_owner, const char16_t *p_load_order) noexcept
+    static return_value_void *setLoadOrder(void *const p_owner, const char16_t *const p_load_order) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto loadOrder = JSONParse(env, String::New(env, p_load_order));
@@ -218,11 +218,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_string *translateString(const void *p_owner, const char16_t *p_text, const char16_t *p_ns) noexcept
+    static return_value_string *translateString(void *const p_owner, const char16_t *const p_text, const char16_t *const p_ns) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto text = String::New(env, p_text);
@@ -236,11 +236,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_void *sendNotification(const void *p_owner, const char16_t *p_id, const char16_t *p_type, const char16_t *p_message, unsigned __int32 displayMs) noexcept
+    static return_value_void *sendNotification(void *const p_owner, const char16_t *const p_id, const char16_t *const p_type, const char16_t *const p_message, const uint32_t displayMs) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto id = String::New(env, p_id);
@@ -256,11 +256,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_string *getInstallPath(const void *p_owner) noexcept
+    static return_value_string *getInstallPath(void *const p_owner) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetInstallPath({}).As<String>();
@@ -272,11 +272,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_string *readFileContent(const void *p_owner, const char16_t *p_file_path) noexcept
+    static return_value_string *readFileContent(void *const p_owner, const char16_t *const p_file_path) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
             const auto filePath = String::New(env, p_file_path);
 
@@ -294,11 +294,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_json *readDirectoryFileList(const void *p_owner, const char16_t *p_directory_path) noexcept
+    static return_value_json *readDirectoryFileList(void *const p_owner, const char16_t *const p_directory_path) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
             const auto directoryPath = String::New(env, p_directory_path);
 
@@ -316,11 +316,11 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_json *readDirectoryList(const void *p_owner, const char16_t *p_directory_path) noexcept
+    static return_value_json *readDirectoryList(void *const p_owner, const char16_t *const p_directory_path) noexcept
     {
         try
         {
-            const auto manager = (VortexExtensionManager *)p_owner;
+            const auto manager = static_cast<VortexExtensionManager *>(p_owner);
             const auto env = manager->Env();
             const auto directoryPath = String::New(env, p_directory_path);
 
