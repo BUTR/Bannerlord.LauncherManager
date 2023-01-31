@@ -32,6 +32,8 @@ namespace Bannerlord::VortexExtension
         return_value_void *const CALL_CONV ve_set_load_order(const void *p_handler, const param_json *p_load_order);
 
         return_value_json *const CALL_CONV ve_get_modules(const void *p_handler);
+        
+        return_value_void *const CALL_CONV ve_refresh_game_parameters(const void *p_handler, const param_json *p_load_order);
 
         return_value_void *const CALL_CONV ve_register_callbacks(const void *p_handler
             , return_value_json *(CALL_CONV *p_get_active_profile)(void *p_owner)

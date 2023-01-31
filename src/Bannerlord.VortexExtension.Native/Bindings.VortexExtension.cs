@@ -227,7 +227,31 @@ namespace Bannerlord.VortexExtension.Native
                 return return_value_json.AsException(e, false);
             }
         }
+        
 
+        [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_void* RefreshGameParameters(param_ptr* p_handle, param_json* p_load_order)
+        {
+            Logger.LogInput(p_load_order);
+            try
+            {
+                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
+
+                var loadOrder = Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
+                handler.RefreshGameParams(loadOrder);
+
+                Logger.LogOutput();
+                return return_value_void.AsValue(false);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return return_value_void.AsException(e, false);
+            }
+        }
+
+        
         /*
         [UnmanagedCallersOnly(EntryPoint = "ve_get_module_paths", CallConvs = new [] { typeof(CallConvCdecl) })]
         public static return_value_void* GetModulePaths(param_ptr* p_handle, param_json* p_load_order)

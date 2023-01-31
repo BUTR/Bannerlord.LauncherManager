@@ -15,7 +15,7 @@ namespace Bannerlord.VortexExtension
         }
 
         /// <summary>
-        /// Sets the launch arguements for the Bannerlord executable
+        /// Sets the launch arguments for the Bannerlord executable
         /// </summary>
         public void RefreshGameParams(LoadOrder modules)
         {

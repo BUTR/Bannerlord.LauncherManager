@@ -47,7 +47,11 @@ namespace Bannerlord.VortexExtension.Native
             Logger.LogInput();
             try
             {
+#if TRACK_ALLOCATIONS
                 var result = Allocator.GetCurrentAllocations();
+#else
+                var result = 0;
+#endif
 
                 Logger.LogOutput(result);
                 return result;

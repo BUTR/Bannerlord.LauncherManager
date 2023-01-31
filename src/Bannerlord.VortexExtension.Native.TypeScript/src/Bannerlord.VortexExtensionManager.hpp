@@ -43,6 +43,7 @@ namespace Bannerlord::VortexExtension
         Napi::Value GetLoadOrder(const CallbackInfo &info);
         void SetLoadOrder(const CallbackInfo &info);
         Napi::Value GetModules(const CallbackInfo &info);
+        void RefreshGameParameters(const CallbackInfo &info);
 
     private:
         void *_pInstance;
@@ -68,6 +69,7 @@ namespace Bannerlord::VortexExtension
                                           InstanceMethod<&VortexExtensionManager::GetLoadOrder>("getLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&VortexExtensionManager::SetLoadOrder>("setLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&VortexExtensionManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&VortexExtensionManager::RefreshGameParameters>("refreshGameParameters", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
         auto *const constructor = new FunctionReference();
@@ -444,6 +446,17 @@ namespace Bannerlord::VortexExtension
 
         const auto result = Bannerlord::VortexExtension::ve_get_modules(this->_pInstance);
         return ThrowOrReturnJson(env, result);
+    }
+
+    void VortexExtensionManager::RefreshGameParameters(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto loadOrder = JSONStringify(env, info[0].As<Object>());
+
+        const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
+
+        const auto result = Bannerlord::VortexExtension::ve_refresh_game_parameters(this->_pInstance, loadOrderCopy.get());
+        ThrowOrReturn(env, result);
     }
 
 }

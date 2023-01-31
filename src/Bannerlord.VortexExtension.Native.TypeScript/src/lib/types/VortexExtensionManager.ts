@@ -48,4 +48,6 @@ export type VortexExtensionManager = {
   setLoadOrder(loadOrder: ILoadOrder): void;
 
   getModules(): ModuleInfoExtended[];
+
+  refreshGameParameters(loadOrder: ILoadOrder): void;
 }
