@@ -26,13 +26,13 @@ namespace Bannerlord.VortexExtension
         }
 
         /// <summary>
-        /// Two ways to handle installation:
-        /// 1. The root folder is the game's root folder.
-        ///     We can install mods to both /Modules and /bin folders
-        /// 2. The root folder is the game's /Modules folder
+        /// Two ways to handle installation:<br/>
+        /// 1. The root folder is the game's root folder.<br/>
+        ///     We can install mods to both /Modules and /bin folders<br/>
+        /// 2. The root folder is the game's /Modules folder<br/>
         ///     The /bin mods won't be handled by us and instead they will be
         ///     copied by a fallback mechanism. Vortex will just copy the
-        ///     content as is  to the game's root folder
+        ///     content as is  to the game's root folder<br/>
         /// </summary>
         public InstallResult InstallModuleContent(string[] files, string destinationPath)
         {

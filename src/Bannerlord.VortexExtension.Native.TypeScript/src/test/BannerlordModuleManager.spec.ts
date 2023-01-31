@@ -2,7 +2,7 @@ import test from 'ava';
 
 import { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml } from './_data';
 import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType } from '../lib/types';
-import { BannerlordModuleManager } from '../lib';
+import { BannerlordModuleManager, allocAliveCount } from '../lib';
 
 test('ApplicationVersion', async (t) => {
   const version1: ApplicationVersion = {
@@ -91,12 +91,16 @@ test('Main', async (t) => {
     t.fail();
     return;
   }
+  t.deepEqual(sorted2.length, 2);
+  t.deepEqual(sorted2[0].id, harmony.id);
+  t.deepEqual(sorted2[1].id, uiExtenderEx.id);
 
   const validationResult = BannerlordModuleManager.validateLoadOrder(sorted, harmony);
   if (validationResult === null || !Array.isArray(validationResult)) {
     t.fail();
     return;
   }
+  t.deepEqual(validationResult.length, 0);
 
   let isSelectedCalled = false;
   const validationManager: IValidationManager = {
@@ -111,6 +115,7 @@ test('Main', async (t) => {
     t.fail();
     return;
   }
+  t.deepEqual(validationResult1.length, 0);
   if (!isSelectedCalled) {
     t.fail();
     return;
@@ -121,6 +126,7 @@ test('Main', async (t) => {
     t.fail();
     return;
   }
+  t.deepEqual(validationResult2.length, 1);
 
   let getSelectedCalled = false;
   let setSelectedCalled = false;
@@ -153,5 +159,15 @@ test('Main', async (t) => {
     return;
   }
 
+  const dependenciesAll = BannerlordModuleManager.getDependenciesAll(uiExtenderEx);
+  t.deepEqual(dependenciesAll.length, 6);
+  const dependenciesLoadBefore = BannerlordModuleManager.getDependenciesToLoadBeforeThis(uiExtenderEx);
+  t.deepEqual(dependenciesLoadBefore.length, 1);
+  const dependenciesLoadAfter = BannerlordModuleManager.getDependenciesToLoadAfterThis(uiExtenderEx);
+  t.deepEqual(dependenciesLoadAfter.length, 5);
+  const dependenciesIncompatibles = BannerlordModuleManager.getDependenciesIncompatibles(uiExtenderEx);
+  t.deepEqual(dependenciesIncompatibles.length, 0);
+
+  t.deepEqual(allocAliveCount(), 0);
   t.pass();
 });

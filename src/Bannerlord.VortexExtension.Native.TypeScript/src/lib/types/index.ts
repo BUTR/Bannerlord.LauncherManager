@@ -7,5 +7,5 @@ import { IFetchBannerlordVersion } from './FetchBannerlordVersion';
 import { IVortexExtension } from './VortexExtensionManager';
 
 export interface IExtension extends IBannerlordModuleManager, IFetchBannerlordVersion, IVortexExtension {
-
+    allocAliveCount(): number;
 }

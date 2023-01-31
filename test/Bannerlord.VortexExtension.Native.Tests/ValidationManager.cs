@@ -8,10 +8,10 @@ namespace Bannerlord.VortexExtension.Native.Tests;
 
 internal class ValidationManager
 {
-    public static unsafe return_value_bool* IsSelected(void* owner, param_string* moduleId)
+    public static unsafe return_value_bool* IsSelected(param_ptr* owner, param_string* moduleId)
     {
         var manager = Unsafe.AsRef<ValidationManager>(owner);
-        return return_value_bool.AsValue(manager.IsSelected(ToSpan(moduleId).ToString()));
+        return return_value_bool.AsValue(manager.IsSelected(ToSpan(moduleId).ToString()), false);
     }
 
     public bool IsSelected(string moduleId)

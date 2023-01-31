@@ -189,8 +189,8 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto const manager = static_cast<VortexExtensionManager *const>(p_owner);
-            const auto const env = manager->Env();
+            const auto manager = static_cast<VortexExtensionManager *const>(p_owner);
+            const auto env = manager->Env();
 
             const auto result = manager->FGetLoadOrder({}).As<Object>();
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});

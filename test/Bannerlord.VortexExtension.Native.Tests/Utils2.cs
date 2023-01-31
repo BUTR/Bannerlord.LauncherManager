@@ -1,5 +1,6 @@
 ﻿using BUTR.NativeAOT.Shared;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
@@ -8,72 +9,93 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Unicode;
 
-using static BUTR.NativeAOT.Shared.Utils;
-
-namespace Bannerlord.VortexExtension.Native.Tests;
-
-public static partial class Utils2
+namespace Bannerlord.VortexExtension.Native.Tests
 {
-    private const string DllPath = "../../../../../src/Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll";
+    internal static partial class Utils2
+    {
+        public const string DllPath = "../../../../../src/Bannerlord.VortexExtension.Native/bin/Debug/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll";
+        
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
-    private static unsafe partial void* alloc(nuint size);
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
-    private static unsafe partial void dealloc(void* ptr);
+        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+        private static unsafe partial void* alloc(nuint size);
+        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+        private static unsafe partial void dealloc(void* ptr);
+        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+        private static unsafe partial int alloc_alive_count();
 
-    private static readonly JsonSerializerOptions Options = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-        IgnoreReadOnlyFields = true,
-        IgnoreReadOnlyProperties = true,
-        IncludeFields = false,
-        WriteIndented = false,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
-    };
-    internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(Options);
+        private static readonly JsonSerializerOptions Options = new()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+            IgnoreReadOnlyFields = true,
+            IgnoreReadOnlyProperties = true,
+            IncludeFields = false,
+            WriteIndented = false,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
+        };
+        internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(Options);
 
-    public static unsafe char* Copy(in ReadOnlySpan<char> str)
-    {
-        var size = (uint) ((str.Length + 1) * 2);
+        public static unsafe void LibrarySetAllocator() => Allocator.SetCustom(&alloc, &dealloc);
+        public static int LibraryAliveCount() => alloc_alive_count();
 
-        var dst = (char*) alloc(new UIntPtr(size));
-        str.CopyTo(new Span<char>(dst, str.Length));
-        dst[str.Length] = '\0';
-        return dst;
-    }
+        public static unsafe ReadOnlySpan<char> ToSpan(param_string* value) => new SafeStringMallocHandle((char*) value, false).ToSpan();
+        public static SafeStringMallocHandle ToJson<T>(T value) => Utils.SerializeJsonCopy(value, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)), true);
+        private static TValue DeserializeJson<TValue>(SafeStringMallocHandle json, JsonTypeInfo<TValue> jsonTypeInfo, [CallerMemberName] string? caller = null)
+        {
+            if (json.DangerousGetHandle() == IntPtr.Zero)
+            {
+                throw new JsonDeserializationException($"Received null parameter! Caller: {caller}, Type: {typeof(TValue)};");
+            }
 
-    public static unsafe ReadOnlySpan<char> ToSpan(char* value) => new SafeStringMallocHandle(value).ToSpan();
-    public static unsafe ReadOnlySpan<char> ToSpan(param_string* value) => new SafeStringMallocHandle((char*) value).ToSpan();
-    public static unsafe param_json* ToJson<T>(T value) => (param_json*) SerializeJsonCopy(value, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)));
-    public static unsafe (string Error, T? Result) GetResult<T>(return_value_json* ret)
-    {
-        var result = Unsafe.AsRef<return_value_json>(ret);
-        return (ToSpan(result.Error).ToString(), DeserializeJson(new SafeStringMallocHandle(result.Value), (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T))));
-    }
-    public static unsafe (string Error, string Result) GetResult(return_value_string* ret)
-    {
-        var result = Unsafe.AsRef<return_value_string>(ret);
-        return (ToSpan(result.Error).ToString(), ToSpan(result.Value).ToString());
-    }
-    public static unsafe (string Error, bool Result) GetResult(return_value_bool* ret)
-    {
-        var result = Unsafe.AsRef<return_value_bool>(ret);
-        return (ToSpan(result.Error).ToString(), result.Value);
-    }
-    public static unsafe (string Error, int Result) GetResult(return_value_int32* ret)
-    {
-        var result = Unsafe.AsRef<return_value_int32>(ret);
-        return (new string(result.Error), result.Value);
-    }
-    public static unsafe (string Error, uint Result) GetResult(return_value_uint32* ret)
-    {
-        var result = Unsafe.AsRef<return_value_uint32>(ret);
-        return (new string(result.Error), result.Value);
-    }
-    public static unsafe (string Error, string Result) GetResult(return_value_void* ret)
-    {
-        var result = Unsafe.AsRef<return_value_void>(ret);
-        return (new string(result.Error), string.Empty);
+            return DeserializeJson(json.ToSpan(), jsonTypeInfo, caller);
+        }
+        private static TValue DeserializeJson<TValue>([StringSyntax(StringSyntaxAttribute.Json)] ReadOnlySpan<char> json, JsonTypeInfo<TValue> jsonTypeInfo, [CallerMemberName] string? caller = null)
+        {
+            try
+            {
+                if (JsonSerializer.Deserialize(json, jsonTypeInfo) is not { } result)
+                {
+                    throw new JsonDeserializationException($"Received null! Caller: {caller}, Type: {typeof(TValue)}; Json:{json};");
+                }
+
+                return result;
+            }
+            catch (JsonException e)
+            {
+                throw new JsonDeserializationException($"Failed to deserialize! Caller: {caller}, Type: {typeof(TValue)}; Json:{json};", e);
+            }
+        }
+
+        public static unsafe T? GetResult<T>(return_value_json* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            return result.ValueAsJson((JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)));
+        }
+        public static unsafe string GetResult(return_value_string* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            using var str = result.ValueAsString();
+            return str.ToSpan().ToString();
+        }
+        public static unsafe bool GetResult(return_value_bool* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            return result.ValueAsBool();
+        }
+        public static unsafe int GetResult(return_value_int32* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            return result.ValueAsInt32();
+        }
+        public static unsafe uint GetResult(return_value_uint32* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            return result.ValueAsUInt32();
+        }
+        public static unsafe void GetResult(return_value_void* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            result.ValueAsVoid();
+        }
     }
 }

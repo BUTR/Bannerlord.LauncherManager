@@ -4,233 +4,233 @@ using BUTR.NativeAOT.Shared;
 
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Bannerlord.VortexExtension.Native
 {
     public static unsafe partial class Bindings
     {
-        [UnmanagedCallersOnly(EntryPoint = "ve_create_handler")]
-        public static return_value_ptr* CreateVortexExtensionHandler(void* p_owner)
+        [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_ptr* CreateVortexExtensionHandler(param_ptr* p_owner)
         {
             Logger.LogInput();
             try
             {
                 Logger.LogOutput();
-                return return_value_ptr.AsValue(new VortexExtensionHandlerNative(p_owner).HandlePtr);
+                return return_value_ptr.AsValue(new VortexExtensionHandlerNative(p_owner).HandlePtr, false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_ptr.AsError(Utils.Copy(e.ToString()));
+                return return_value_ptr.AsException(e, false);
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler")]
-        public static return_value_void* DisposeVortexExtensionHandler(void* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_void* DisposeVortexExtensionHandler(param_ptr* p_handle)
         {
             Logger.LogInput();
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 handler.Dispose();
 
                 Logger.LogOutput();
-                return return_value_void.AsValue();
+                return return_value_void.AsValue(false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_void.AsError(Utils.Copy(e.ToString()));
+                return return_value_void.AsException(e, false);
             }
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version")]
-        public static return_value_string* GetGameVersion(void* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_string* GetGameVersion(param_ptr* p_handle)
         {
             Logger.LogInput();
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_string.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_string.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.GetGameVersion();
 
-                Logger.LogOutput(result);
-                return return_value_string.AsValue(Utils.Copy(result));
+                Logger.LogOutput(result, nameof(GetGameVersion));
+                return return_value_string.AsValue(Utils.Copy(result, false), false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_string.AsError(Utils.Copy(e.ToString()));
+                return return_value_string.AsException(e, false);
             }
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_test_module")]
-        public static return_value_json* TestModule(void* p_handle, param_json* p_files, param_string* p_game_id)
+        [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_json* TestModule(param_ptr* p_handle, param_json* p_files, param_string* p_game_id)
         {
             Logger.LogInput(p_files, p_game_id);
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var files = Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
                 var gameId = new string(param_string.ToSpan(p_game_id));
 
                 var result = handler.TestModuleContent(files, gameId);
 
-                Logger.LogOutputManaged(result);
-                return return_value_json.AsValue(Utils.SerializeJsonCopy(result, CustomSourceGenerationContext.SupportedResult));
+                Logger.LogOutput(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.SupportedResult, false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_json.AsError(Utils.Copy(e.ToString()));
+                return return_value_json.AsException(e, false);
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_install_module")]
-        public static return_value_json* InstallModule(void* p_handle, param_json* p_files, param_string* p_destination_path)
+        [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_string* p_destination_path)
         {
             Logger.LogInput(p_files, p_destination_path);
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var files = Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
                 var destinationPath = new string(param_string.ToSpan(p_destination_path));
 
                 var result = handler.InstallModuleContent(files, destinationPath);
 
-                Logger.LogOutputManaged(result);
-                return return_value_json.AsValue(Utils.SerializeJsonCopy(result, CustomSourceGenerationContext.InstallResult));
+                Logger.LogOutput(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.InstallResult, false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_json.AsError(Utils.Copy(e.ToString()));
+                return return_value_json.AsException(e, false);
             }
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting")]
-        [return: MarshalAs(UnmanagedType.U1)]
-        public static return_value_bool* IsSorting(void* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_bool* IsSorting(param_ptr* p_handle)
         {
             Logger.LogInput();
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_bool.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_bool.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.IsSorting;
 
-                Logger.LogOutputPrimitive(result);
-                return return_value_bool.AsValue(result);
+                Logger.LogOutput(result);
+                return return_value_bool.AsValue(result, false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_bool.AsError(Utils.Copy(e.ToString()));
+                return return_value_bool.AsException(e, false);
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_sort")]
-        public static return_value_void* SortVortexExtension(void* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_sort", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_void* SortVortexExtension(param_ptr* p_handle)
         {
             Logger.LogInput();
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 handler.Sort();
 
                 Logger.LogOutput();
-                return return_value_void.AsValue();
+                return return_value_void.AsValue(false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_void.AsError(Utils.Copy(e.ToString()));
+                return return_value_void.AsException(e, false);
             }
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_load_order")]
-        public static return_value_json* GetLoadOrder(void* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_json* GetLoadOrder(param_ptr* p_handle)
         {
             Logger.LogInput();
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.GetLoadOrder();
 
-                Logger.LogOutputManaged(result);
-                return return_value_json.AsValue(Utils.SerializeJsonCopy(result, CustomSourceGenerationContext.LoadOrder));
+                Logger.LogOutput(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.LoadOrder, false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_json.AsError(Utils.Copy(e.ToString()));
+                return return_value_json.AsException(e, false);
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_set_load_order")]
-        public static return_value_void* SetLoadOrder(void* p_handle, param_json* p_load_order)
+        [UnmanagedCallersOnly(EntryPoint = "ve_set_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_void* SetLoadOrder(param_ptr* p_handle, param_json* p_load_order)
         {
             Logger.LogInput(p_load_order);
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var loadOrder = Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
                 handler.SetLoadOrder(loadOrder);
 
                 Logger.LogOutput();
-                return return_value_void.AsValue();
+                return return_value_void.AsValue(false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_void.AsError(Utils.Copy(e.ToString()));
+                return return_value_void.AsException(e, false);
             }
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_modules")]
-        public static return_value_json* GetModules(void* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_modules", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_json* GetModules(param_ptr* p_handle)
         {
             Logger.LogInput();
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.GetModules().ToArray();
 
-                Logger.LogOutputManaged(result);
-                return return_value_json.AsValue(Utils.SerializeJsonCopy(result, CustomSourceGenerationContext.ModuleInfoExtendedArray));
+                Logger.LogOutput(result);
+                return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_json.AsError(Utils.Copy(e.ToString()));
+                return return_value_json.AsException(e, false);
             }
         }
 
         /*
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_module_paths")]
-        public static return_value_void* GetModulePaths(void* p_handle, param_json* p_load_order)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_module_paths", CallConvs = new [] { typeof(CallConvCdecl) })]
+        public static return_value_void* GetModulePaths(param_ptr* p_handle, param_json* p_load_order)
         {
             Logger.LogInput();
 
@@ -241,7 +241,7 @@ namespace Bannerlord.VortexExtension.Native
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_void.AsError(Utils.Copy(e.ToString()));
+                return return_value_void.AsException(e, false);
             }
         }
         */
@@ -251,11 +251,10 @@ namespace Bannerlord.VortexExtension.Native
         {
             Logger.LogInput();
 
-            using var result = SafeStructMallocHandle.Create(handler.D_GetActiveProfile(handler.OwnerPtr));
-            using var profile = result.ValueAsJson();
+            using var result = SafeStructMallocHandle.Create(handler.D_GetActiveProfile(handler.OwnerPtr), true);
 
-            var returnResult = Utils.DeserializeJson(profile, CustomSourceGenerationContext.Profile);
-            Logger.LogOutputManaged(returnResult);
+            var returnResult = result.ValueAsJson(CustomSourceGenerationContext.Profile)!;
+            Logger.LogOutput(returnResult);
             return returnResult;
         }
 
@@ -265,13 +264,12 @@ namespace Bannerlord.VortexExtension.Native
 
             fixed (char* pProfileId = profileId)
             {
-                Logger.LogInputChar(pProfileId);
+                Logger.LogPinned(pProfileId);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_GetProfileById(handler.OwnerPtr, (param_string*) pProfileId));
-                using var profile = result.ValueAsJson();
+                using var result = SafeStructMallocHandle.Create(handler.D_GetProfileById(handler.OwnerPtr, (param_string*) pProfileId), true);
 
-                var returnResult = Utils.DeserializeJson(profile, CustomSourceGenerationContext.Profile);
-                Logger.LogOutputManaged(returnResult);
+                var returnResult = result.ValueAsJson(CustomSourceGenerationContext.Profile)!;
+                Logger.LogOutput(returnResult);
                 return returnResult;
             }
         }
@@ -280,11 +278,11 @@ namespace Bannerlord.VortexExtension.Native
         {
             Logger.LogInput();
 
-            using var result = SafeStructMallocHandle.Create(handler.D_GetActiveGameId(handler.OwnerPtr));
+            using var result = SafeStructMallocHandle.Create(handler.D_GetActiveGameId(handler.OwnerPtr), true);
             using var gameId = result.ValueAsString();
 
             var returnResult = new string(gameId);
-            Logger.LogOutput(returnResult);
+            Logger.LogOutput(returnResult, nameof(GetActiveGameId));
             return returnResult;
         }
 
@@ -296,9 +294,9 @@ namespace Bannerlord.VortexExtension.Native
             fixed (char* pExecutable = executable)
             fixed (char* pGameParameters = Utils.SerializeJson(gameParameters, CustomSourceGenerationContext.StringArray))
             {
-                Logger.LogInputChar(pGameId, pExecutable, pGameParameters);
+                Logger.LogPinned(pGameId, pExecutable, pGameParameters);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_SetGameParameters(handler.OwnerPtr, (param_string*) pGameId, (param_string*) pExecutable, (param_json*) pGameParameters));
+                using var result = SafeStructMallocHandle.Create(handler.D_SetGameParameters(handler.OwnerPtr, (param_string*) pGameId, (param_string*) pExecutable, (param_json*) pGameParameters), true);
                 result.ValueAsVoid();
             }
 
@@ -309,11 +307,10 @@ namespace Bannerlord.VortexExtension.Native
         {
             Logger.LogInput();
 
-            using var result = SafeStructMallocHandle.Create(handler.D_GetLoadOrder(handler.OwnerPtr));
-            using var loadOrder = result.ValueAsJson();
+            using var result = SafeStructMallocHandle.Create(handler.D_GetLoadOrder(handler.OwnerPtr), true);
 
-            var returnResult = Utils.DeserializeJson(loadOrder, CustomSourceGenerationContext.LoadOrder);
-            Logger.LogOutputManaged(returnResult);
+            var returnResult = result.ValueAsJson(CustomSourceGenerationContext.LoadOrder)!;
+            Logger.LogOutput(returnResult);
             return returnResult;
         }
 
@@ -323,9 +320,9 @@ namespace Bannerlord.VortexExtension.Native
 
             fixed (char* pLoadOrder = Utils.SerializeJson(loadOrder, CustomSourceGenerationContext.LoadOrder))
             {
-                Logger.LogInputChar(pLoadOrder);
+                Logger.LogPinned(pLoadOrder);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_SetLoadOrder(handler.OwnerPtr, (param_json*) pLoadOrder));
+                using var result = SafeStructMallocHandle.Create(handler.D_SetLoadOrder(handler.OwnerPtr, (param_json*) pLoadOrder), true);
                 result.ValueAsVoid();
             }
 
@@ -339,13 +336,13 @@ namespace Bannerlord.VortexExtension.Native
             fixed (char* pText = text)
             fixed (char* pNs = ns)
             {
-                Logger.LogInputChar(pText, pNs);
+                Logger.LogPinned(pText, pNs);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_TranslateString(handler.OwnerPtr, (param_string*) pText, (param_string*) pNs));
+                using var result = SafeStructMallocHandle.Create(handler.D_TranslateString(handler.OwnerPtr, (param_string*) pText, (param_string*) pNs), true);
                 using var localized = result.ValueAsString();
 
                 var returnResult = new string(localized);
-                Logger.LogOutput(returnResult);
+                Logger.LogOutput(returnResult, nameof(TranslateString));
                 return returnResult;
             }
         }
@@ -358,9 +355,9 @@ namespace Bannerlord.VortexExtension.Native
             fixed (char* pType = type)
             fixed (char* pMessage = message)
             {
-                Logger.LogInputChar(pId, pType, pMessage);
+                Logger.LogPinned(pId, pType, pMessage);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_SendNotification(handler.OwnerPtr, (param_string*) pId, (param_string*) pType, (param_string*) pMessage, displayMs));
+                using var result = SafeStructMallocHandle.Create(handler.D_SendNotification(handler.OwnerPtr, (param_string*) pId, (param_string*) pType, (param_string*) pMessage, displayMs), true);
                 result.ValueAsVoid();
             }
 
@@ -371,11 +368,11 @@ namespace Bannerlord.VortexExtension.Native
         {
             Logger.LogInput();
 
-            using var result = SafeStructMallocHandle.Create(handler.D_GetInstallPath(handler.OwnerPtr));
+            using var result = SafeStructMallocHandle.Create(handler.D_GetInstallPath(handler.OwnerPtr), true);
             using var installPath = result.ValueAsString();
 
             var returnResult = new string(installPath);
-            Logger.LogOutput(returnResult);
+            Logger.LogOutput(returnResult, nameof(GetInstallPath));
             return returnResult;
         }
 
@@ -385,14 +382,14 @@ namespace Bannerlord.VortexExtension.Native
 
             fixed (char* pFilePath = filePath)
             {
-                Logger.LogInputChar(pFilePath);
+                Logger.LogPinned(pFilePath);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_ReadFileContent(handler.OwnerPtr, (param_string*) pFilePath));
+                using var result = SafeStructMallocHandle.Create(handler.D_ReadFileContent(handler.OwnerPtr, (param_string*) pFilePath), true);
                 if (result.IsNull) return null;
                 using var content = result.ValueAsString();
 
                 var returnResult = new string(content);
-                Logger.LogOutput(returnResult);
+                Logger.LogOutput(returnResult, nameof(GetInstallPath));
                 return returnResult;
             }
         }
@@ -403,14 +400,14 @@ namespace Bannerlord.VortexExtension.Native
 
             fixed (char* pDirectoryPath = directoryPath)
             {
-                Logger.LogInputChar(pDirectoryPath);
+                Logger.LogPinned(pDirectoryPath);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_ReadDirectoryFileList(handler.OwnerPtr, (param_string*) pDirectoryPath));
+                using var result = SafeStructMallocHandle.Create(handler.D_ReadDirectoryFileList(handler.OwnerPtr, (param_string*) pDirectoryPath), true);
                 if (result.IsNull) return Array.Empty<string>();
-                using var fileList = result.ValueAsJson();
 
-                var returnResult = fileList.IsInvalid ? null : Utils.DeserializeJson(fileList, CustomSourceGenerationContext.StringArray);
-                Logger.LogOutputManaged(returnResult!);
+                // TODO: Check null handle
+                var returnResult = result.ValueAsJson(CustomSourceGenerationContext.StringArray)!;
+                Logger.LogOutput(returnResult);
                 return returnResult;
             }
         }
@@ -421,32 +418,32 @@ namespace Bannerlord.VortexExtension.Native
 
             fixed (char* pDirectoryPath = directoryPath)
             {
-                Logger.LogInputChar(pDirectoryPath);
+                Logger.LogPinned(pDirectoryPath);
 
-                using var result = SafeStructMallocHandle.Create(handler.D_ReadDirectoryList(handler.OwnerPtr, (param_string*) pDirectoryPath));
+                using var result = SafeStructMallocHandle.Create(handler.D_ReadDirectoryList(handler.OwnerPtr, (param_string*) pDirectoryPath), true);
                 if (result.IsNull) return Array.Empty<string>();
-                using var directoryList = result.ValueAsJson();
 
-                var returnResult = directoryList.IsInvalid ? null : Utils.DeserializeJson(directoryList, CustomSourceGenerationContext.StringArray);
-                Logger.LogOutputManaged(returnResult!);
+                // TODO: Check null handle
+                var returnResult = result.ValueAsJson(CustomSourceGenerationContext.StringArray)!;
+                Logger.LogOutput(returnResult);
                 return returnResult;
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_register_callbacks")]
-        public static return_value_void* RegisterCallbacks(void* p_handle
-            , delegate* unmanaged[Cdecl]<return_value_json*, void*> p_get_active_profile
-            , delegate* unmanaged[Cdecl]<return_value_json*, void*, param_string*> p_get_profile_by_id
-            , delegate* unmanaged[Cdecl]<return_value_string*, void*> p_get_active_game_id
-            , delegate* unmanaged[Cdecl]<return_value_void*, void*, param_string*, param_string*, param_json*> p_set_game_parameters
-            , delegate* unmanaged[Cdecl]<return_value_json*, void*> p_get_load_order
-            , delegate* unmanaged[Cdecl]<return_value_void*, void*, param_json*> p_set_load_order
-            , delegate* unmanaged[Cdecl]<return_value_string*, void*, param_string*, param_string*, param_string*, uint> p_translate_string
-            , delegate* unmanaged[Cdecl]<return_value_void*, void*> p_send_notification
-            , delegate* unmanaged[Cdecl]<return_value_string*, void*> p_get_install_path
-            , delegate* unmanaged[Cdecl]<return_value_string*, void*, param_string*> p_read_file_content
-            , delegate* unmanaged[Cdecl]<return_value_json*, void*, param_string*> p_read_directory_file_list
-            , delegate* unmanaged[Cdecl]<return_value_json*, void*, param_string*> p_read_directory_list
+        [UnmanagedCallersOnly(EntryPoint = "ve_register_callbacks", CallConvs = new[] { typeof(CallConvCdecl) })]
+        public static return_value_void* RegisterCallbacks(param_ptr* p_handle
+            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*> p_get_active_profile
+            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*, param_string*> p_get_profile_by_id
+            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*> p_get_active_game_id
+            , delegate* unmanaged[Cdecl]<return_value_void*, param_ptr*, param_string*, param_string*, param_json*> p_set_game_parameters
+            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*> p_get_load_order
+            , delegate* unmanaged[Cdecl]<return_value_void*, param_ptr*, param_json*> p_set_load_order
+            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*, param_string*, param_string*, param_string*, param_uint> p_translate_string
+            , delegate* unmanaged[Cdecl]<return_value_void*, param_ptr*> p_send_notification
+            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*> p_get_install_path
+            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*, param_string*> p_read_file_content
+            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*, param_string*> p_read_directory_file_list
+            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*, param_string*> p_read_directory_list
             )
         {
             Logger.LogInput();
@@ -454,7 +451,7 @@ namespace Bannerlord.VortexExtension.Native
             try
             {
                 if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
-                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!"));
+                    return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 handler.D_GetActiveProfile = Marshal.GetDelegateForFunctionPointer<N_GetActiveProfileDelegate>(new IntPtr(p_get_active_profile));
                 handler.D_GetProfileById = Marshal.GetDelegateForFunctionPointer<N_GetProfileByIdDelegate>(new IntPtr(p_get_profile_by_id));
@@ -485,12 +482,12 @@ namespace Bannerlord.VortexExtension.Native
                 );
 
                 Logger.LogOutput();
-                return return_value_void.AsValue();
+                return return_value_void.AsValue(false);
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return return_value_void.AsError(Utils.Copy(e.ToString()));
+                return return_value_void.AsException(e, false);
             }
         }
     }

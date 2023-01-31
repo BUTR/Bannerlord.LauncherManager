@@ -2,8 +2,8 @@ import test from 'ava';
 import fs from 'fs';
 import path from 'path';
 import { IProfile, NotificationType } from 'vortex-api/lib/types/api';
-import { createVortexExtensionManager } from '../lib/';
 import { ILoadOrder, ILoadOrderEntry } from '../lib/types';
+import { createVortexExtensionManager, allocAliveCount } from '../lib/';
 
 test('Main', async (t) => {
   const gameId = 'mountandblade2bannerlord';
@@ -118,5 +118,6 @@ test('Main', async (t) => {
 
   manager.sort();
 
+  t.deepEqual(allocAliveCount(), 1); // manager is alive
   t.pass();
 });

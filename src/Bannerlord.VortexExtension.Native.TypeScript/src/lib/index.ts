@@ -6,6 +6,10 @@ export const createVortexExtensionManager = (): types.VortexExtensionManager => 
     return new vortexextension.VortexExtensionManager();
 }
 
+export const allocAliveCount = (): number => {
+    return vortexextension.allocAliveCount();
+}
+
 export class BannerlordModuleManager {
     /* istanbul ignore next */
     private constructor() { }

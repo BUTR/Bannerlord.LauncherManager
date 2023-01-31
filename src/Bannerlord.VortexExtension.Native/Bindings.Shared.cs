@@ -13,9 +13,9 @@ namespace Bannerlord.VortexExtension.Native
             Logger.LogInput(size);
             try
             {
-                var result = NativeMemory.Alloc(size);
+                var result = Allocator.Alloc(size);
 
-                Logger.LogOutputPrimitive((int) result);
+                Logger.LogOutput(new IntPtr(result).ToString("x16"), nameof(Alloc));
                 return result;
             }
             catch (Exception e)
@@ -28,16 +28,34 @@ namespace Bannerlord.VortexExtension.Native
         [UnmanagedCallersOnly(EntryPoint = "dealloc")]
         public static void Dealloc(param_ptr* ptr)
         {
-            Logger.LogInput(ptr);
+            Logger.LogInput(new IntPtr(ptr).ToString("x16"), nameof(Dealloc));
             try
             {
-                NativeMemory.Free(ptr);
+                Allocator.Free(ptr);
 
                 Logger.LogOutput();
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
+            }
+        }
+
+        [UnmanagedCallersOnly(EntryPoint = "alloc_alive_count")]
+        public static int AllocAliveCount()
+        {
+            Logger.LogInput();
+            try
+            {
+                var result = Allocator.GetCurrentAllocations();
+
+                Logger.LogOutput(result);
+                return result;
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return -1;
             }
         }
     }

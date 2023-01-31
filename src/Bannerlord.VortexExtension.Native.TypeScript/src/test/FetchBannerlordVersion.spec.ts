@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { FetchBannerlordVersion } from '../lib';
+import { FetchBannerlordVersion, allocAliveCount } from '../lib';
 
 test('Main', async (t) => {
   const path = __dirname;
@@ -15,5 +15,6 @@ test('Main', async (t) => {
   const versionType = FetchBannerlordVersion.getVersionType(path, dllName);
   t.is(versionType, 4);
 
+  t.deepEqual(allocAliveCount(), 0);
   t.pass();
 });

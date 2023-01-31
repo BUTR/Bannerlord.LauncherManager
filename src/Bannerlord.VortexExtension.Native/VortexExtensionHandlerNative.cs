@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BUTR.NativeAOT.Shared;
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace Bannerlord.VortexExtension.Native
@@ -20,13 +22,13 @@ namespace Bannerlord.VortexExtension.Native
         public N_ReadDirectoryFileList D_ReadDirectoryFileList = (_, _) => throw new CallbacksNotRegisteredException();
         public N_ReadDirectoryList D_ReadDirectoryList = (_, _) => throw new CallbacksNotRegisteredException();
 
-        public void* OwnerPtr { get; }
-        public void* HandlePtr { get; }
+        public param_ptr* OwnerPtr { get; }
+        public VoidPtr* HandlePtr { get; }
 
-        public VortexExtensionHandlerNative(void* pOwner)
+        public VortexExtensionHandlerNative(param_ptr* pOwner)
         {
             OwnerPtr = pOwner;
-            HandlePtr = GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Normal)).ToPointer();
+            HandlePtr = (VoidPtr*) GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Normal)).ToPointer();
         }
 
         private void ReleaseUnmanagedResources()
