@@ -11,8 +11,8 @@ namespace Bannerlord.VortexExtension.Native
 {
     public static unsafe partial class Bindings
     {
-        [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_ptr* CreateVortexExtensionHandler(param_ptr* p_owner)
+        [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_ptr* CreateVortexExtensionHandler([IsConst<IsPtrConst>] param_ptr* p_owner)
         {
             Logger.LogInput();
             try
@@ -27,8 +27,8 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_void* DisposeVortexExtensionHandler(param_ptr* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_void* DisposeVortexExtensionHandler([IsConst<IsPtrConst>] param_ptr* p_handle)
         {
             Logger.LogInput();
             try
@@ -49,8 +49,8 @@ namespace Bannerlord.VortexExtension.Native
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_string* GetGameVersion(param_ptr* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_string* GetGameVersion([IsConst<IsPtrConst>] param_ptr* p_handle)
         {
             Logger.LogInput();
             try
@@ -71,8 +71,8 @@ namespace Bannerlord.VortexExtension.Native
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_json* TestModule(param_ptr* p_handle, param_json* p_files, param_string* p_game_id)
+        [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_json* TestModule([IsConst<IsPtrConst>] param_ptr* p_handle, [IsConst<IsPtrConst>] param_json* p_files, [IsConst<IsPtrConst>] param_string* p_game_id)
         {
             Logger.LogInput(p_files, p_game_id);
             try
@@ -95,8 +95,8 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_string* p_destination_path)
+        [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_json* InstallModule([IsConst<IsPtrConst>] param_ptr* p_handle, [IsConst<IsPtrConst>] param_json* p_files, [IsConst<IsPtrConst>] param_string* p_destination_path)
         {
             Logger.LogInput(p_files, p_destination_path);
             try
@@ -120,8 +120,8 @@ namespace Bannerlord.VortexExtension.Native
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_bool* IsSorting(param_ptr* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_bool* IsSorting([IsConst<IsPtrConst>] param_ptr* p_handle)
         {
             Logger.LogInput();
             try
@@ -141,8 +141,8 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_sort", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_void* SortVortexExtension(param_ptr* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_sort", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_void* SortVortexExtension([IsConst<IsPtrConst>] param_ptr* p_handle)
         {
             Logger.LogInput();
             try
@@ -163,8 +163,8 @@ namespace Bannerlord.VortexExtension.Native
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_json* GetLoadOrder(param_ptr* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_load_order", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_json* GetLoadOrder([IsConst<IsPtrConst>] param_ptr* p_handle)
         {
             Logger.LogInput();
             try
@@ -184,8 +184,8 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_set_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_void* SetLoadOrder(param_ptr* p_handle, param_json* p_load_order)
+        [UnmanagedCallersOnly(EntryPoint = "ve_set_load_order", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_void* SetLoadOrder([IsConst<IsPtrConst>] param_ptr* p_handle, [IsConst<IsPtrConst>] param_json* p_load_order)
         {
             Logger.LogInput(p_load_order);
             try
@@ -207,8 +207,8 @@ namespace Bannerlord.VortexExtension.Native
         }
 
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_modules", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_json* GetModules(param_ptr* p_handle)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_modules", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_json* GetModules([IsConst<IsPtrConst>] param_ptr* p_handle)
         {
             Logger.LogInput();
             try
@@ -229,8 +229,8 @@ namespace Bannerlord.VortexExtension.Native
         }
         
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_void* RefreshGameParameters(param_ptr* p_handle, param_json* p_load_order)
+        [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_void* RefreshGameParameters([IsConst<IsPtrConst>] param_ptr* p_handle, [IsConst<IsPtrConst>] param_json* p_load_order)
         {
             Logger.LogInput(p_load_order);
             try
@@ -253,8 +253,8 @@ namespace Bannerlord.VortexExtension.Native
 
         
         /*
-        [UnmanagedCallersOnly(EntryPoint = "ve_get_module_paths", CallConvs = new [] { typeof(CallConvCdecl) })]
-        public static return_value_void* GetModulePaths(param_ptr* p_handle, param_json* p_load_order)
+        [UnmanagedCallersOnly(EntryPoint = "ve_get_module_paths", CallConvs = new [] { typeof(CallConvCdecl) }), Const]
+        public static return_value_void* GetModulePaths([Const(PointsToConstant = true)] param_ptr* p_handle, [Const(PointsToConstant = true)] param_json* p_load_order)
         {
             Logger.LogInput();
 
@@ -454,21 +454,32 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "ve_register_callbacks", CallConvs = new[] { typeof(CallConvCdecl) })]
-        public static return_value_void* RegisterCallbacks(param_ptr* p_handle
-            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*> p_get_active_profile
-            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*, param_string*> p_get_profile_by_id
-            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*> p_get_active_game_id
-            , delegate* unmanaged[Cdecl]<return_value_void*, param_ptr*, param_string*, param_string*, param_json*> p_set_game_parameters
-            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*> p_get_load_order
-            , delegate* unmanaged[Cdecl]<return_value_void*, param_ptr*, param_json*> p_set_load_order
-            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*, param_string*, param_string*, param_string*, param_uint> p_translate_string
-            , delegate* unmanaged[Cdecl]<return_value_void*, param_ptr*> p_send_notification
-            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*> p_get_install_path
-            , delegate* unmanaged[Cdecl]<return_value_string*, param_ptr*, param_string*> p_read_file_content
-            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*, param_string*> p_read_directory_file_list
-            , delegate* unmanaged[Cdecl]<return_value_json*, param_ptr*, param_string*> p_read_directory_list
-            )
+        [UnmanagedCallersOnly(EntryPoint = "ve_register_callbacks", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static return_value_void* RegisterCallbacks([IsConst<IsPtrConst>] param_ptr* p_handle,
+            [ConstMeta<IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_active_profile,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_get_profile_by_id,
+            [ConstMeta<IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_get_active_game_id,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_json*, return_value_void*> p_set_game_parameters,
+            [ConstMeta<IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_load_order,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_json*, return_value_void*> p_set_load_order,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, return_value_string*> p_translate_string,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, return_value_void*> p_send_notification,
+            [ConstMeta<IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_get_install_path,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_string*> p_read_file_content,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_file_list,
+            [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
+            delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list)
         {
             Logger.LogInput();
 

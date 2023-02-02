@@ -1,14 +1,15 @@
 ﻿using BUTR.NativeAOT.Shared;
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Bannerlord.VortexExtension.Native
 {
     public static unsafe partial class Bindings
     {
-        [UnmanagedCallersOnly(EntryPoint = "alloc")]
-        public static void* Alloc(nuint size)
+        [UnmanagedCallersOnly(EntryPoint = "alloc", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static void* Alloc([IsConst<IsPtrConst>] nuint size)
         {
             Logger.LogInput(size);
             try
@@ -25,8 +26,8 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "dealloc")]
-        public static void Dealloc(param_ptr* ptr)
+        [UnmanagedCallersOnly(EntryPoint = "dealloc", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+        public static void Dealloc([IsConst<IsPtrConst>] param_ptr* ptr)
         {
             Logger.LogInput(new IntPtr(ptr).ToString("x16"), nameof(Dealloc));
             try
@@ -41,7 +42,7 @@ namespace Bannerlord.VortexExtension.Native
             }
         }
 
-        [UnmanagedCallersOnly(EntryPoint = "alloc_alive_count")]
+        [UnmanagedCallersOnly(EntryPoint = "alloc_alive_count", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
         public static int AllocAliveCount()
         {
             Logger.LogInput();

@@ -1,15 +1,67 @@
 #ifndef VE_UTILS_GUARD_HPP_
 #define VE_UTILS_GUARD_HPP_
 
-#include <Common.Native.h>
 #include <napi.h>
 #include <cstdint>
 
 using namespace Napi;
-using namespace Common;
 
 namespace Utils
 {
+
+    template <typename T>
+    struct deleter
+    {
+        void operator()(T *const ptr) const { dealloc(static_cast<void *const>(ptr)); }
+    };
+
+    using del_void = std::unique_ptr<return_value_void, deleter<return_value_void>>;
+    using del_string = std::unique_ptr<return_value_string, deleter<return_value_string>>;
+    using del_json = std::unique_ptr<return_value_json, deleter<return_value_json>>;
+    using del_bool = std::unique_ptr<return_value_bool, deleter<return_value_bool>>;
+    using del_int32 = std::unique_ptr<return_value_int32, deleter<return_value_int32>>;
+    using del_uint32 = std::unique_ptr<return_value_uint32, deleter<return_value_uint32>>;
+    using del_ptr = std::unique_ptr<return_value_ptr, deleter<return_value_ptr>>;
+
+    char16_t *const Copy(const std::u16string str)
+    {
+        const auto src = str.c_str();
+        const auto srcChar16Length = str.length();
+        const auto srcByteLength = srcChar16Length * sizeof(char16_t);
+        const auto size = srcByteLength + sizeof(char16_t);
+
+        auto dst = static_cast<char16_t *const>(alloc(size));
+        if (dst == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+        std::memmove(dst, src, srcByteLength);
+        dst[srcChar16Length] = '\0';
+        return dst;
+    }
+
+    std::unique_ptr<char16_t[], deleter<char16_t>> CopyWithFree(const std::u16string str)
+    {
+        return std::unique_ptr<char16_t[], deleter<char16_t>>(Copy(str));
+    }
+
+    const char16_t *const NoCopy(const std::u16string str) noexcept
+    {
+        return str.c_str();
+    }
+
+    template <typename T>
+    T *const Create(const T val)
+    {
+        const auto size = sizeof(T);
+        auto dst = static_cast<T *const>(alloc(size));
+        if (dst == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+        std::memcpy(dst, &val, sizeof(T));
+        return dst;
+    }
 
     void ConsoleLog(const Env env, const String message)
     {

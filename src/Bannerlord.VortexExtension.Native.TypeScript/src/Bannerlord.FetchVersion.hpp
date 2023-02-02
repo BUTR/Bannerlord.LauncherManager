@@ -2,14 +2,12 @@
 #define VE_FETCHBLVERSION_GUARD_HPP_
 
 #include "utils.hpp"
-#include "Common.Native.h"
-#include "Bannerlord.FetchVersion.Native.h"
+#include "Bannerlord.VortexExtension.Native.h"
 #include <codecvt>
 
 using namespace Napi;
-using namespace Common;
 using namespace Utils;
-using namespace Bannerlord::FetchVersion;
+using namespace Bannerlord::VortexExtension::Native;
 
 namespace Bannerlord::FetchVersion
 {

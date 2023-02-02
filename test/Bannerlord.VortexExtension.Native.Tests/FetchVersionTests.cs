@@ -36,7 +36,9 @@ namespace Bannerlord.VortexExtension.Native.Tests
                 Assert.That(versionType, Is.EqualTo(4));
             });
 
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
+#if DEBUG
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+#endif
         }
     }
 }

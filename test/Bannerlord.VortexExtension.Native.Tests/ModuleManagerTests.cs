@@ -173,7 +173,9 @@ namespace Bannerlord.VortexExtension.Native.Tests
                 Assert.That(result, Is.EqualTo(-1));
             });
 
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
+#if DEBUG
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+#endif
         }
 
         [Test]
@@ -185,7 +187,9 @@ namespace Bannerlord.VortexExtension.Native.Tests
                 var subModule = GetResult<ModuleInfoExtended>(bmm_get_sub_module_info(xml));
             });
 
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
+#if DEBUG
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+#endif
         }
 
         [Test]
@@ -284,7 +288,9 @@ namespace Bannerlord.VortexExtension.Native.Tests
                 Assert.That(dependenciesIncompatibles!, Has.Length.EqualTo(0));
             });
 
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
+#if DEBUG
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+#endif
         }
     }
 }

@@ -4,6 +4,8 @@ import { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml } from './
 import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType } from '../lib/types';
 import { BannerlordModuleManager, allocAliveCount } from '../lib';
 
+const isDebug = process.argv[2] == "Debug";
+
 test('ApplicationVersion', async (t) => {
   const version1: ApplicationVersion = {
     applicationVersionType: ApplicationVersionType.Alpha,
@@ -22,6 +24,11 @@ test('ApplicationVersion', async (t) => {
 
   const result = BannerlordModuleManager.compareVersions(version1, version2);
   t.is(result, -1);
+
+  if (isDebug)
+    t.deepEqual(allocAliveCount(), 0);
+
+  t.pass();
 });
 
 test('SubModule', async (t) => {
@@ -30,6 +37,9 @@ test('SubModule', async (t) => {
     t.fail();
     return;
   }
+
+  if (isDebug)
+    t.deepEqual(allocAliveCount(), 0);
 
   t.pass();
 });
@@ -168,6 +178,8 @@ test('Main', async (t) => {
   const dependenciesIncompatibles = BannerlordModuleManager.getDependenciesIncompatibles(uiExtenderEx);
   t.deepEqual(dependenciesIncompatibles.length, 0);
 
-  t.deepEqual(allocAliveCount(), 0);
+  if (isDebug)
+    t.deepEqual(allocAliveCount(), 0);
+
   t.pass();
 });

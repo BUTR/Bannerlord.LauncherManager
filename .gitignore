@@ -387,3 +387,4 @@ MigrationBackup/
 .ionide/
 /docfx3/*
 /**/.idea/*
+/src/Bannerlord.VortexExtension.Native/Bannerlord.VortexExtension.Native.h
