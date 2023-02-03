@@ -12,10 +12,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  # It's faster to split the work beween ubuntu-windows than to wait for the windows machine
-  dotnet:
-    name: Create C# Artifact
-    runs-on: ubuntu-latest
+  publish:
+    name: Publish on NPM and GPR
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.0.2
         with:
@@ -31,37 +30,6 @@ jobs:
 
       - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Debug
       - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Release
-
-      - name: Upload Debug Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Debug
-          path: src/Bannerlord.LauncherManager.Native/bin/Debug/net7.0
-
-      - name: Upload Release Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Release
-          path: src/Bannerlord.LauncherManager.Native/bin/Release/net7.0
-          
-  publish:
-    name: Publish on NPM and GPR
-    needs: dotnet
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3.0.2
-        with:
-          fetch-depth: 0
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: Debug
-          path: src/Bannerlord.LauncherManager.Native/bin/Debug/net7.0
-          
-      - uses: actions/download-artifact@v3
-        with:
-          name: Release
-          path: src/Bannerlord.LauncherManager.Native/bin/Release/net7.0
 
       - uses: actions/setup-node@v3.4.1
         with:
