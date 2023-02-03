@@ -34,13 +34,13 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <None Update="Bannerlord.VortexExtension.Native.h">
+    <None Update="Bannerlord.LauncherManager.Native.h">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bannerlord.VortexExtension\Bannerlord.VortexExtension.csproj" />
+    <ProjectReference Include="..\Bannerlord.LauncherManager\Bannerlord.LauncherManager.csproj" />
   </ItemGroup>
 
   <ItemGroup>

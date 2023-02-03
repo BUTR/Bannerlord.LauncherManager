@@ -2,17 +2,17 @@
 #define VE_VORTEXEXTENSIONMANAGER_GUARD_HPP_
 
 #include "utils.hpp"
-#include "Bannerlord.VortexExtension.Native.h"
+#include "Bannerlord.LauncherManager.Native.h"
 #include <codecvt>
 
 using namespace Napi;
 using namespace Utils;
-using namespace Bannerlord::VortexExtension::Native;
+using namespace Bannerlord::LauncherManager::Native;
 
-namespace Bannerlord::VortexExtension
+namespace Bannerlord::LauncherManager
 {
 
-    class VortexExtensionManager : public Napi::ObjectWrap<VortexExtensionManager>
+    class LauncherManager : public Napi::ObjectWrap<LauncherManager>
     {
     public:
         FunctionReference FGetActiveProfile;
@@ -30,8 +30,8 @@ namespace Bannerlord::VortexExtension
 
         static Object Init(const Napi::Env env, const Object exports);
 
-        VortexExtensionManager(const CallbackInfo &info);
-        ~VortexExtensionManager();
+        LauncherManager(const CallbackInfo &info);
+        ~LauncherManager();
 
         void RegisterCallbacks(const CallbackInfo &info);
         Napi::Value GetGameVersion(const CallbackInfo &info);
@@ -51,24 +51,24 @@ namespace Bannerlord::VortexExtension
     // Initialize native add-on
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)
     {
-        return VortexExtensionManager::Init(env, exports);
+        return LauncherManager::Init(env, exports);
     }
 
-    Object VortexExtensionManager::Init(const Napi::Env env, const Object exports)
+    Object LauncherManager::Init(const Napi::Env env, const Object exports)
     {
         // This method is used to hook the accessor and method callbacks
-        const auto func = DefineClass(env, "VortexExtensionManager",
+        const auto func = DefineClass(env, "LauncherManager",
                                       {
-                                          InstanceMethod<&VortexExtensionManager::RegisterCallbacks>("registerCallbacks", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::GetGameVersion>("getGameVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::TestModule>("testModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::InstallModule>("installModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::IsSorting>("isSorting", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::Sort>("sort", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::GetLoadOrder>("getLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::SetLoadOrder>("setLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&VortexExtensionManager::RefreshGameParameters>("refreshGameParameters", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::RegisterCallbacks>("registerCallbacks", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetGameVersion>("getGameVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::TestModule>("testModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::InstallModule>("installModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::IsSorting>("isSorting", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::Sort>("sort", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetLoadOrder>("getLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SetLoadOrder>("setLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::RefreshGameParameters>("refreshGameParameters", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
         auto *const constructor = new FunctionReference();
@@ -77,7 +77,7 @@ namespace Bannerlord::VortexExtension
         // a function called on a class prototype and a function
         // called on instance of a class to be distinguished from each other.
         *constructor = Persistent(func);
-        exports.Set("VortexExtensionManager", func);
+        exports.Set("LauncherManager", func);
 
         // Store the constructor as the add-on instance data. This will allow this
         // add-on to support multiple instances of itself running on multiple worker
@@ -92,7 +92,7 @@ namespace Bannerlord::VortexExtension
         return exports;
     }
 
-    VortexExtensionManager::VortexExtensionManager(const CallbackInfo &info) : ObjectWrap<VortexExtensionManager>(info)
+    LauncherManager::LauncherManager(const CallbackInfo &info) : ObjectWrap<LauncherManager>(info)
     {
         const auto env = info.Env();
 
@@ -100,7 +100,7 @@ namespace Bannerlord::VortexExtension
         this->_pInstance = ThrowOrReturnPtr(env, result);
     }
 
-    VortexExtensionManager::~VortexExtensionManager()
+    LauncherManager::~LauncherManager()
     {
         this->FGetActiveProfile.Unref();
         this->FGetProfileById.Unref();
@@ -121,7 +121,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetActiveProfile({}).As<Object>();
@@ -137,7 +137,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto profileId = String::New(env, p_profile_id);
@@ -154,7 +154,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetActiveGameId({}).As<String>();
@@ -170,7 +170,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto gameId = String::New(env, p_game_id);
@@ -190,7 +190,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetLoadOrder({}).As<Object>();
@@ -206,7 +206,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto loadOrder = JSONParse(env, String::New(env, p_load_order));
@@ -223,7 +223,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto text = String::New(env, p_text);
@@ -241,7 +241,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto id = String::New(env, p_id);
@@ -261,7 +261,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
             const auto result = manager->FGetInstallPath({}).As<String>();
@@ -277,7 +277,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
             const auto filePath = String::New(env, p_file_path);
 
@@ -299,7 +299,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
             const auto directoryPath = String::New(env, p_directory_path);
 
@@ -321,7 +321,7 @@ namespace Bannerlord::VortexExtension
     {
         try
         {
-            const auto manager = static_cast<const VortexExtensionManager *const>(p_owner);
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
             const auto directoryPath = String::New(env, p_directory_path);
 
@@ -339,7 +339,7 @@ namespace Bannerlord::VortexExtension
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    void VortexExtensionManager::RegisterCallbacks(const CallbackInfo &info)
+    void LauncherManager::RegisterCallbacks(const CallbackInfo &info)
     {
         const auto env = info.Env();
         this->FGetActiveProfile = Persistent(info[0].As<Function>());
@@ -370,7 +370,7 @@ namespace Bannerlord::VortexExtension
                                                  readDirectoryList));
     }
 
-    Value VortexExtensionManager::GetGameVersion(const CallbackInfo &info)
+    Value LauncherManager::GetGameVersion(const CallbackInfo &info)
     {
         const auto env = info.Env();
 
@@ -378,7 +378,7 @@ namespace Bannerlord::VortexExtension
         return ThrowOrReturnString(env, result);
     }
 
-    Value VortexExtensionManager::TestModule(const CallbackInfo &info)
+    Value LauncherManager::TestModule(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto files = JSONStringify(env, info[0].As<Object>());
@@ -391,7 +391,7 @@ namespace Bannerlord::VortexExtension
         return ThrowOrReturnJson(env, result);
     }
 
-    Value VortexExtensionManager::InstallModule(const CallbackInfo &info)
+    Value LauncherManager::InstallModule(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto files = JSONStringify(env, info[0].As<Object>());
@@ -404,7 +404,7 @@ namespace Bannerlord::VortexExtension
         return ThrowOrReturnJson(env, result);
     }
 
-    Value VortexExtensionManager::IsSorting(const CallbackInfo &info)
+    Value LauncherManager::IsSorting(const CallbackInfo &info)
     {
         const auto env = info.Env();
 
@@ -412,7 +412,7 @@ namespace Bannerlord::VortexExtension
         return ThrowOrReturnBoolean(env, result);
     }
 
-    void VortexExtensionManager::Sort(const CallbackInfo &info)
+    void LauncherManager::Sort(const CallbackInfo &info)
     {
         const auto env = info.Env();
 
@@ -420,7 +420,7 @@ namespace Bannerlord::VortexExtension
         ThrowOrReturn(env, result);
     }
 
-    Value VortexExtensionManager::GetLoadOrder(const CallbackInfo &info)
+    Value LauncherManager::GetLoadOrder(const CallbackInfo &info)
     {
         const auto env = info.Env();
 
@@ -428,7 +428,7 @@ namespace Bannerlord::VortexExtension
         return ThrowOrReturnJson(env, result);
     }
 
-    void VortexExtensionManager::SetLoadOrder(const CallbackInfo &info)
+    void LauncherManager::SetLoadOrder(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto loadOrder = JSONStringify(env, info[0].As<Object>());
@@ -439,7 +439,7 @@ namespace Bannerlord::VortexExtension
         ThrowOrReturn(env, result);
     }
 
-    Value VortexExtensionManager::GetModules(const CallbackInfo &info)
+    Value LauncherManager::GetModules(const CallbackInfo &info)
     {
         const auto env = info.Env();
 
@@ -447,7 +447,7 @@ namespace Bannerlord::VortexExtension
         return ThrowOrReturnJson(env, result);
     }
 
-    void VortexExtensionManager::RefreshGameParameters(const CallbackInfo &info)
+    void LauncherManager::RefreshGameParameters(const CallbackInfo &info)
     {
         const auto env = info.Env();
         const auto loadOrder = JSONStringify(env, info[0].As<Object>());

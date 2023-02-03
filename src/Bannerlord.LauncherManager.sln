@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension", "Bannerlord.VortexExtension\Bannerlord.VortexExtension.csproj", "{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.LauncherManager", "Bannerlord.LauncherManager\Bannerlord.LauncherManager.csproj", "{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EBC69772-7E45-4996-844B-EB7D6D456E26}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C8EDF62A-BBD6-475C-AA91-7F2F560E89C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.Tests", "..\test\Bannerlord.VortexExtension.Tests\Bannerlord.VortexExtension.Tests.csproj", "{187F7140-F60E-4B54-8D9E-36B743625069}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.LauncherManager.Tests", "..\test\Bannerlord.LauncherManager.Tests\Bannerlord.LauncherManager.Tests.csproj", "{187F7140-F60E-4B54-8D9E-36B743625069}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.Native", "Bannerlord.VortexExtension.Native\Bannerlord.VortexExtension.Native.csproj", "{092F3FB1-0028-4F59-B4AC-AAA90AE91287}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.LauncherManager.Native", "Bannerlord.LauncherManager.Native\Bannerlord.LauncherManager.Native.csproj", "{092F3FB1-0028-4F59-B4AC-AAA90AE91287}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{FA205CE3-25C8-4140-A0B9-843AC92340C6}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\publish-native-ts.yml = ..\.github\workflows\publish-native-ts.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.VortexExtension.Native.Tests", "..\test\Bannerlord.VortexExtension.Native.Tests\Bannerlord.VortexExtension.Native.Tests.csproj", "{35FD1D55-D155-4950-9608-25129B0135B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.LauncherManager.Native.Tests", "..\test\Bannerlord.LauncherManager.Native.Tests\Bannerlord.LauncherManager.Native.Tests.csproj", "{35FD1D55-D155-4950-9608-25129B0135B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

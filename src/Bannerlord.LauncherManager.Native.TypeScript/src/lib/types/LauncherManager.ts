@@ -2,7 +2,7 @@ import { types } from "vortex-api";
 import { ModuleInfoExtended } from "./BannerlordModuleManager";
 
 export interface IVortexExtension {
-  VortexExtensionManager: new () => VortexExtensionManager
+  LauncherManager: new () => LauncherManager
 }
 
 export interface ILoadOrderEntry<T = any> {
@@ -18,8 +18,8 @@ export interface ILoadOrder {
   [modId: string]: ILoadOrderEntry;
 }
 
-export type VortexExtensionManager = {
-  constructor(): VortexExtensionManager;
+export type LauncherManager = {
+  constructor(): LauncherManager;
 
   registerCallbacks(
     getActiveProfile: () => types.IProfile,

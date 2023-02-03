@@ -2,12 +2,12 @@
 #define VE_BLMANAGER_GUARD_HPP_
 
 #include "utils.hpp"
-#include "Bannerlord.VortexExtension.Native.h"
+#include "Bannerlord.LauncherManager.Native.h"
 #include <codecvt>
 
 using namespace Napi;
 using namespace Utils;
-using namespace Bannerlord::VortexExtension::Native;
+using namespace Bannerlord::LauncherManager::Native;
 
 namespace Bannerlord::ModuleManager
 {

@@ -2,10 +2,10 @@
 #define VE_COMMON_GUARD_HPP_
 
 #include <napi.h>
-#include "Bannerlord.VortexExtension.Native.h"
+#include "Bannerlord.LauncherManager.Native.h"
 
 using namespace Napi;
-using namespace Bannerlord::VortexExtension::Native;
+using namespace Bannerlord::LauncherManager::Native;
 
 namespace Bannerlord::Common
 {

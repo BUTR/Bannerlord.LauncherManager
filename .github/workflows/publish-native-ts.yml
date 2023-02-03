@@ -6,15 +6,16 @@ on:
       - master
     paths:
       - '.github/workflows/publish-native-ts.yml'
-      - 'src/Bannerlord.VortexExtension/**.*'
-      - 'src/Bannerlord.VortexExtension.Native/**.*'
-      - 'src/Bannerlord.VortexExtension.Native.TypeScript/**.*'
+      - 'src/Bannerlord.LauncherManager/**.*'
+      - 'src/Bannerlord.LauncherManager.Native/**.*'
+      - 'src/Bannerlord.LauncherManager.Native.TypeScript/**.*'
   workflow_dispatch:
 
 jobs:
-  publish:
-    name: Publish on NPM and GPR
-    runs-on: windows-latest
+  # It's faster to split the work beween ubuntu-windows than to wait for the windows machine
+  dotnet:
+    name: Create C# Artifact
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.0.2
         with:
@@ -23,39 +24,69 @@ jobs:
       - name: Setup .NET 7
         uses: actions/setup-dotnet@master
         with:
-          dotnet-version: 7.x.x
+          dotnet-version: 7.0.x
 
-      - run: dotnet publish -r win-x64 --self-contained -c Debug src/Bannerlord.VortexExtension.Native
-      - run: dotnet publish -r win-x64 --self-contained -c Release src/Bannerlord.VortexExtension.Native
+      - run: dotnet publish -r win-x64 --self-contained -c Debug src/Bannerlord.LauncherManager.Native
+      - run: dotnet publish -r win-x64 --self-contained -c Release src/Bannerlord.LauncherManager.Native
 
-      - run: dotnet test test/Bannerlord.VortexExtension.Native.Tests -c Debug
-      - run: dotnet test test/Bannerlord.VortexExtension.Native.Tests -c Release
+      - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Debug
+      - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Release
 
+      - name: Upload Debug Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Debug
+          path: src/Bannerlord.LauncherManager.Native/bin/Debug/net7.0
+
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Release
+          path: src/Bannerlord.LauncherManager.Native/bin/Release/net7.0
+          
+  publish:
+    name: Publish on NPM and GPR
+    depends-on: dotnet
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: Debug
+          path: src/Bannerlord.LauncherManager.Native/bin/Debug/net7.0
+          
+      - uses: actions/download-artifact@v3
+        with:
+          name: Release
+          path: src/Bannerlord.LauncherManager.Native/bin/Release/net7.0
 
       - uses: actions/setup-node@v3.4.1
         with:
           node-version: 16
           cache: 'npm'
-          cache-dependency-path: src/Bannerlord.VortexExtension.Native.TypeScript/package-lock.json
+          cache-dependency-path: src/Bannerlord.LauncherManager.Native.TypeScript/package-lock.json
 
       - run: |
-          cd ./src/Bannerlord.VortexExtension.Native.TypeScript && `
+          cd ./src/Bannerlord.LauncherManager.Native.TypeScript && `
           npm version $(node -p "require('./package.json').version = `
           require('./package.json').version.split('.')[0]+'.' + `
           require('./package.json').version.split('.')[1]+'.' + `
           $(git rev-list --no-merges --count master)") --no-git-tag-version --allow-same-version;
 
-      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm ci
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm ci
 
-      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm run test -- Debug
-      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm run test -- Release
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm run test -- Debug
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm run test -- Release
 
       - uses: actions/setup-node@v3.4.1
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
-      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_NPM_TOKEN }}
 
@@ -64,7 +95,7 @@ jobs:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
-      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

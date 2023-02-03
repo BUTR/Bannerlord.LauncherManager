@@ -1,7 +1,7 @@
 {
     "targets": [
         {
-            "target_name": "vortexextension",
+            "target_name": "launchermanager",
             "sources": [
                 "<(module_root_dir)/src/main.cpp",
             ],
@@ -10,7 +10,7 @@
                 "<(module_root_dir)"
             ],
             'libraries': [
-                "<(module_root_dir)/Bannerlord.VortexExtension.Native.lib"
+                "<(module_root_dir)/Bannerlord.LauncherManager.Native.lib"
             ],
             'dependencies': [
                 "<!(node -p \"require('node-addon-api').gyp\")"

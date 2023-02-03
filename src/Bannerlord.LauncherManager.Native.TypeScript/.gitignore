@@ -11,7 +11,7 @@ coverage
 *.log
 Bannerlord.FetchVersion.Native.*
 Bannerlord.ModuleManager.Native.*
-Bannerlord.VortexExtension.Native.*
+Bannerlord.LauncherManager.Native.*
 Common.Native.*
 steam_api64.dll
 steam_appid.txt

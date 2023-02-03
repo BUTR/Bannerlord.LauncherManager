@@ -1,10 +1,10 @@
 export * from './BannerlordModuleManager';
 export * from './FetchBannerlordVersion';
-export * from './VortexExtensionManager';
+export * from './LauncherManager';
 
 import { IBannerlordModuleManager } from './BannerlordModuleManager';
 import { IFetchBannerlordVersion } from './FetchBannerlordVersion';
-import { IVortexExtension } from './VortexExtensionManager';
+import { IVortexExtension } from './LauncherManager';
 
 export interface IExtension extends IBannerlordModuleManager, IFetchBannerlordVersion, IVortexExtension {
     allocAliveCount(): number;

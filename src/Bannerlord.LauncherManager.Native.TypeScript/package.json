@@ -8,7 +8,7 @@
   "gypfile": true,
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:BUTR/Bannerlord.VortexExtension.git"
+    "url": "git+ssh://git@github.com:BUTR/Bannerlord.LauncherManager.git"
   },
   "keywords": [
     "bannerlord",
@@ -16,9 +16,9 @@
   ],
   "author": "BUTR",
   "license": "MIT",
-  "homepage": "https://github.com/BUTR/Bannerlord.VortexExtension#readme",
+  "homepage": "https://github.com/BUTR/Bannerlord.LauncherManager#readme",
   "bugs": {
-    "url": "https://github.com/BUTR/Bannerlord.VortexExtension/issues"
+    "url": "https://github.com/BUTR/Bannerlord.LauncherManager/issues"
   },
   "scripts": {
     "install": "echo",
@@ -71,7 +71,7 @@
     "dist/main/lib",
     "dist/module/index.*",
     "dist/module/lib",
-    "dist/Bannerlord.VortexExtension.Native.dll",
+    "dist/Bannerlord.LauncherManager.Native.dll",
     "dist/vortexextension.node",
     "dist/steam_api64.dll",
     "dist/steam_appid.txt",

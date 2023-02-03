@@ -16,27 +16,30 @@ try {
     }
     # Build C#
     if ($type -eq "build" -or $type -eq "test" -or $type -eq "build-native") {
-        Write-Host "Building Bannerlord.VortexExtension.Native ($Configuration)";
+        Write-Host "Building Bannerlord.LauncherManager.Native ($Configuration)";
 
         Invoke-Command -ScriptBlock {
-            dotnet publish -r win-x64 --self-contained -c $Configuration ../Bannerlord.VortexExtension.Native;
+            dotnet publish -r win-x64 --self-contained -c $Configuration ../Bannerlord.LauncherManager.Native;
         }
         
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.lib" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.VortexExtension.Native.h" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.dll" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
     }
     # Build NAPI
     if ($type -eq "build" -or $type -eq "test" -or $type -eq "build-napi") {
         Write-Host "Building NAPI ($Configuration)";
 
+        $tag = "";
+        $tag = If ($Configuration -eq "Release") { "--release" } Else { $tag }
+        $tag = If ($Configuration -eq "Debug") { "--debug" } Else { $tag }
         Invoke-Command -ScriptBlock {
-            npx node-gyp rebuild;
+            npx node-gyp rebuild $tag;
         }
 
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.lib" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.VortexExtension.Native.h" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.dll" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
     }
     # Build JS
     if ($type -eq "build" -or $type -eq "test" -or $type -or $type -eq "test-build" -eq "build-ts") {
@@ -50,8 +53,8 @@ try {
     if ($type -eq "build" -or $type -eq "test" -or $type -eq "test-build" -or $type -eq "build-content") {
         Write-Host "Copying content";
 
-        Copy-Item2 -Path "Bannerlord.VortexExtension.Native.dll" -Destination "dist" | Out-Null;
-        Copy-Item2 -Path "build/Release/vortexextension.node" -Destination "dist" | Out-Null;
+        Copy-Item2 -Path "Bannerlord.LauncherManager.Native.dll" -Destination "dist" | Out-Null;
+        Copy-Item2 -Path "build/$Configuration/launchermanager.node" -Destination "dist" | Out-Null;
         
         Copy-Item2 -Path "src/test/Version.xml" -Destination "dist/main/test/bin/Win64_Shipping_Client/" | Out-Null;
         Copy-Item2 -Path "src/test/Harmony.xml" -Destination "dist/main/test/Modules/Bannerlord.Harmony/SubModule.xml" | Out-Null;
@@ -61,8 +64,8 @@ try {
         Copy-Item2 -Path "src/test/Harmony.xml" -Destination "dist/module/test/Modules/Bannerlord.Harmony/SubModule.xml" | Out-Null;
         Copy-Item2 -Path "src/test/UIExtenderEx.xml" -Destination "dist/module/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml" | Out-Null;
         
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.lib" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.VortexExtension.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.VortexExtension.Native.h" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
     }
     if ($type -eq "test" -or $type -eq "test-build" -or $type -eq "test-no-build") {
         Write-Host "Testing with Configuration $Configuration";

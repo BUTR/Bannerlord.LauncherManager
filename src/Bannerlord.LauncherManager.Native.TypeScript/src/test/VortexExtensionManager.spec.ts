@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { IProfile, NotificationType } from 'vortex-api/lib/types/api';
 import { ILoadOrder, ILoadOrderEntry } from '../lib/types';
-import { createVortexExtensionManager, allocAliveCount } from '../lib/';
+import { createLauncherManager, allocAliveCount } from '../lib/';
 
 const isDebug = process.argv[2] == "Debug";
 
@@ -28,7 +28,7 @@ test('Main', async (t) => {
     } as ILoadOrderEntry,
   };
 
-  var manager = createVortexExtensionManager();
+  var manager = createLauncherManager();
   const getActiveProfile = (): IProfile => {
     return profile;
   };
