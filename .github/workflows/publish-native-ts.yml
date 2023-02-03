@@ -46,7 +46,7 @@ jobs:
           
   publish:
     name: Publish on NPM and GPR
-    depends-on: dotnet
+    needs: dotnet
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.0.2
