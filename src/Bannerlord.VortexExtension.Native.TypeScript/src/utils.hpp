@@ -3,8 +3,10 @@
 
 #include <napi.h>
 #include <cstdint>
+#include "Bannerlord.VortexExtension.Native.h"
 
 using namespace Napi;
+using namespace Bannerlord::VortexExtension::Native;
 
 namespace Utils
 {
@@ -12,7 +14,7 @@ namespace Utils
     template <typename T>
     struct deleter
     {
-        void operator()(T *const ptr) const { dealloc(static_cast<void *const>(ptr)); }
+        void operator()(T *const ptr) const { common_dealloc(static_cast<void *const>(ptr)); }
     };
 
     using del_void = std::unique_ptr<return_value_void, deleter<return_value_void>>;
@@ -30,7 +32,7 @@ namespace Utils
         const auto srcByteLength = srcChar16Length * sizeof(char16_t);
         const auto size = srcByteLength + sizeof(char16_t);
 
-        auto dst = static_cast<char16_t *const>(alloc(size));
+        auto dst = static_cast<char16_t *const>(common_alloc(size));
         if (dst == nullptr)
         {
             throw std::bad_alloc();
@@ -54,7 +56,7 @@ namespace Utils
     T *const Create(const T val)
     {
         const auto size = sizeof(T);
-        auto dst = static_cast<T *const>(alloc(size));
+        auto dst = static_cast<T *const>(common_alloc(size));
         if (dst == nullptr)
         {
             throw std::bad_alloc();

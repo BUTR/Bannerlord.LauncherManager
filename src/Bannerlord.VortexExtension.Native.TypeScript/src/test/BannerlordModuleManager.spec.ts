@@ -50,6 +50,7 @@ test('Main', async (t) => {
     t.fail();
     return;
   }
+  t.deepEqual(invalid.name, 'Русский');
 
   const harmony = BannerlordModuleManager.getModuleInfo(harmonyXml);
   if (harmony === null || harmony === undefined) {

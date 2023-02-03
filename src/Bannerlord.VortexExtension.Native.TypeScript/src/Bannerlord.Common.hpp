@@ -14,7 +14,7 @@ namespace Bannerlord::Common
     {
         const auto env = info.Env();
 
-        const auto result = alloc_alive_count();
+        const auto result = common_alloc_alive_count();
         return Number::New(env, result);
     }
 

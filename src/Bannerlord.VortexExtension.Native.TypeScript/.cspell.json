@@ -36,7 +36,8 @@
     "typedoc",
     "untracked",
     "vortexextension",
-    "VORTEXEXTENSIONMANAGER"
+    "VORTEXEXTENSIONMANAGER",
+    "Кириллица"
   ],
   "flagWords": [],
   "ignorePaths": [
