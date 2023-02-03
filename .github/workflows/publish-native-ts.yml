@@ -67,3 +67,12 @@ jobs:
       - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dispatch
+        uses: guilouro/multiple-repositories-dispatch@master
+        with:
+          repo_token: ${{secrets.REPO_ACCESS_TOKEN}}
+          repositories: |
+            BUTR/game-mount-and-blade2
+          event_type: vortex_extension_update
+          client_payload: '{"github": ${{ toJson(github) }}}'
