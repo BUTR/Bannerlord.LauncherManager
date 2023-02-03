@@ -55,8 +55,7 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
-
-      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish --access public
+      - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_NPM_TOKEN }}
 
@@ -65,7 +64,6 @@ jobs:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
-
       - run: cd ./src/Bannerlord.VortexExtension.Native.TypeScript && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
