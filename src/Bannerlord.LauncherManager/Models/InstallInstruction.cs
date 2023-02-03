@@ -1,4 +1,4 @@
-﻿namespace Bannerlord.VortexExtension.Models
+﻿namespace Bannerlord.LauncherManager.Models
 {
     public sealed record InstallInstruction
     {

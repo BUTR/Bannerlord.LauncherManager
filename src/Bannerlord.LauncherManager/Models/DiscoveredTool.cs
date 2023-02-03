@@ -1,5 +1,5 @@
 ﻿/*
-namespace Bannerlord.VortexExtension.Models
+namespace Bannerlord.LauncherManager.Models
 {
     public record DiscoveredTool : Tool
     {

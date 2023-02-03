@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bannerlord.VortexExtension.Models
+namespace Bannerlord.LauncherManager.Models
 {
     public sealed record SupportedResult
     {

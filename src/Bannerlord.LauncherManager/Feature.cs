@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public static class Feature
     {

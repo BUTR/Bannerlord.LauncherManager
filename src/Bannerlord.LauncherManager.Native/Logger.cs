@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     public static class Logger
     {
@@ -134,7 +134,7 @@ namespace Bannerlord.VortexExtension.Native
 
                     try 
                     { 
-                        using var fs = new FileStream("Bannerlord.VortexExtension.Native.log", FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.SequentialScan);
+                        using var fs = new FileStream("Bannerlord.LauncherManager.Native.log", FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.SequentialScan);
                         using var sw = new StreamWriter(fs, Encoding.UTF8, -1, true);
                         sw.WriteLine(message);
                         return;

@@ -1,6 +1,6 @@
 ﻿using Bannerlord.ModuleManager;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public partial class VortexExtensionHandler
     {

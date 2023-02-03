@@ -2,9 +2,9 @@
 
 using System.Runtime.CompilerServices;
 
-using static Bannerlord.VortexExtension.Native.Tests.Utils2;
+using static Bannerlord.LauncherManager.Native.Tests.Utils2;
 
-namespace Bannerlord.VortexExtension.Native.Tests;
+namespace Bannerlord.LauncherManager.Native.Tests;
 
 internal class ValidationManager
 {

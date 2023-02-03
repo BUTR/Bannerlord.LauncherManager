@@ -2,7 +2,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal unsafe delegate return_value_json* N_GetActiveProfileDelegate(param_ptr* p_owner);

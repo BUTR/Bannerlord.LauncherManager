@@ -1,8 +1,8 @@
-﻿using Bannerlord.VortexExtension.Models;
+﻿using Bannerlord.LauncherManager.Models;
 
 using System;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public partial class VortexExtensionHandler
     {

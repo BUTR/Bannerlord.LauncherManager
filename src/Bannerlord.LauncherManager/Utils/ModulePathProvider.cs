@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public interface IModulePathProvider
     {

@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Bannerlord.VortexExtension.Native.Tests
+namespace Bannerlord.LauncherManager.Native.Tests
 {
     [JsonSourceGenerationOptions(
         GenerationMode = JsonSourceGenerationMode.Default,

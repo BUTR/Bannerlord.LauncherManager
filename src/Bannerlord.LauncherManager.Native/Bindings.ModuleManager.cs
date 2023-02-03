@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Xml;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     public static unsafe partial class Bindings
     {

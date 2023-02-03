@@ -1,4 +1,4 @@
-﻿using Bannerlord.VortexExtension.Models;
+﻿using Bannerlord.LauncherManager.Models;
 
 using BUTR.NativeAOT.Shared;
 
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     public static unsafe partial class Bindings
     {

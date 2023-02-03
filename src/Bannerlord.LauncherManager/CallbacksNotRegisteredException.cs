@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public sealed class CallbacksNotRegisteredException : Exception
     {

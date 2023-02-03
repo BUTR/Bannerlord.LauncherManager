@@ -5,9 +5,9 @@ using BUTR.NativeAOT.Shared;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using static Bannerlord.VortexExtension.Native.Tests.Utils2;
+using static Bannerlord.LauncherManager.Native.Tests.Utils2;
 
-namespace Bannerlord.VortexExtension.Native.Tests
+namespace Bannerlord.LauncherManager.Native.Tests
 {
     public partial class ModuleManagerTests : BaseTests
     {

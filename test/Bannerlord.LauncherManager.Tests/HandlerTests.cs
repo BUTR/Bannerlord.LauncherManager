@@ -1,11 +1,11 @@
-﻿using Bannerlord.VortexExtension.Models;
+﻿using Bannerlord.LauncherManager.Models;
 
 using NUnit.Framework;
 
 using System.IO;
 using System.Linq;
 
-namespace Bannerlord.VortexExtension.Tests
+namespace Bannerlord.LauncherManager.Tests
 {
     public class HandlerTests
     {

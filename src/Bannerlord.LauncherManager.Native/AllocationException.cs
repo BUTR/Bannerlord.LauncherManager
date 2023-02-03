@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     public class AllocationException : Exception
     {

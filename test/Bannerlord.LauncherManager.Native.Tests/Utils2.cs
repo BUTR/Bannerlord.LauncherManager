@@ -9,14 +9,14 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Unicode;
 
-namespace Bannerlord.VortexExtension.Native.Tests
+namespace Bannerlord.LauncherManager.Native.Tests
 {
     internal static partial class Utils2
     {
 #if DEBUG
-        public const string DllPath = "../../../../../src/Bannerlord.VortexExtension.Native/bin/Debug/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll";
+        public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
 #else
-        public const string DllPath = "../../../../../src/Bannerlord.VortexExtension.Native/bin/Release/net7.0/win-x64/native/Bannerlord.VortexExtension.Native.dll";
+        public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Release/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
 #endif
         
 

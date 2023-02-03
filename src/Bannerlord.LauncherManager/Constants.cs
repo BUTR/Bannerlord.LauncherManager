@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public static class Constants
     {

@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     internal sealed unsafe class VortexExtensionHandlerNative : VortexExtensionHandler, IDisposable
     {

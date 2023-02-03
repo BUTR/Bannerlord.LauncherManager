@@ -2,7 +2,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace Bannerlord.VortexExtension.Native.Tests;
+namespace Bannerlord.LauncherManager.Native.Tests;
 
 internal class EnableDisableManager
 {

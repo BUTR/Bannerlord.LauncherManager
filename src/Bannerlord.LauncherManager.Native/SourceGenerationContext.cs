@@ -1,10 +1,10 @@
 ﻿using Bannerlord.ModuleManager;
-using Bannerlord.VortexExtension.Models;
+using Bannerlord.LauncherManager.Models;
 
 using System;
 using System.Text.Json.Serialization;
 
-namespace Bannerlord.VortexExtension.Native
+namespace Bannerlord.LauncherManager.Native
 {
     [JsonSourceGenerationOptions(
         GenerationMode = JsonSourceGenerationMode.Default,

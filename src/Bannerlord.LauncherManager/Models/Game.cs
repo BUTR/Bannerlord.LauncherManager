@@ -1,7 +1,7 @@
 ﻿/*
 using System.Collections.Generic;
 
-namespace Bannerlord.VortexExtension.Models
+namespace Bannerlord.LauncherManager.Models
 {
     public record Game : Tool
     {

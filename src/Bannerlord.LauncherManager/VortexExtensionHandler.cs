@@ -1,10 +1,10 @@
 ﻿using Bannerlord.ModuleManager;
-using Bannerlord.VortexExtension.Models;
+using Bannerlord.LauncherManager.Models;
 
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bannerlord.VortexExtension
+namespace Bannerlord.LauncherManager
 {
     public partial class VortexExtensionHandler
     {
