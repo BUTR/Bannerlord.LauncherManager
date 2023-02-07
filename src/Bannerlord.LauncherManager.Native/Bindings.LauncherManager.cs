@@ -18,7 +18,7 @@ namespace Bannerlord.LauncherManager.Native
             try
             {
                 Logger.LogOutput();
-                return return_value_ptr.AsValue(new VortexExtensionHandlerNative(p_owner).HandlePtr, false);
+                return return_value_ptr.AsValue(new LauncherManagerHandlerNative(p_owner).HandlePtr, false);
             }
             catch (Exception e)
             {
@@ -33,7 +33,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput();
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 handler.Dispose();
@@ -55,7 +55,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput();
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_string.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.GetGameVersion();
@@ -77,7 +77,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput(p_files, p_game_id);
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var files = Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
@@ -101,7 +101,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput(p_files, p_destination_path);
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var files = Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
@@ -126,7 +126,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput();
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_bool.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.IsSorting;
@@ -147,7 +147,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput();
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 handler.Sort();
@@ -169,7 +169,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput();
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.GetLoadOrder();
@@ -190,7 +190,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput(p_load_order);
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var loadOrder = Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
@@ -213,7 +213,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput();
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_json.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var result = handler.GetModules().ToArray();
@@ -235,7 +235,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogInput(p_load_order);
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 var loadOrder = Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
@@ -271,7 +271,7 @@ namespace Bannerlord.LauncherManager.Native
         */
 
 
-        private static Profile GetActiveProfile(VortexExtensionHandlerNative handler)
+        private static Profile GetActiveProfile(LauncherManagerHandlerNative handler)
         {
             Logger.LogInput();
 
@@ -282,7 +282,7 @@ namespace Bannerlord.LauncherManager.Native
             return returnResult;
         }
 
-        private static Profile GetProfileById(VortexExtensionHandlerNative handler, ReadOnlySpan<char> profileId)
+        private static Profile GetProfileById(LauncherManagerHandlerNative handler, ReadOnlySpan<char> profileId)
         {
             Logger.LogInput();
 
@@ -298,7 +298,7 @@ namespace Bannerlord.LauncherManager.Native
             }
         }
 
-        private static ReadOnlySpan<char> GetActiveGameId(VortexExtensionHandlerNative handler)
+        private static ReadOnlySpan<char> GetActiveGameId(LauncherManagerHandlerNative handler)
         {
             Logger.LogInput();
 
@@ -310,7 +310,7 @@ namespace Bannerlord.LauncherManager.Native
             return returnResult;
         }
 
-        private static void SetGameParameters(VortexExtensionHandlerNative handler, ReadOnlySpan<char> gameId, ReadOnlySpan<char> executable, string[] gameParameters)
+        private static void SetGameParameters(LauncherManagerHandlerNative handler, ReadOnlySpan<char> gameId, ReadOnlySpan<char> executable, string[] gameParameters)
         {
             Logger.LogInput();
 
@@ -327,7 +327,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogOutput();
         }
 
-        private static LoadOrder GetLoadOrder(VortexExtensionHandlerNative handler)
+        private static LoadOrder GetLoadOrder(LauncherManagerHandlerNative handler)
         {
             Logger.LogInput();
 
@@ -338,7 +338,7 @@ namespace Bannerlord.LauncherManager.Native
             return returnResult;
         }
 
-        private static void SetLoadOrder(VortexExtensionHandlerNative handler, LoadOrder loadOrder)
+        private static void SetLoadOrder(LauncherManagerHandlerNative handler, LoadOrder loadOrder)
         {
             Logger.LogInput();
 
@@ -353,7 +353,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogOutput();
         }
 
-        private static ReadOnlySpan<char> TranslateString(VortexExtensionHandlerNative handler, ReadOnlySpan<char> text, ReadOnlySpan<char> ns)
+        private static ReadOnlySpan<char> TranslateString(LauncherManagerHandlerNative handler, ReadOnlySpan<char> text, ReadOnlySpan<char> ns)
         {
             Logger.LogInput();
 
@@ -371,7 +371,7 @@ namespace Bannerlord.LauncherManager.Native
             }
         }
 
-        private static void SendNotification(VortexExtensionHandlerNative handler, ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs)
+        private static void SendNotification(LauncherManagerHandlerNative handler, ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs)
         {
             Logger.LogInput();
 
@@ -388,7 +388,7 @@ namespace Bannerlord.LauncherManager.Native
             Logger.LogOutput();
         }
 
-        private static ReadOnlySpan<char> GetInstallPath(VortexExtensionHandlerNative handler)
+        private static ReadOnlySpan<char> GetInstallPath(LauncherManagerHandlerNative handler)
         {
             Logger.LogInput();
 
@@ -400,7 +400,7 @@ namespace Bannerlord.LauncherManager.Native
             return returnResult;
         }
 
-        private static string? ReadFileContent(VortexExtensionHandlerNative handler, ReadOnlySpan<char> filePath)
+        private static string? ReadFileContent(LauncherManagerHandlerNative handler, ReadOnlySpan<char> filePath)
         {
             Logger.LogInput();
 
@@ -418,7 +418,7 @@ namespace Bannerlord.LauncherManager.Native
             }
         }
 
-        private static string[]? ReadDirectoryFileList(VortexExtensionHandlerNative handler, ReadOnlySpan<char> directoryPath)
+        private static string[]? ReadDirectoryFileList(LauncherManagerHandlerNative handler, ReadOnlySpan<char> directoryPath)
         {
             Logger.LogInput();
 
@@ -436,7 +436,7 @@ namespace Bannerlord.LauncherManager.Native
             }
         }
 
-        private static string[]? ReadDirectoryList(VortexExtensionHandlerNative handler, ReadOnlySpan<char> directoryPath)
+        private static string[]? ReadDirectoryList(LauncherManagerHandlerNative handler, ReadOnlySpan<char> directoryPath)
         {
             Logger.LogInput();
 
@@ -485,7 +485,7 @@ namespace Bannerlord.LauncherManager.Native
 
             try
             {
-                if (p_handle is null || VortexExtensionHandlerNative.FromPointer(p_handle) is not { } handler)
+                if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                     return return_value_void.AsError(Utils.Copy("Handler is null or wrong!", false), false);
 
                 handler.D_GetActiveProfile = Marshal.GetDelegateForFunctionPointer<N_GetActiveProfileDelegate>(new IntPtr(p_get_active_profile));

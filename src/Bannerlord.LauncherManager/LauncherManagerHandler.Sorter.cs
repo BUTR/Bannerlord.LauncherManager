@@ -2,7 +2,7 @@
 
 namespace Bannerlord.LauncherManager
 {
-    public partial class VortexExtensionHandler
+    public partial class LauncherManagerHandler
     {
         private const int SORTING = 1;
         private const int NOTSORTING = 0;

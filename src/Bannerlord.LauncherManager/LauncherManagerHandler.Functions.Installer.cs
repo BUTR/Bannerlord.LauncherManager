@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace Bannerlord.LauncherManager
 {
-    public partial class VortexExtensionHandler
+    public partial class LauncherManagerHandler
     {
         /// <summary>
         /// Checks the mods content and verifies if it is a valid bannerlord mod

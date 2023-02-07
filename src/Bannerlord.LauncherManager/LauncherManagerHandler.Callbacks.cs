@@ -4,7 +4,7 @@ using System;
 
 namespace Bannerlord.LauncherManager
 {
-    public partial class VortexExtensionHandler
+    public partial class LauncherManagerHandler
     {
         private bool _callbacksRegistered;
         private GetActiveProfileDelegate D_GetActiveProfile = () => throw new CallbacksNotRegisteredException();

@@ -7,11 +7,11 @@ using System.Xml;
 
 namespace Bannerlord.LauncherManager
 {
-    public partial class VortexExtensionHandler
+    public partial class LauncherManagerHandler
     {
         private readonly IModulePathProvider[] _providers;
 
-        public VortexExtensionHandler()
+        public LauncherManagerHandler()
         {
             _providers = new IModulePathProvider[]
             {

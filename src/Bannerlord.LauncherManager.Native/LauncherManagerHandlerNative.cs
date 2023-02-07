@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Bannerlord.LauncherManager.Native
 {
-    internal sealed unsafe class VortexExtensionHandlerNative : VortexExtensionHandler, IDisposable
+    internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandler, IDisposable
     {
-        public static VortexExtensionHandlerNative? FromPointer(void* ptr) => GCHandle.FromIntPtr(new IntPtr(ptr)).Target as VortexExtensionHandlerNative;
+        public static LauncherManagerHandlerNative? FromPointer(void* ptr) => GCHandle.FromIntPtr(new IntPtr(ptr)).Target as LauncherManagerHandlerNative;
 
         public N_GetActiveProfileDelegate D_GetActiveProfile = (_) => throw new CallbacksNotRegisteredException();
         public N_GetProfileByIdDelegate D_GetProfileById = (_, _) => throw new CallbacksNotRegisteredException();
@@ -25,7 +25,7 @@ namespace Bannerlord.LauncherManager.Native
         public param_ptr* OwnerPtr { get; }
         public VoidPtr* HandlePtr { get; }
 
-        public VortexExtensionHandlerNative(param_ptr* pOwner)
+        public LauncherManagerHandlerNative(param_ptr* pOwner)
         {
             OwnerPtr = pOwner;
             HandlePtr = (VoidPtr*) GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Normal)).ToPointer();
@@ -43,7 +43,7 @@ namespace Bannerlord.LauncherManager.Native
             GC.SuppressFinalize(this);
         }
 
-        ~VortexExtensionHandlerNative()
+        ~LauncherManagerHandlerNative()
         {
             ReleaseUnmanagedResources();
         }
