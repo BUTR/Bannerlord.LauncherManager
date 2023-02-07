@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>full</DebugType>
+
+    <ILRepackTargetConfigurations>$(Configurations);</ILRepackTargetConfigurations>
+    <ILRepackMergeDebugSymbols>true</ILRepackMergeDebugSymbols>
+    <ILRepackPerformInternalize>false</ILRepackPerformInternalize>
+    <AssemblyName>Bannerlord.BUTRLoader</AssemblyName>
+
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bannerlord.BLSE" Version="0.0.0.2" />
+    <PackageReference Include="ILRepack.FullAuto" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="Lib.Harmony" Version="2.2.2" />
+    <PackageReference Include="Harmony.Extensions" Version="3.2.0.73" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Bannerlord.BUTRLoader\src\Bannerlord.BUTRLoader.Core\Bannerlord.BUTRLoader.Core.csproj" />
+    <ProjectReference Include="..\Bannerlord.BUTRLoader.LauncherEx\Bannerlord.BUTRLoader.LauncherEx.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="CopyFilesToOutputDirectory" Condition="Exists($(GameFolder))">
+    <ItemGroup>
+      <Files Include="$(MSBuildProjectDirectory)\$(OutputPath)\$(AssemblyName).dll" />
+      <Files Include="$(MSBuildProjectDirectory)\$(OutputPath)\$(AssemblyName).pdb" />
+      <Files2 Include="_GameRoot\**\*" />
+      <Files3 Include="@(Files2)">
+        <SubDir>%(Files2.RecursiveDir)</SubDir>
+      </Files3>
+    </ItemGroup>
+    <Copy SourceFiles="@(Files)" DestinationFolder="$(GameFolder)\bin\Win64_Shipping_Client" />
+    <Copy SourceFiles="@(Files3)" DestinationFolder="$(GameFolder)\%(SubDir)" />
+  </Target>
+  
+</Project>
