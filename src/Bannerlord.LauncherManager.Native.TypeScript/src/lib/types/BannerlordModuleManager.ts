@@ -12,6 +12,9 @@ export interface ModuleInfoExtended {
     url: string;
     dependentModuleMetadatas: Array<DependentModuleMetadata>;
 }
+export interface ModuleInfoExtendedWithPath extends ModuleInfoExtended {
+    path: string;
+}
 export interface ApplicationVersion {
     applicationVersionType: ApplicationVersionType;
     major: number;
@@ -20,12 +23,12 @@ export interface ApplicationVersion {
     changeSet: number;
 }
 export enum ApplicationVersionType {
-    Alpha = 0,
-    Beta = 1,
-    EarlyAccess = 2,
-    Release = 3,
-    Development = 4,
-    Invalid = 5
+    Alpha = 'Alpha',
+    Beta = 'Beta',
+    EarlyAccess = 'EarlyAccess',
+    Release = 'Release',
+    Development = 'Development',
+    Invalid = 'Invalid'
 }
 export interface SubModuleInfoExtended {
     name: string;
@@ -103,6 +106,7 @@ export interface IBannerlordModuleManager {
     disableModule(modules: Array<ModuleInfoExtended>, targetModule: ModuleInfoExtended, manager: IEnableDisableManager): Array<ModuleIssue>;
 
     getModuleInfo(xml: string): ModuleInfoExtended | undefined;
+    getModuleInfoWithPath(xml: string, path: string): ModuleInfoExtendedWithPath | undefined;
     getSubModuleInfo(xml: string): SubModuleInfoExtended | undefined;
 
     compareVersions(x: ApplicationVersion, y: ApplicationVersion): number;

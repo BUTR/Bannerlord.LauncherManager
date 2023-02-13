@@ -1,4 +1,4 @@
-﻿using Bannerlord.BUTRLoader.Localization;
+﻿using Bannerlord.LauncherManager.Localization;
 
 using HarmonyLib;
 using HarmonyLib.BUTR.Extensions;
@@ -37,9 +37,9 @@ namespace Bannerlord.BUTRLoader.ResourceManagers
 
         private static SpriteData WithData(this SpriteData spriteData, string spriteName)
         {
-            SetSpriteNames(spriteData, new Dictionary<string, Sprite>
+            SetSpriteNames!(spriteData, new Dictionary<string, Sprite>
             {
-                { spriteName, SpriteDataManager.CreateGeneric(spriteName) }
+                { spriteName, SpriteDataManager.CreateGeneric(spriteName)! }
             });
             return spriteData;
         }

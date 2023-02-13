@@ -1,15 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <DebugType>full</DebugType>
+    
     <DefineConstants>$(DefineConstants);BANNERLORDBUTRMODULEMANAGER_PUBLIC</DefineConstants>
   </PropertyGroup>
 
 
   <ItemGroup>
     <PackageReference Include="Bannerlord.ModuleManager.Source" Version="5.0.198" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-    <PackageReference Include="FetchBannerlordVersion" Version="1.0.6.24" />
+    <PackageReference Include="FetchBannerlordVersion" Version="1.0.6.35" />
+    <PackageReference Include="PolySharp" Version="1.12.1" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
 </Project>

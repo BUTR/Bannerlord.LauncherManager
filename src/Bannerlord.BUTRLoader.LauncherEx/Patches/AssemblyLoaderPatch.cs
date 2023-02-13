@@ -1,5 +1,4 @@
-﻿using Bannerlord.BLSE.Utils;
-using Bannerlord.BUTR.Shared.Helpers;
+﻿using Bannerlord.BUTR.Shared.Helpers;
 using Bannerlord.BUTRLoader.Helpers;
 
 using HarmonyLib;
@@ -63,7 +62,7 @@ namespace Bannerlord.BUTRLoader.Patches
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { /* ignore */ }
 
             return true;
         }
@@ -84,12 +83,12 @@ namespace Bannerlord.BUTRLoader.Patches
                         }
                     }
 
-                    var name = args.Name.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    var name = args.Name.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     __result = Assembly.LoadFrom(name[0]);
                     return false;
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { /* ignore */ }
 
             return true;
         }

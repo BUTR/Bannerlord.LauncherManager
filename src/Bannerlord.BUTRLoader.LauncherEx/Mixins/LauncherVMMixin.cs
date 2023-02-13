@@ -1,13 +1,16 @@
-﻿using Bannerlord.BLSE.Features.ContinueSaveFile;
-using Bannerlord.BUTRLoader.Extensions;
+﻿using Bannerlord.BUTRLoader.Extensions;
 using Bannerlord.BUTRLoader.Helpers;
-using Bannerlord.BUTRLoader.Localization;
 using Bannerlord.BUTRLoader.ViewModels;
+using Bannerlord.LauncherManager;
+using Bannerlord.LauncherManager.Localization;
+using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Utils;
 
 using HarmonyLib;
 using HarmonyLib.BUTR.Extensions;
 
 using System.Text;
+using System.Threading;
 
 using TaleWorlds.GauntletUI;
 using TaleWorlds.MountAndBlade.Launcher.Library;
@@ -178,6 +181,10 @@ namespace Bannerlord.BUTRLoader.Mixins
         private string _savesText = new BUTRTextObject("{=d5OjKcGE}Saves").ToString();
 
         [BUTRDataSourceProperty]
+        public string BLSEVersionText { get => _blseVersionText; set => SetField(ref _blseVersionText, value); }
+        private string _blseVersionText = $"BLSE v{typeof(FeatureIds).Assembly.GetName().Version.ToString(3)}";
+
+        [BUTRDataSourceProperty]
         public string BUTRLoaderVersionText { get => _butrLoaderVersionText; set => SetField(ref _butrLoaderVersionText, value); }
         private string _butrLoaderVersionText = $"BUTRLoader v{typeof(LauncherVMMixin).Assembly.GetName().Version.ToString(3)}";
 
@@ -198,7 +205,7 @@ namespace Bannerlord.BUTRLoader.Mixins
         private BUTRLauncherSavesVM? _savesData;
 
         [BUTRDataSourceProperty]
-        public BUTRLauncherMessageBoxVM MessageBox { get => _messageBox; set => SetField(ref _messageBox, value); }
+        public BUTRLauncherMessageBoxVM? MessageBox { get => _messageBox; set => SetField(ref _messageBox, value); }
         private BUTRLauncherMessageBoxVM? _messageBox = new();
 
         [BUTRDataSourceProperty]
@@ -234,6 +241,10 @@ namespace Bannerlord.BUTRLoader.Mixins
         private float _butrLoaderVersionMarginBottom = 90;
 
         [BUTRDataSourceProperty]
+        public float BLSEVersionMarginBottom { get => _blseLoaderVersionMarginBottom; set => SetField(ref _blseLoaderVersionMarginBottom, value); }
+        private float _blseLoaderVersionMarginBottom = 70;
+
+        [BUTRDataSourceProperty]
         public float DividerMarginBottom { get => _dividerMarginBottom; set => SetField(ref _dividerMarginBottom, value); }
         private float _dividerMarginBottom = 113;
 
@@ -259,11 +270,18 @@ namespace Bannerlord.BUTRLoader.Mixins
         public string LaunchText2 => new BUTRTextObject("{=eUt6GKkQ}LAUNCH").ToString();
 
         private readonly UserDataManager? _userDataManager;
+        private readonly LauncherModsVMMixin? _launcherModsVMMixin;
+        private readonly BUTRLauncherManagerHandler _launcherManagerHandler = BUTRLauncherManagerHandler.Default;
 
         private ModuleListHandler? _currentModuleListHandler;
 
         public LauncherVMMixin(LauncherVM launcherVM) : base(launcherVM)
         {
+            _launcherManagerHandler.RegisterStateProvider(() => new LauncherState()
+            {
+                IsSingleplayer = IsSingleplayer2
+            });
+
             _userDataManager = UserDataManagerFieldRef?.Invoke(launcherVM);
 
             _optionsEngineData = new BUTRLauncherOptionsVM(OptionsType.Engine, SaveUserData, RefreshOptions);
@@ -272,6 +290,8 @@ namespace Bannerlord.BUTRLoader.Mixins
 
             if (launcherVM.GetPropertyValue(nameof(LauncherVM.ModsData)) is LauncherModsVM lmvm && lmvm.GetMixin<LauncherModsVMMixin, LauncherModsVM>() is { } mixin)
             {
+                _launcherModsVMMixin = mixin;
+
                 _savesData = new BUTRLauncherSavesVM(mixin.GetModuleById, mixin.GetModuleByName);
                 _savesData.PropertyChanged += (_, args) =>
                 {
@@ -281,7 +301,6 @@ namespace Bannerlord.BUTRLoader.Mixins
                         OnPropertyChanged(nameof(ShowContinueSingleplayerButton));
                     }
                 };
-                mixin.SetGetSelectedSave(() => SavesData?.Selected);
             }
 
             ShowRandomImage = !LauncherSettings.HideRandomImage;
@@ -328,6 +347,7 @@ namespace Bannerlord.BUTRLoader.Mixins
 
             ContentTabControlMarginBottom = IsOptions ? 50 : 114;
             BUTRLoaderVersionMarginBottom = IsOptions ? 30 : 90;
+            BLSEVersionMarginBottom = IsOptions ? 10 : 70;
             DividerMarginBottom = IsOptions ? 49 : 113;
         }
 
@@ -423,32 +443,68 @@ namespace Bannerlord.BUTRLoader.Mixins
         [BUTRDataSourceMethod]
         public void ExecuteImport()
         {
-            if (ViewModel is null) return;
+            if (ViewModel is null || _launcherModsVMMixin is null || UpdateAndSaveUserModsDataMethod is null) return;
 
-            _currentModuleListHandler = new ModuleListHandler(ViewModel);
+            _currentModuleListHandler = new ModuleListHandler(_launcherManagerHandler);
+
             if (IsSingleplayer2 && IsModsDataSelected)
             {
-                _currentModuleListHandler.Import();
+                var thread = new Thread(() =>
+                {
+                    _currentModuleListHandler.Import(result =>
+                    {
+                        if (!result) return;
+                        UpdateAndSaveUserModsDataMethod(ViewModel, false);
+                        HintManager.ShowHint(new BUTRTextObject("{=eohqbvHU}Successfully imported list!"));
+                    });
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
             }
             if (IsSingleplayer2 && IsSavesDataSelected && SavesData?.Selected?.Name is { } saveName)
             {
-                _currentModuleListHandler.ImportSaveFile(saveName);
+                var thread = new Thread(() =>
+                {
+                    _currentModuleListHandler.ImportSaveFile(saveName, result =>
+                    {
+                        if (!result) return;
+                        UpdateAndSaveUserModsDataMethod(ViewModel, false);
+                        HintManager.ShowHint(new BUTRTextObject("{=eohqbvHU}Successfully imported list!"));
+                    });
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
             }
         }
 
         [BUTRDataSourceMethod]
         public void ExecuteExport()
         {
-            if (ViewModel is null) return;
+            if (ViewModel is null || _launcherModsVMMixin is null) return;
 
-            _currentModuleListHandler = new ModuleListHandler(ViewModel);
+            _currentModuleListHandler = new ModuleListHandler(_launcherManagerHandler);
+
             if (IsSingleplayer2 && IsModsDataSelected)
             {
-                _currentModuleListHandler.Export();
+                var thread = new Thread(() =>
+                {
+                    _currentModuleListHandler.Export();
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
             }
             if (IsSingleplayer2 && IsSavesDataSelected && SavesData?.Selected?.Name is { } saveName)
             {
-                _currentModuleListHandler.ExportSaveFile(saveName);
+                var thread = new Thread(() =>
+                {
+                    _currentModuleListHandler.ExportSaveFile(saveName);
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
             }
         }
 
@@ -459,7 +515,7 @@ namespace Bannerlord.BUTRLoader.Mixins
 
             if (IsSavesDataSelected && SavesData?.Selected is { } saveVM)
             {
-                ContinueSaveFileFeature.SetCurrentSaveFile(saveVM.Name);
+                _launcherManagerHandler.SetGameParameterSaveFile(saveVM.Name);
                 if (saveVM.HasWarning || saveVM.HasError)
                 {
                     var description = new StringBuilder();
@@ -483,7 +539,7 @@ namespace Bannerlord.BUTRLoader.Mixins
                     description.Append("\n");
                     description.Append(new BUTRTextObject("{=qvzptzrE}Do you wish to continue loading the save?"));
 
-                    MessageBox.Show(new BUTRTextObject("{=dDprK7Mz}WARNING").ToString(), description.ToString(), () => ExecuteStartGame(ViewModel, 0), null);
+                    MessageBox?.Show(new BUTRTextObject("{=dDprK7Mz}WARNING").ToString(), description.ToString(), () => ExecuteStartGame(ViewModel, 0), null);
                     return;
                 }
 

@@ -1,7 +1,7 @@
-﻿using Bannerlord.BUTR.Shared.Helpers;
-using Bannerlord.BUTRLoader.Helpers;
-using Bannerlord.BUTRLoader.Localization;
-using Bannerlord.ModuleManager;
+﻿using Bannerlord.BUTRLoader.Helpers;
+using Bannerlord.LauncherManager.Localization;
+using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Utils;
 
 using System;
 using System.Collections.Generic;
@@ -13,11 +13,14 @@ using TaleWorlds.MountAndBlade.Launcher.Library;
 
 namespace Bannerlord.BUTRLoader.ViewModels
 {
-    internal sealed class BUTRLauncherModuleVM : BUTRViewModel
+    internal sealed class BUTRLauncherModuleVM : BUTRViewModel, IModuleViewModel
     {
-        public readonly ModuleInfoExtendedWithMetadata ModuleInfoExtended;
         private readonly Action<BUTRLauncherModuleVM> _select;
         private readonly Func<BUTRLauncherModuleVM, IEnumerable<string>> _validate;
+
+        public ModuleInfoExtendedWithPath ModuleInfoExtended { get; }
+
+        public int Index { get; set; }
 
         [BUTRDataSourceProperty]
         public string Name => ModuleInfoExtended.Name;
@@ -29,23 +32,23 @@ namespace Bannerlord.BUTRLoader.ViewModels
         public bool IsOfficial => ModuleInfoExtended.IsOfficial;
 
         [BUTRDataSourceProperty]
-        public bool IsDangerous { get => _isDangerous; set => SetField(ref _isDangerous, value, nameof(IsDangerous)); }
+        public bool IsDangerous { get => _isDangerous; set => SetField(ref _isDangerous, value); }
         private bool _isDangerous;
 
         [BUTRDataSourceProperty]
-        public LauncherHintVM? DangerousHint { get => _dangerousHint; set => SetField(ref _dangerousHint, value, nameof(DangerousHint)); }
+        public LauncherHintVM? DangerousHint { get => _dangerousHint; set => SetField(ref _dangerousHint, value); }
         private LauncherHintVM? _dangerousHint;
 
         [BUTRDataSourceProperty]
-        public LauncherHintVM? DependencyHint { get => _dependencyHint; set => SetField(ref _dependencyHint, value, nameof(DependencyHint)); }
+        public LauncherHintVM? DependencyHint { get => _dependencyHint; set => SetField(ref _dependencyHint, value); }
         private LauncherHintVM? _dependencyHint;
 
         [BUTRDataSourceProperty]
-        public bool AnyDependencyAvailable { get => _anyDependencyAvailable; set => SetField(ref _anyDependencyAvailable, value, nameof(AnyDependencyAvailable)); }
+        public bool AnyDependencyAvailable { get => _anyDependencyAvailable; set => SetField(ref _anyDependencyAvailable, value); }
         private bool _anyDependencyAvailable;
 
         [BUTRDataSourceProperty]
-        public bool IsSelected { get => _isSelected; set => SetField(ref _isSelected, value, nameof(IsSelected)); }
+        public bool IsSelected { get => _isSelected; set => SetField(ref _isSelected, value); }
         private bool _isSelected;
 
         [BUTRDataSourceProperty]
@@ -65,7 +68,7 @@ namespace Bannerlord.BUTRLoader.ViewModels
         private bool _isDisabled;
 
         [BUTRDataSourceProperty]
-        public bool IsExpanded { get => _isExpanded; set => SetField(ref _isExpanded, value, nameof(IsExpanded)); }
+        public bool IsExpanded { get => _isExpanded; set => SetField(ref _isExpanded, value); }
         private bool _isExpanded;
 
         [BUTRDataSourceProperty]
@@ -93,10 +96,10 @@ namespace Bannerlord.BUTRLoader.ViewModels
         public bool IsValid => string.IsNullOrWhiteSpace(IssuesText);
 
         [BUTRDataSourceProperty]
-        public bool IsVisible { get => _isVisible; set => SetField(ref _isVisible, value, nameof(IsVisible)); }
+        public bool IsVisible { get => _isVisible; set => SetField(ref _isVisible, value); }
         private bool _isVisible = true;
 
-        public BUTRLauncherModuleVM(ModuleInfoExtendedWithMetadata moduleInfoExtended, Action<BUTRLauncherModuleVM> select, Func<BUTRLauncherModuleVM, IEnumerable<string>> validate)
+        public BUTRLauncherModuleVM(ModuleInfoExtendedWithPath moduleInfoExtended, Action<BUTRLauncherModuleVM> select, Func<BUTRLauncherModuleVM, IEnumerable<string>> validate)
         {
             ModuleInfoExtended = moduleInfoExtended;
             _select = select;

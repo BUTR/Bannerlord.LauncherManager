@@ -110,6 +110,7 @@ namespace Bannerlord.BUTRLoader.Helpers
 
         protected void OnPropertyChangedWithValue<T>(T value, [CallerMemberName] string? propertyName = null) where T : class
         {
+            // TODO: 
             ViewModel?.OnPropertyChangedWithValue(value, propertyName);
             //ViewModel?.OnPropertyChangedWithValue<T>(value, propertyName);
         }

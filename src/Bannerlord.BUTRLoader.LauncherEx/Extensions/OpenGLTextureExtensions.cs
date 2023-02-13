@@ -34,8 +34,7 @@ namespace Bannerlord.BUTRLoader.Extensions
         }
 
         private delegate void MakeActiveDelegate(OpenGLTexture texture);
-        private static readonly MakeActiveDelegate? _makeActiveDelegate =
-            AccessTools2.GetDelegate<MakeActiveDelegate>(typeof(OpenGLTexture), "MakeActive");
+        private static readonly MakeActiveDelegate? _makeActiveDelegate = AccessTools2.GetDelegate<MakeActiveDelegate>(typeof(OpenGLTexture), "MakeActive");
 
         [DllImport("Opengl32.dll", EntryPoint = "glTexImage2D")]
         private static extern void TexImage2D(uint target, int level, uint pixelInternalformat, int width, int height, int border, PixelFormat format, uint type, byte[] pixels);
@@ -50,7 +49,7 @@ namespace Bannerlord.BUTRLoader.Extensions
             if (_makeActiveDelegate is null)
                 return false;
 
-            var image = new ImageReader().Read(stream, 0);
+            var image = new ImageReader().Read(stream);
             texture.Initialize(name, image.Width, image.Height);
             texture.MakeActive();
             var (error, pixelFormat, pixelInternalformat) = image.Comp switch

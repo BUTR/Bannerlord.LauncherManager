@@ -62,6 +62,7 @@ namespace Bannerlord.BUTRLoader.Patches
 
             // Minor
             PrefabExtensionManager.RegisterPatch(UILauncherPrefabExtension1.Movie, UILauncherPrefabExtension1.XPath, new UILauncherPrefabExtension1());
+            PrefabExtensionManager.RegisterPatch(UILauncherPrefabExtension2.Movie, UILauncherPrefabExtension2.XPath, new UILauncherPrefabExtension2());
             PrefabExtensionManager.RegisterPatch(UILauncherPrefabExtension15.Movie, UILauncherPrefabExtension15.XPath, new UILauncherPrefabExtension15());
             PrefabExtensionManager.RegisterPatch(UILauncherPrefabExtension16.Movie, UILauncherPrefabExtension16.XPath, new UILauncherPrefabExtension16());
             PrefabExtensionManager.RegisterPatch(UILauncherPrefabExtension17.Movie, UILauncherPrefabExtension17.XPath, new UILauncherPrefabExtension17());
@@ -137,14 +138,14 @@ namespace Bannerlord.BUTRLoader.Patches
         {
             var instructionsList = instructions.ToList();
 
-            IEnumerable<CodeInstruction> ReturnDefault(string reason)
+            IEnumerable<CodeInstruction> ReturnDefault()
             {
                 return instructionsList.AsEnumerable();
             }
 
             var widgetPrefabConstructorIndex = GetWidgetPrefabConstructorIndex(instructionsList, method);
             if (widgetPrefabConstructorIndex == -1)
-                return ReturnDefault("Pattern not found");
+                return ReturnDefault();
 
             // ProcessMovie(path, xmlDocument);
             instructionsList.InsertRange(widgetPrefabConstructorIndex + 1, new List<CodeInstruction>

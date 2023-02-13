@@ -33,6 +33,7 @@ namespace Bannerlord.BUTRLoader.TPac
 
         private T ReadData()
         {
+            if (_file is null) throw new InvalidOperationException("Can't read data from file");
             using var stream = _file.OpenBinaryReader();
             return ReadData(stream);
         }

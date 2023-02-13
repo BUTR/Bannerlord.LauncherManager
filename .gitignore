@@ -388,3 +388,4 @@ MigrationBackup/
 /docfx3/*
 /**/.idea/*
 /src/Bannerlord.VortexExtension.Native/Bannerlord.VortexExtension.Native.h
+/src/Bannerlord.LauncherManager.Native/Bannerlord.LauncherManager.Native.h

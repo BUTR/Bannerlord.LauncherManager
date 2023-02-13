@@ -1,5 +1,5 @@
 ﻿using Bannerlord.BUTRLoader.Helpers;
-using Bannerlord.BUTRLoader.Localization;
+using Bannerlord.LauncherManager.Localization;
 
 using TaleWorlds.MountAndBlade.Launcher.Library;
 

@@ -174,7 +174,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             });
 
 #if DEBUG
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
 #endif
         }
 
@@ -183,12 +183,12 @@ namespace Bannerlord.LauncherManager.Native.Tests
         {
             Assert.DoesNotThrow(() =>
             {
-                using var xml = Utils.Copy(HarmonySubModuleXml, true);
+                using var xml = BUTR.NativeAOT.Shared.Utils.Copy(HarmonySubModuleXml, true);
                 var subModule = GetResult<ModuleInfoExtended>(bmm_get_sub_module_info(xml));
             });
 
 #if DEBUG
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
 #endif
         }
 
@@ -197,11 +197,11 @@ namespace Bannerlord.LauncherManager.Native.Tests
         {
             Assert.DoesNotThrow(() =>
             {
-                using var invalidXml = Utils.Copy(InvalidXml, true);
+                using var invalidXml = BUTR.NativeAOT.Shared.Utils.Copy(InvalidXml, true);
                 var invalid = GetResult<ModuleInfoExtended>(bmm_get_module_info(invalidXml));
                 using var invalidJson = ToJson(invalid);
                 Assert.That(invalid, Is.Not.Null);
-                using var harmonyXml = Utils.Copy(HarmonyXml, true);
+                using var harmonyXml = BUTR.NativeAOT.Shared.Utils.Copy(HarmonyXml, true);
                 var harmony = GetResult<ModuleInfoExtended>(bmm_get_module_info(harmonyXml));
                 using var harmonyJson = ToJson(harmony);
                 Assert.Multiple(() =>
@@ -209,7 +209,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
                     Assert.That(harmony, Is.Not.Null);
                     Assert.That(harmony!.Id, Is.EqualTo("Bannerlord.Harmony"));
                 });
-                using var uiExtenderExXml = Utils.Copy(UIExtenderExXml, true);
+                using var uiExtenderExXml = BUTR.NativeAOT.Shared.Utils.Copy(UIExtenderExXml, true);
                 var uiExtenderEx = GetResult<ModuleInfoExtended>(bmm_get_module_info(uiExtenderExXml));
                 using var uiExtenderExJson = ToJson(uiExtenderEx);
                 Assert.Multiple(() =>
@@ -289,7 +289,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             });
 
 #if DEBUG
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
 #endif
         }
     }

@@ -1,5 +1,5 @@
-#ifndef VE_UTILS_GUARD_HPP_
-#define VE_UTILS_GUARD_HPP_
+#ifndef VE_LIB_UTILS_GUARD_HPP_
+#define VE_LIB_UTILS_GUARD_HPP_
 
 #include <napi.h>
 #include <cstdint>
@@ -10,6 +10,39 @@ using namespace Bannerlord::LauncherManager::Native;
 
 namespace Utils
 {
+    struct CallbackStorageSimple
+    {
+        void *_p_callback_ptr;
+        void(__cdecl *_p_callback)(param_ptr *, param_ptr *);
+    };
+
+    template <typename T>
+    struct CallbackStorage
+    {
+        Napi::Env _env;
+        Napi::Promise::Deferred _deferred;
+
+        static void Callback(void *ptr, T value)
+        {
+            const auto callbackStorage = static_cast<CallbackStorage<T> *>(ptr);
+            callbackStorage->SetResult(value);
+            delete callbackStorage;
+        }
+
+        void SetResult(T arg)
+        {
+            if constexpr (std::is_same_v<T, param_bool>)
+            {
+                const auto value = Boolean::New(_env, static_cast<param_bool>(arg) == 1);
+                _deferred.Resolve(value);
+            }
+            if constexpr (std::is_same_v<T, param_string *>)
+            {
+                const auto value = String::New(_env, static_cast<param_string *>(arg));
+                _deferred.Resolve(value);
+            }
+        }
+    };
 
     template <typename T>
     struct deleter
@@ -24,6 +57,17 @@ namespace Utils
     using del_int32 = std::unique_ptr<return_value_int32, deleter<return_value_int32>>;
     using del_uint32 = std::unique_ptr<return_value_uint32, deleter<return_value_uint32>>;
     using del_ptr = std::unique_ptr<return_value_ptr, deleter<return_value_ptr>>;
+
+    uint8_t *const Copy(const uint8_t *src, const size_t length)
+    {
+        auto dst = static_cast<uint8_t *const>(common_alloc(length));
+        if (dst == nullptr)
+        {
+            throw std::bad_alloc();
+        }
+        std::memmove(dst, src, length);
+        return dst;
+    }
 
     char16_t *const Copy(const std::u16string str)
     {
@@ -40,6 +84,11 @@ namespace Utils
         std::memmove(dst, src, srcByteLength);
         dst[srcChar16Length] = '\0';
         return dst;
+    }
+
+    std::unique_ptr<uint8_t[], deleter<uint8_t>> CopyWithFree(const uint8_t *const data, int32_t length)
+    {
+        return std::unique_ptr<uint8_t[], deleter<uint8_t>>(Copy(data, length));
     }
 
     std::unique_ptr<char16_t[], deleter<char16_t>> CopyWithFree(const std::u16string str)

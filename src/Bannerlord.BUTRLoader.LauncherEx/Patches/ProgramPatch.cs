@@ -1,5 +1,6 @@
 ﻿using Bannerlord.BUTRLoader.Helpers;
 using Bannerlord.BUTRLoader.LauncherEx;
+using Bannerlord.LauncherManager.Utils;
 
 using HarmonyLib;
 using HarmonyLib.BUTR.Extensions;
@@ -36,13 +37,13 @@ namespace Bannerlord.BUTRLoader.Patches
                     {
                         NtfsUnblocker.UnblockPath(pathPrefix, "*.dll");
                     }
-                    catch { }
+                    catch { /* ignore */ }
                 }
             }
 
             if (LauncherSettings.FixCommonIssues)
             {
-                IssuesChecker.CheckForRootHarmony();
+                IssuesChecker.CheckForRootHarmony(BUTRLauncherManagerHandler.Default);
             }
 
             Manager.Disable();

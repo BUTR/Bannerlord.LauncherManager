@@ -9,7 +9,7 @@ namespace Bannerlord.BUTRLoader.TPac
         public static readonly Guid TYPE_GUID = Guid.Parse("c974cbcb-5f1c-49f6-9a32-2b5b6c92c2e8");
 
 
-        public List<string> Flags { set; get; }
+        public List<string> Flags { set; get; } = new();
         /*
          dont_degrade 0x2
          dont_delay_loading 0x80
@@ -35,7 +35,7 @@ namespace Bannerlord.BUTRLoader.TPac
 
         private string? _rawFormat;
 
-        public List<string> SystemFlags { set; get; }
+        public List<string> SystemFlags { set; get; } = new();
         /*
          has_alpha 0x8000
          is_cubemap 0x2000
@@ -43,7 +43,7 @@ namespace Bannerlord.BUTRLoader.TPac
 
         public ExternalLoader<TexturePixelData>? TexturePixels { set; get; }
 
-        public bool HasPixelData => TexturePixels != null;
+        public bool HasPixelData => TexturePixels is not null;
 
         public Texture() : base(TYPE_GUID)
         {

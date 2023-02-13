@@ -4,8 +4,8 @@ export * from './LauncherManager';
 
 import { IBannerlordModuleManager } from './BannerlordModuleManager';
 import { IFetchBannerlordVersion } from './FetchBannerlordVersion';
-import { IVortexExtension } from './LauncherManager';
+import { INativeExtension } from './LauncherManager';
 
-export interface IExtension extends IBannerlordModuleManager, IFetchBannerlordVersion, IVortexExtension {
+export interface IExtension extends IBannerlordModuleManager, IFetchBannerlordVersion, INativeExtension {
     allocAliveCount(): number;
 }

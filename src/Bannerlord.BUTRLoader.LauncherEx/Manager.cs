@@ -1,9 +1,9 @@
 ﻿using Bannerlord.BUTRLoader.Helpers;
-using Bannerlord.BUTRLoader.Localization;
 using Bannerlord.BUTRLoader.Patches;
 using Bannerlord.BUTRLoader.ResourceManagers;
 using Bannerlord.BUTRLoader.TPac;
 using Bannerlord.BUTRLoader.Widgets;
+using Bannerlord.LauncherManager.Localization;
 
 using HarmonyLib;
 
@@ -26,6 +26,8 @@ namespace Bannerlord.BUTRLoader.LauncherEx
 
         public static event Action? OnDisable;
 
+        public static string GetActiveLanguage() => ConfigReader.GetGameOptions(path => File.Exists(path) ? File.ReadAllBytes(path) : null).TryGetValue("Language", out var lang) ? lang : "English";
+
         public static void Initialize()
         {
             AssemblyLoaderPatch.Enable(_launcherHarmony);
@@ -47,7 +49,7 @@ namespace Bannerlord.BUTRLoader.LauncherEx
             BUTRLocalizationManager.LoadLanguage(Load("Bannerlord.BUTRLoader.Resources.Localization.CNs.strings.xml"));
             BUTRLocalizationManager.LoadLanguage(Load("Bannerlord.BUTRLoader.Resources.Localization.TR.strings.xml"));
             BUTRLocalizationManager.LoadLanguage(Load("Bannerlord.BUTRLoader.Resources.Localization.BR.strings.xml"));
-            BUTRLocalizationManager.ActiveLanguage = BUTRLocalizationManager.GetActiveLanguage();
+            BUTRLocalizationManager.ActiveLanguage = GetActiveLanguage();
 
             GraphicsContextManager.Enable(_launcherHarmony);
             GraphicsContextManager.CreateAndRegister("launcher_arrow_down", LoadStream("Bannerlord.BUTRLoader.Resources.Textures.arrow_down.png"));
@@ -125,25 +127,7 @@ namespace Bannerlord.BUTRLoader.LauncherEx
         }
         private static Stream LoadStream(string embedPath)
         {
-            return typeof(Manager).Assembly.GetManifestResourceStream(embedPath) ?? Stream.Null;
-        }
-        private static byte[] LoadRaw(string embedPath)
-        {
-            static byte[] ReadFully(Stream input)
-            {
-                var buffer = new byte[16 * 1024];
-                using var ms = new MemoryStream();
-                int read;
-                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    ms.Write(buffer, 0, read);
-                }
-                return ms.ToArray();
-            }
-
-            using var stream = typeof(Manager).Assembly.GetManifestResourceStream(embedPath);
-            if (stream is null) throw new Exception($"Could not find embed resource '{embedPath}'!");
-            return ReadFully(stream);
+            return typeof(Manager).Assembly.GetManifestResourceStream(embedPath) ?? throw new Exception($"Could not find embed resource '{embedPath}'!");
         }
 
         public static void Disable()

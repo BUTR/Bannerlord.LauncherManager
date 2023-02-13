@@ -55,7 +55,7 @@ namespace Bannerlord.BUTRLoader.Widgets
 
         //[Editor]
         public bool ManualToggle { get => _manualToggle; set => this.SetField(ref _manualToggle, value); }
-        private bool _manualToggle = false;
+        private bool _manualToggle;
 
         private const float _maxDoubleClickDeltaTimeInSeconds = 0.5f;
         private float _lastClickTime;

@@ -1,4 +1,5 @@
-﻿using Bannerlord.ModuleManager;
+﻿using Bannerlord.LauncherManager.Models;
+using Bannerlord.ModuleManager;
 
 using System.Text.Json.Serialization;
 
@@ -19,5 +20,10 @@ namespace Bannerlord.LauncherManager.Native.Tests
     [JsonSerializable(typeof(ModuleSorterOptions))]
     [JsonSerializable(typeof(ModuleIssue[]))]
     [JsonSerializable(typeof(DependentModuleMetadata[]))]
+    [JsonSerializable(typeof(string[]))]
+    [JsonSerializable(typeof(InstallResult))]
+    [JsonSerializable(typeof(AttributeInstallInstruction))]
+    [JsonSerializable(typeof(CopyInstallInstruction))]
+    [JsonSerializable(typeof(NoneInstallInstruction))]
     internal partial class SourceGenerationContext : JsonSerializerContext { }
 }

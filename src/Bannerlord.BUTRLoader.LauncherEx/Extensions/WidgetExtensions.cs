@@ -64,7 +64,7 @@ namespace Bannerlord.BUTRLoader.Extensions
             if (method is null || property is null)
                 return false;
 
-            if (method?.Invoke(widget, new object[] { property.GetValue(widget.EventManager) }) is not bool result)
+            if (method.Invoke(widget, new[] { property.GetValue(widget.EventManager) }) is not bool result)
                 return false;
 
             return result;
@@ -91,9 +91,11 @@ namespace Bannerlord.BUTRLoader.Extensions
                 case Vec2 val when OnPropertyChanged8 is not null: OnPropertyChanged8(widget, val, propertyName); return true;
             }
 
-            static Delegate ValueFactory(Type _) => AccessTools2.GetDelegate<OnPropertyChangedDelegate1<T>>(AccessTools.GetDeclaredMethods(typeof(PropertyOwnerObject))
-                .FirstOrDefault(x => x.IsGenericMethod && x.Name == "OnPropertyChanged")?
-                .MakeGenericMethod(typeof(T)));
+            static Delegate ValueFactory(Type _)
+            {
+                var method = AccessTools.GetDeclaredMethods(typeof(PropertyOwnerObject)).FirstOrDefault(x => x.IsGenericMethod && x.Name == "OnPropertyChanged")?.MakeGenericMethod(typeof(T))!;
+                return AccessTools2.GetDelegate<OnPropertyChangedDelegate1<T>>(method)!;
+            }
 
             if (OnPropertyChanged1.GetOrAdd(typeof(T), ValueFactory) is OnPropertyChangedDelegate1<T> del)
                 del(widget, value, propertyName);

@@ -1,144 +1,209 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
 using System;
+using System.Collections.Generic;
 
-namespace Bannerlord.LauncherManager
+namespace Bannerlord.LauncherManager;
+
+public partial class LauncherManagerHandler
 {
-    public partial class LauncherManagerHandler
+    private bool _callbacksRegistered;
+    private SetGameParametersDelegate D_SetGameParameters = (_, _) => throw new CallbacksNotRegisteredException();
+    private GetLoadOrderDelegate D_LoadLoadOrder = () => throw new CallbacksNotRegisteredException();
+    private SetLoadOrderDelegate D_SaveLoadOrder = (_) => throw new CallbacksNotRegisteredException();
+    private SendNotificationDelegate D_SendNotification = (_, _, _, _) => throw new CallbacksNotRegisteredException();
+    private SendDialogDelegate D_SendDialog = (_, _, _, _, _) => throw new CallbacksNotRegisteredException();
+    private GetInstallPathDelegate D_GetInstallPath = () => throw new CallbacksNotRegisteredException();
+    private ReadFileContentDelegate D_ReadFileContent = (_) => throw new CallbacksNotRegisteredException();
+    private WriteFileContentDelegate D_WriteFileContent = (_, _) => throw new CallbacksNotRegisteredException();
+    private ReadDirectoryFileListDelegate D_ReadDirectoryFileList = (_) => throw new CallbacksNotRegisteredException();
+    private ReadDirectoryListDelegate D_ReadDirectoryList = (_) => throw new CallbacksNotRegisteredException();
+    private GetModuleViewModelsDelegate D_GetModuleViewModels = () => throw new CallbacksNotRegisteredException();
+    private SetModuleViewModelsDelegate D_SetModuleViewModels = (_) => throw new CallbacksNotRegisteredException();
+    private GetOptionsDelegate D_GetOptions = () => throw new CallbacksNotRegisteredException();
+    private GetStateDelegate D_GetState = () => throw new CallbacksNotRegisteredException();
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public void RegisterCallbacks(SetGameParametersDelegate setGameParameters
+        , GetLoadOrderDelegate loadLoadOrder
+        , SetLoadOrderDelegate saveLoadOrder
+        , SendNotificationDelegate sendNotification
+        , SendDialogDelegate sendDialog
+        , GetInstallPathDelegate getInstallPath
+        , ReadFileContentDelegate readFileContent
+        , WriteFileContentDelegate writeFileContent
+        , ReadDirectoryFileListDelegate readDirectoryFileList
+        , ReadDirectoryListDelegate readDirectoryList
+        , GetModuleViewModelsDelegate getModuleViewModels
+        , SetModuleViewModelsDelegate setModuleViewModels
+        , GetOptionsDelegate getOptions
+        , GetStateDelegate getState
+    )
     {
-        private bool _callbacksRegistered;
-        private GetActiveProfileDelegate D_GetActiveProfile = () => throw new CallbacksNotRegisteredException();
-        private GetProfileByIdDelegate D_GetProfileById = (_) => throw new CallbacksNotRegisteredException();
-        private GetActiveGameIdDelegate D_GetActiveGameId = () => throw new CallbacksNotRegisteredException();
-        private SetGameParametersDelegate D_SetGameParameters = (_, _) => throw new CallbacksNotRegisteredException();
-        private GetLoadOrderDelegate D_GetLoadOrder = () => throw new CallbacksNotRegisteredException();
-        private SetLoadOrderDelegate D_SetLoadOrder = (_) => throw new CallbacksNotRegisteredException();
-        private TranslateStringDelegate D_TranslateString = (_) => throw new CallbacksNotRegisteredException();
-        private SendNotificationDelegate D_SendNotification = (_, _, _, _) => throw new CallbacksNotRegisteredException();
-        private GetInstallPathDelegate D_GetInstallPath = () => throw new CallbacksNotRegisteredException();
-        private ReadFileContentDelegate D_ReadFileContent = (_) => throw new CallbacksNotRegisteredException();
-        private ReadDirectoryFileListDelegate D_ReadDirectoryFileList = (_) => throw new CallbacksNotRegisteredException();
-        private ReadDirectoryListDelegate D_ReadDirectoryList = (_) => throw new CallbacksNotRegisteredException();
+        D_SetGameParameters = setGameParameters;
+        D_LoadLoadOrder = loadLoadOrder;
+        D_SaveLoadOrder = saveLoadOrder;
+        D_SendNotification = sendNotification;
+        D_SendDialog = sendDialog;
+        D_GetInstallPath = getInstallPath;
+        D_ReadFileContent = readFileContent;
+        D_WriteFileContent = writeFileContent;
+        D_ReadDirectoryFileList = readDirectoryFileList;
+        D_ReadDirectoryList = readDirectoryList;
+        D_GetModuleViewModels = getModuleViewModels;
+        D_SetModuleViewModels = setModuleViewModels;
+        D_GetOptions = getOptions;
+        D_GetState = getState;
+        _callbacksRegistered = true;
+    }
 
-        public void RegisterCallbacks(
-            GetActiveProfileDelegate getActiveProfile
-            , GetProfileByIdDelegate getProfileById
-            , GetActiveGameIdDelegate getActiveGameId
-            , SetGameParametersDelegate setGameParameters
-            , GetLoadOrderDelegate getLoadOrder
-            , SetLoadOrderDelegate setLoadOrder
-            , TranslateStringDelegate translateString
-            , SendNotificationDelegate sendNotification
-            , GetInstallPathDelegate getInstallPath
-            , ReadFileContentDelegate readFileContent
-            , ReadDirectoryFileListDelegate readDirectoryFileList
-            , ReadDirectoryListDelegate readDirectoryList
-        )
-        {
-            D_GetActiveProfile = getActiveProfile;
-            D_GetProfileById = getProfileById;
-            D_GetActiveGameId = getActiveGameId;
-            D_SetGameParameters = setGameParameters;
-            D_GetLoadOrder = getLoadOrder;
-            D_SetLoadOrder = setLoadOrder;
-            D_TranslateString = translateString;
-            D_SendNotification = sendNotification;
-            D_GetInstallPath = getInstallPath;
-            D_ReadFileContent = readFileContent;
-            D_ReadDirectoryFileList = readDirectoryFileList;
-            D_ReadDirectoryList = readDirectoryList;
-            _callbacksRegistered = true;
-        }
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-        public Profile GetActiveProfile()
-        {
-            ThrowIfNoCallbacksRegistered();
+        D_SetGameParameters(executable, gameParameters);
+    }
 
-            return D_GetActiveProfile();
-        }
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal LoadOrder LoadLoadOrder()
+    {
+        ThrowIfNoCallbacksRegistered();
 
-        public Profile GetProfileById(ReadOnlySpan<char> profileId)
-        {
-            ThrowIfNoCallbacksRegistered();
+        return D_LoadLoadOrder();
+    }
 
-            return D_GetProfileById(profileId);
-        }
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal void SaveLoadOrder(LoadOrder loadOrder)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-        public ReadOnlySpan<char> GetActiveGameId()
-        {
-            ThrowIfNoCallbacksRegistered();
+        D_SaveLoadOrder(loadOrder);
 
-            return D_GetActiveGameId();
-        }
+        SetGameParameterLoadOrder(loadOrder);
+    }
 
-        public void SetGameParameters(ReadOnlySpan<char> executable, string[] gameParameters)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            D_SetGameParameters(executable, gameParameters);
-        }
+        D_SendNotification(id, type, message, displayMs);
+    }
 
-        public LoadOrder GetLoadOrder()
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            return D_GetLoadOrder();
-        }
+        D_SendDialog(type, title, message, filters, onResult);
+    }
 
-        public void SetLoadOrder(LoadOrder loadOrder)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal string GetInstallPath()
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            D_SetLoadOrder(loadOrder);
-            RefreshGameParams(loadOrder);
-        }
+        return D_GetInstallPath();
+    }
 
-        public ReadOnlySpan<char> TranslateString(ReadOnlySpan<char> text)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal byte[]? ReadFileContent(string filePath)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            return D_TranslateString(text);
-        }
+        return D_ReadFileContent(filePath);
+    }
 
-        public void SendNotification(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal void WriteFileContent(string filePath, byte[]? data)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            D_SendNotification(id, type, message, displayMs);
-        }
+        D_WriteFileContent(filePath, data);
+    }
 
-        public ReadOnlySpan<char> GetInstallPath()
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal string[]? ReadDirectoryFileList(string directoryPath)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            return D_GetInstallPath();
-        }
+        return D_ReadDirectoryFileList(directoryPath);
+    }
 
-        public string? ReadFileContent(ReadOnlySpan<char> filePath)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal string[]? ReadDirectoryList(string directoryPath)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            return D_ReadFileContent(filePath);
-        }
+        return D_ReadDirectoryList(directoryPath);
+    }
 
-        public string[]? ReadDirectoryFileList(ReadOnlySpan<char> directoryPath)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal IModuleViewModel[]? GetModuleViewModels()
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            return D_ReadDirectoryFileList(directoryPath);
-        }
+        return D_GetModuleViewModels();
+    }
 
-        public string[]? ReadDirectoryList(ReadOnlySpan<char> directoryPath)
-        {
-            ThrowIfNoCallbacksRegistered();
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
+    {
+        ThrowIfNoCallbacksRegistered();
 
-            return D_ReadDirectoryList(directoryPath);
-        }
+        D_SetModuleViewModels(orderedModules);
+    }
 
-        private void ThrowIfNoCallbacksRegistered()
-        {
-            if (!_callbacksRegistered)
-                throw new CallbacksNotRegisteredException();
-        }
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal LauncherOptions GetOptions()
+    {
+        ThrowIfNoCallbacksRegistered();
+
+        return D_GetOptions();
+    }
+
+    /// <summary>
+    /// Callback<br/>
+    /// </summary>
+    internal LauncherState GetState()
+    {
+        ThrowIfNoCallbacksRegistered();
+
+        return D_GetState();
+    }
+
+    private void ThrowIfNoCallbacksRegistered()
+    {
+        if (!_callbacksRegistered)
+            throw new CallbacksNotRegisteredException();
     }
 }

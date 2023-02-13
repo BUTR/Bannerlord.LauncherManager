@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Bannerlord.BUTRLoader.Helpers
 {
@@ -11,12 +12,13 @@ namespace Bannerlord.BUTRLoader.Helpers
         public static readonly string EngineConfigPath =
             Path.Combine($@"{Environment.GetFolderPath(Environment.SpecialFolder.Personal)}", "Mount and Blade II Bannerlord", "Configs", "engine_config.txt");
 
-        public static Dictionary<string, string> GetGameOptions()
+        public static Dictionary<string, string> GetGameOptions(Func<string, byte[]?> readFileContent)
         {
             var dict = new Dictionary<string, string>();
+            if (readFileContent(GameConfigPath) is not { } data) return dict;
             try
             {
-                var content = File.ReadAllText(GameConfigPath);
+                var content = Encoding.UTF8.GetString(data);
                 foreach (var keyValue in content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var split = keyValue.Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
@@ -26,15 +28,16 @@ namespace Bannerlord.BUTRLoader.Helpers
                     dict.Add(key, value);
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { /* ignore */ }
             return dict;
         }
-        public static Dictionary<string, string> GetEngineOptions()
+        public static Dictionary<string, string> GetEngineOptions(Func<string, byte[]?> readFileContent)
         {
             var dict = new Dictionary<string, string>();
+            if (readFileContent(GameConfigPath) is not { } data) return dict;
             try
             {
-                var content = File.ReadAllText(EngineConfigPath);
+                var content = Encoding.UTF8.GetString(data);
                 foreach (var keyValue in content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var split = keyValue.Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
@@ -44,7 +47,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                     dict.Add(key, value);
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { /* ignore */ }
             return dict;
         }
     }

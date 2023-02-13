@@ -8,7 +8,7 @@ namespace Bannerlord.BUTRLoader.TPac
     {
         protected static readonly IDictionary<object, object> EMPTY_USERDATA = new Dictionary<object, object>();
 
-        protected FileInfo _file;
+        protected FileInfo? _file;
 
         protected internal ulong _offset;
 

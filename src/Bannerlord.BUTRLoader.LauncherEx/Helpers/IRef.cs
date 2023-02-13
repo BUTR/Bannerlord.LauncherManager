@@ -36,7 +36,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                 if (PropertyInfo.CanWrite)
                 {
                     PropertyInfo.SetValue(Instance, value);
-                    OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                 if (value is T val && !Equals(_value, val))
                 {
                     _value = val;
-                    OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -119,7 +119,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                 if (_setter is not null && value is T val)
                 {
                     _setter(val);
-                    OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged();
                 }
             }
         }

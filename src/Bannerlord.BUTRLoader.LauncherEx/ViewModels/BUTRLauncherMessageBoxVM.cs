@@ -1,5 +1,5 @@
 ﻿using Bannerlord.BUTRLoader.Helpers;
-using Bannerlord.BUTRLoader.Localization;
+using Bannerlord.LauncherManager.Localization;
 
 using System;
 
@@ -9,11 +9,11 @@ namespace Bannerlord.BUTRLoader.ViewModels
     {
         [BUTRDataSourceProperty]
         public string Title { get => _title; set => SetField(ref _title, value); }
-        private string _title;
+        private string _title = string.Empty;
 
         [BUTRDataSourceProperty]
         public string Description { get => _description; set => SetField(ref _description, value); }
-        private string _description;
+        private string _description = string.Empty;
 
         [BUTRDataSourceProperty]
         public bool IsEnabled { get => _isEnabled; set => SetField(ref _isEnabled, value); }

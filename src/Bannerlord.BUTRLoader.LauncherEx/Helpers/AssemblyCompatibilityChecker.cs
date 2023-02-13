@@ -30,7 +30,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                 if (AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName().Name == name))
                     continue;
 
-                var assemblies = Directory.GetFiles(Path.GetDirectoryName(assemblyPath), "*.dll");
+                var assemblies = Directory.GetFiles(Path.GetDirectoryName(assemblyPath)!, "*.dll");
                 var assembly = assemblies.FirstOrDefault(x => Path.GetFileNameWithoutExtension(x).Equals(name));
                 if (assembly is null)
                     continue;
@@ -55,7 +55,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                     }
                 }
 
-                var assemblies = Directory.GetFiles(Path.GetDirectoryName(assemblyPath), "*.dll");
+                var assemblies = Directory.GetFiles(Path.GetDirectoryName(assemblyPath)!, "*.dll");
                 var assembly = assemblies.FirstOrDefault(x => x.Contains(name));
 
                 return assembly is not null ? Assembly.LoadFrom(assembly) : null;
@@ -66,18 +66,18 @@ namespace Bannerlord.BUTRLoader.Helpers
             {
                 var asm = Assembly.LoadFrom(assemblyPath);
                 RecursiveLoad(asm, assemblyPath);
-                var types = asm.GetTypes();
+                _ = asm.GetTypes();
                 return CheckResult.Success;
             }
-            catch (TypeLoadException e)
+            catch (TypeLoadException)
             {
                 return CheckResult.TypeLoadException;
             }
-            catch (ReflectionTypeLoadException e)
+            catch (ReflectionTypeLoadException)
             {
                 return CheckResult.ReflectionTypeLoadException;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return CheckResult.GenericException;
             }
@@ -109,7 +109,7 @@ namespace Bannerlord.BUTRLoader.Helpers
                 _proxy = (Proxy) _domain.CreateInstanceAndUnwrap(typeof(Proxy).Assembly.FullName, typeof(Proxy).FullName);
 
                 // Load official modules before cheking the mods
-                var baseOfficialPath = Path.Combine(Path.GetDirectoryName(typeof(Common).Assembly.Location), "../", "../");
+                var baseOfficialPath = Path.Combine(Path.GetDirectoryName(typeof(Common).Assembly.Location)!, "../", "../");
                 var officialModulesDirectories = Directory.GetDirectories(Path.Combine(baseOfficialPath, "Modules")).Select(x => new DirectoryInfo(x).Name);
                 var officialModules = officialModulesDirectories.Select(ModuleInfoHelper.LoadFromId).OfType<ModuleInfoExtendedWithMetadata>().Where(x => x.IsOfficial).ToList();
                 var sortedModules = ModuleSorter.Sort(officialModules).OfType<ModuleInfoExtendedWithMetadata>();
@@ -128,7 +128,7 @@ namespace Bannerlord.BUTRLoader.Helpers
 
             if (!_checkResult.TryGetValue(assemblyPath, out var result))
             {
-                result = _proxy.CheckAssembly(assemblyPath);
+                result = _proxy?.CheckAssembly(assemblyPath) ?? CheckResult.GenericException;
                 _checkResult[assemblyPath] = result;
             }
 

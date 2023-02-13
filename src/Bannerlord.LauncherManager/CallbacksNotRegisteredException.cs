@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Bannerlord.LauncherManager
+namespace Bannerlord.LauncherManager;
+
+public sealed class CallbacksNotRegisteredException : Exception
 {
-    public sealed class CallbacksNotRegisteredException : Exception
-    {
-        public CallbacksNotRegisteredException() : base("You need to call register callbacks first!") { }
-    }
+    public CallbacksNotRegisteredException() : base("You need to call register callbacks first!") { }
 }

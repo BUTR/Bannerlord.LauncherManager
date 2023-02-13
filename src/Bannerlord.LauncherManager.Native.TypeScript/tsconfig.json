@@ -3,7 +3,7 @@
     "allowJs": true,
     "checkJs": false,
     "incremental": true,
-    "target": "es2017",
+    "target": "es2015",
     "outDir": "dist/main",
     "rootDir": "src",
     "moduleResolution": "node",

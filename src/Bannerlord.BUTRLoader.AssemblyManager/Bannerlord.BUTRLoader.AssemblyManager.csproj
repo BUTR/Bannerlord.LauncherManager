@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Bannerlord.BUTRLoader\src\Bannerlord.BUTRLoader.Core\Bannerlord.BUTRLoader.Core.csproj" />
     <ProjectReference Include="..\Bannerlord.BUTRLoader.LauncherEx\Bannerlord.BUTRLoader.LauncherEx.csproj" />
   </ItemGroup>
 

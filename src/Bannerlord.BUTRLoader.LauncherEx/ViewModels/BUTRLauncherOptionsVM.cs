@@ -1,8 +1,8 @@
 ﻿using Bannerlord.BUTR.Shared.Extensions;
 using Bannerlord.BUTR.Shared.Helpers;
 using Bannerlord.BUTRLoader.Helpers;
-using Bannerlord.BUTRLoader.Localization;
 using Bannerlord.BUTRLoader.Options;
+using Bannerlord.LauncherManager.Localization;
 
 using System;
 using System.Collections.Generic;
@@ -22,17 +22,18 @@ namespace Bannerlord.BUTRLoader.ViewModels
 
     internal sealed class BUTRLauncherOptionsVM : BUTRViewModel
     {
+        private readonly BUTRLauncherManagerHandler _launcherManagerHandler = BUTRLauncherManagerHandler.Default;
         private readonly OptionsType _optionsType;
         private LauncherExData? _launcherExData;
         private readonly Action _saveUserData;
         private readonly Action _refreshOptions;
 
         [BUTRDataSourceProperty]
-        public bool IsDisabled { get => _isDisabled; set => SetField(ref _isDisabled, value, nameof(IsDisabled)); }
+        public bool IsDisabled { get => _isDisabled; set => SetField(ref _isDisabled, value); }
         private bool _isDisabled;
 
         [BUTRDataSourceProperty]
-        public MBBindingList<SettingsPropertyVM> SettingProperties { get => _settingProperties; set => SetField(ref _settingProperties, value, nameof(SettingProperties)); }
+        public MBBindingList<SettingsPropertyVM> SettingProperties { get => _settingProperties; set => SetField(ref _settingProperties, value); }
         private MBBindingList<SettingsPropertyVM> _settingProperties = new();
 
 
@@ -175,23 +176,23 @@ namespace Bannerlord.BUTRLoader.ViewModels
         {
             try
             {
-                foreach (var (key, value) in ConfigReader.GetGameOptions())
+                foreach (var (key, value) in ConfigReader.GetGameOptions(path => File.Exists(path) ? File.ReadAllBytes(path) : null))
                 {
                     SettingProperties.Add(CreateSettingsPropertyVM(key, value, ToSeparateWords));
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { /* ignore */ }
         }
         private void RefreshEngineOptions()
         {
             try
             {
-                foreach (var (key, value) in ConfigReader.GetEngineOptions())
+                foreach (var (key, value) in ConfigReader.GetEngineOptions(path => File.Exists(path) ? File.ReadAllBytes(path) : null))
                 {
                     SettingProperties.Add(CreateSettingsPropertyVM(key, value, x => ToTitleCase(x.Replace("_", " "))));
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { /* ignore */ }
         }
 
         public void Save()
@@ -265,7 +266,7 @@ namespace Bannerlord.BUTRLoader.ViewModels
         private void SaveGameOptions()
         {
             var backupPath = $"{ConfigReader.GameConfigPath}.bak";
-            if (!File.Exists(backupPath))
+            if (File.Exists(ConfigReader.GameConfigPath) && !File.Exists(backupPath))
                 File.Copy(ConfigReader.GameConfigPath, backupPath);
 
             var hasChanges = false;
@@ -283,13 +284,14 @@ namespace Bannerlord.BUTRLoader.ViewModels
             if (hasChanges)
             {
                 File.WriteAllText(ConfigReader.GameConfigPath, sb.ToString());
-                BUTRLocalizationManager.ActiveLanguage = BUTRLocalizationManager.GetActiveLanguage();
+                var options = _launcherManagerHandler.GetOptions();
+                BUTRLocalizationManager.ActiveLanguage = options.Language;
             }
         }
         private void SaveEngineOptions()
         {
             var backupPath = $"{ConfigReader.EngineConfigPath}.bak";
-            if (!File.Exists(backupPath))
+            if (File.Exists(ConfigReader.EngineConfigPath) && !File.Exists(backupPath))
                 File.Copy(ConfigReader.EngineConfigPath, backupPath);
 
             var hasChanges = false;

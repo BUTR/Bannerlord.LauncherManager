@@ -1,53 +1,116 @@
-import { types } from "vortex-api";
-import { ModuleInfoExtended } from "./BannerlordModuleManager";
+import { ModuleInfoExtendedWithPath } from "./BannerlordModuleManager";
 
-export interface IVortexExtension {
+export interface INativeExtension {
   LauncherManager: new () => LauncherManager
 }
 
-export interface ILoadOrderEntry<T = any> {
-  pos: number;
-  enabled: boolean;
-  prefix?: string;
-  data?: T;
-  locked?: boolean;
-  external?: boolean;
+export interface LoadOrderEntry {
+  id: string;
+  name: string;
+  isSelected: boolean;
+  index: number;
 }
 
-export interface ILoadOrder {
-  [modId: string]: ILoadOrderEntry;
+export interface LoadOrder {
+  [id: string]: LoadOrderEntry;
+}
+
+export interface ModuleViewModel {
+  moduleInfoExtended: ModuleInfoExtendedWithPath;
+  isValid: boolean;
+  isSelected: boolean;
+  isDisabled: boolean;
+  index: number;
+}
+
+export interface LauncherOptions {
+  language: string;
+  unblockFiles: boolean;
+  fixCommonIssues: boolean;
+  betaSorting: boolean;
+}
+
+export interface LauncherState {
+  isSingleplayer: boolean;
+}
+
+export interface SaveMetadata {
+  [key: string]: string;
+  name: string;
+}
+
+export type NotificationType = 'hint' | 'info';
+export type DialogType = 'warning' | 'fileOpen' | 'fileSave';
+
+export type InstructionType = 'Copy' | 'Attribute';
+export interface InstallInstruction {
+  type: InstructionType;
+  source?: string;
+  destination?: string;
+  key?: string;
+  value?: any;
+}
+export interface InstallResult {
+  instructions: InstallInstruction[];
+}
+
+export interface SupportedResult {
+  supported: boolean;
+  requiredFiles: string[];
+}
+
+export interface OrderByLoadOrderResult {
+  result: boolean;
+  issues?: string[];
+  orderedModuleViewModels?: ModuleViewModel[]
+}
+
+export interface FileFilter {
+  name: string;
+  extensions: string[];
 }
 
 export type LauncherManager = {
   constructor(): LauncherManager;
 
+  checkForRootHarmony(): void;
+  getGameVersion(): string;
+  getModules(): ModuleInfoExtendedWithPath[];
+  getSaveFilePath(saveFile: string): string;
+  getSaveFiles(): SaveMetadata[];
+  getSaveMetadata(saveFile: string, data: ArrayBuffer): SaveMetadata;
+  installModule(files: string[], destinationPath: string): InstallResult;
+  isSorting(): boolean;
+  loadLocalization(xml: string): void;
+  moduleListHandlerExport(): void;
+  moduleListHandlerExportSaveFile(saveFile: string): void;
+  moduleListHandlerImport(): Promise<boolean>;
+  moduleListHandlerImportSaveFile(saveFile: string): Promise<boolean>;
+  orderByLoadOrder(loadOrder: LoadOrder): OrderByLoadOrderResult;
+  refreshModules(): void;
+  refreshGameParameters(): void;
   registerCallbacks(
-    getActiveProfile: () => types.IProfile,
-    getProfileById: (id: string) => types.IProfile,
-    getActiveGameId: () => string,
-    setGameParameters: (gameId: string, executable: string, gameParameters: string[]) => void,
-    getLoadOrder: () => ILoadOrder,
-    setLoadOrder: (loadOrder: ILoadOrder) => void,
-    translateString: (text: string, ns: string) => string,
-    sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void,
+    setGameParameters: (executable: string, gameParameters: string[]) => void,
+    getLoadOrder: () => LoadOrder,
+    setLoadOrder: (loadOrder: LoadOrder) => void,
+    sendNotification: (id: string, type: NotificationType, message: string, delayMS: number) => void,
+    sendDialog: (type: DialogType, title: string, message: string, filters: FileFilter[]) => Promise<string>,
     getInstallPath: () => string,
-    readFileContent: (filePath: string) => string | null,
+    readFileContent: (filePath: string) => Uint8Array | null,
+    writeFileContent: (filePath: string, data: Uint8Array) => void,
     readDirectoryFileList: (directoryPath: string) => string[] | null,
     readDirectoryList: (directoryPath: string) => string[] | null,
+    getModuleViewModels: () => ModuleViewModel[] | null,
+    setModuleViewModels: (moduleViewModels: ModuleViewModel[]) => void,
+    getOptions: () => LauncherOptions,
+    getState: () => LauncherState,
   ): void;
+  sort(): void;
+  sortHelperChangeModulePosition(moduleViewModel: ModuleViewModel, insertIndex: number): boolean;
+  sortHelperToggleModuleSelection(moduleViewModel: ModuleViewModel): ModuleViewModel;
+  sortHelperValidateModule(moduleViewModel: ModuleViewModel): string[];
+  testModule(files: string[]): SupportedResult;
 
-  getGameVersion(): string;
-
-  testModule(files: string[], gameId: string): types.ISupportedResult;
-  installModule(files: string[], destinationPath: string): types.IInstallResult;
-
-  isSorting(): boolean;
-  sort(): string;
-
-  getLoadOrder(): ILoadOrder;
-  setLoadOrder(loadOrder: ILoadOrder): void;
-
-  getModules(): ModuleInfoExtended[];
-
-  refreshGameParameters(loadOrder: ILoadOrder): void;
+  dialogTestWarning(): Promise<string>;
+  dialogTestFileOpen(): Promise<string>;
 }

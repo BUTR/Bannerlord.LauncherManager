@@ -17,7 +17,7 @@ namespace Bannerlord::ModuleManager
         const Napi::Env Env;
         const Function FIsSelected;
     };
-    static return_value_bool *const isSelected(const param_ptr *const p_owner, const param_string *const p_module_id) noexcept
+    static return_value_bool *isSelected(param_ptr *p_owner, param_string *p_module_id) noexcept
     {
         try
         {
@@ -43,7 +43,7 @@ namespace Bannerlord::ModuleManager
         const Function FGetDisabled;
         const Function FSetDisabled;
     };
-    static return_value_bool *const getSelected(const param_ptr *const p_owner, const param_string *const p_module_id) noexcept
+    static return_value_bool *getSelected(param_ptr *p_owner, param_string *p_module_id) noexcept
     {
         try
         {
@@ -60,7 +60,7 @@ namespace Bannerlord::ModuleManager
             return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
         }
     }
-    static return_value_void *const setSelected(const param_ptr *const p_owner, const param_string *const p_module_id, param_bool value_raw) noexcept
+    static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
     {
         try
         {
@@ -79,7 +79,7 @@ namespace Bannerlord::ModuleManager
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_bool *const getDisabled(const param_ptr *const p_owner, const param_string *const p_module_id) noexcept
+    static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module_id) noexcept
     {
         try
         {
@@ -96,7 +96,7 @@ namespace Bannerlord::ModuleManager
             return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
         }
     }
-    static return_value_void *const setDisabled(const param_ptr *const p_owner, const param_string *const p_module_id, param_bool value_raw) noexcept
+    static return_value_void *setDisabled(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
     {
         try
         {
@@ -261,6 +261,18 @@ namespace Bannerlord::ModuleManager
         const auto result = bmm_get_module_info(sourceCopy.get());
         return ThrowOrReturnJson(env, result);
     }
+    Value GetModuleInfoWithPath(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto source = info[0].As<String>();
+        const auto path = info[1].As<String>();
+
+        const auto sourceCopy = CopyWithFree(source.Utf16Value());
+        const auto pathCopy = CopyWithFree(path.Utf16Value());
+
+        const auto result = bmm_get_module_info_with_path(sourceCopy.get(), pathCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
     Value GetSubModuleInfo(const CallbackInfo &info)
     {
         const auto env = info.Env();
@@ -343,6 +355,7 @@ namespace Bannerlord::ModuleManager
         exports.Set("disableModule", Function::New(env, DisableModule));
 
         exports.Set("getModuleInfo", Function::New(env, GetModuleInfo));
+        exports.Set("getModuleInfoWithPath", Function::New(env, GetModuleInfoWithPath));
         exports.Set("getSubModuleInfo", Function::New(env, GetSubModuleInfo));
 
         exports.Set("compareVersions", Function::New(env, CompareVersions));

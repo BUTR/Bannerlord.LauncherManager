@@ -10,7 +10,7 @@ using TaleWorlds.MountAndBlade.Launcher.Library;
 namespace Bannerlord.BUTRLoader.PrefabExtensions
 {
     /// <summary>
-    /// BUTRLoader text up the Version. Singleplayer
+    /// BLSE text up the Version. Singleplayer
     /// </summary>
     internal sealed class UILauncherPrefabExtension1 : PrefabExtensionInsertAsSiblingPatch
     {
@@ -21,6 +21,26 @@ namespace Bannerlord.BUTRLoader.PrefabExtensions
         private XmlDocument XmlDocument { get; } = new();
 
         public UILauncherPrefabExtension1()
+        {
+            XmlDocument.LoadXml(@$"
+<TextWidget WidthSizePolicy=""StretchToParent"" HeightSizePolicy=""CoverChildren"" VerticalAlignment=""Bottom"" Brush=""Launcher.Version.Text"" MarginLeft=""7"" MarginBottom=""@BLSEVersionMarginBottom"" IsVisible=""@ShowBUTRLoaderVersionText"" Text=""@BLSEVersionText""/>
+");
+        }
+
+        public override XmlDocument GetPrefabExtension() => XmlDocument;
+    }
+    /// <summary>
+    /// BUTRLoader text up the Version. Singleplayer
+    /// </summary>
+    internal sealed class UILauncherPrefabExtension2 : PrefabExtensionInsertAsSiblingPatch
+    {
+        public static string Movie => "UILauncher";
+        public static string XPath => "descendant::TextWidget[@Text='@BLSEVersionText']";
+
+        public override InsertType Type => InsertType.Append;
+        private XmlDocument XmlDocument { get; } = new();
+
+        public UILauncherPrefabExtension2()
         {
             XmlDocument.LoadXml(@$"
 <TextWidget WidthSizePolicy=""StretchToParent"" HeightSizePolicy=""CoverChildren"" VerticalAlignment=""Bottom"" Brush=""Launcher.Version.Text"" MarginLeft=""7"" MarginBottom=""@BUTRLoaderVersionMarginBottom"" IsVisible=""@ShowBUTRLoaderVersionText"" Text=""@BUTRLoaderVersionText""/>

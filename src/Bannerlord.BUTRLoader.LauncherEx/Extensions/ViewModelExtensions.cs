@@ -35,7 +35,7 @@ namespace Bannerlord.BUTRLoader.Extensions
 
         public static void AddProperty(this ViewModel viewModel, string name, PropertyInfo propertyInfo)
         {
-            if (!GetOrCreateIndividualStorage(viewModel, out var propDict, out var _))
+            if (!GetOrCreateIndividualStorage(viewModel, out var propDict, out _))
                 return;
 
             propDict[name] = propertyInfo;
@@ -43,7 +43,7 @@ namespace Bannerlord.BUTRLoader.Extensions
 
         public static void AddMethod(this ViewModel viewModel, string name, MethodInfo methodInfo)
         {
-            if (!GetOrCreateIndividualStorage(viewModel, out var _, out var methodDict))
+            if (!GetOrCreateIndividualStorage(viewModel, out _, out var methodDict))
                 return;
 
             methodDict[name] = methodInfo;

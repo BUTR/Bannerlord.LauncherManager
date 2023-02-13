@@ -23,8 +23,8 @@ namespace Bannerlord.LauncherManager.Native.Tests
         {
             Assert.DoesNotThrow(() =>
             {
-                using var path = Utils.Copy(Path.GetFullPath("./Data"), true);
-                using var dllName = Utils.Copy("TaleWorlds.Library.dll", true);
+                using var path = BUTR.NativeAOT.Shared.Utils.Copy(Path.GetFullPath("./Data"), true);
+                using var dllName = BUTR.NativeAOT.Shared.Utils.Copy("TaleWorlds.Library.dll", true);
 
                 var changeSet = GetResult(bfv_get_change_set(path, dllName));
                 Assert.That(changeSet, Is.EqualTo(321460));
@@ -37,7 +37,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             });
 
 #if DEBUG
-            Assert.That(LibraryAliveCount(), Is.EqualTo(0));   
+            Assert.That(LibraryAliveCount(), Is.EqualTo(0));
 #endif
         }
     }

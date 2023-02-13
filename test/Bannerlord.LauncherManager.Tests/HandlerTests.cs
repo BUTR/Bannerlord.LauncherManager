@@ -2,6 +2,7 @@
 
 using NUnit.Framework;
 
+using System;
 using System.IO;
 using System.Linq;
 
@@ -9,6 +10,15 @@ namespace Bannerlord.LauncherManager.Tests
 {
     public class HandlerTests
     {
+        private record ModuleViewModel : IModuleViewModel
+        {
+            public required ModuleInfoExtendedWithPath ModuleInfoExtended { get; init; }
+            public required bool IsValid { get; init; }
+            public required bool IsSelected { get; set; }
+            public required bool IsDisabled { get; set; }
+            public required int Index { get; set; }
+        }
+
         private const string GamePath = "./Data/game/";
         private const string VortexTestMod = "./Data/vortex/mountandblade2bannerlord/mods/Test/";
 
@@ -17,48 +27,75 @@ namespace Bannerlord.LauncherManager.Tests
         {
             var loadOrder = new LoadOrder
             {
-                {"Test2", new LoadOrderEntry { Enabled = true, Pos = 1 }},
-                {"Test", new LoadOrderEntry { Enabled = true, Pos = 2 }},
+                {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 0 }},
+                {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 1 }},
             };
             var expectedLoadOrderIds = new[] { "Test", "Test2" };
 
-            var handler = new VortexExtensionHandler();
+            var moduleViewModels = Array.Empty<IModuleViewModel>();
+
+            var handler = new LauncherManagerHandler();
             handler.RegisterCallbacks(
-                getActiveProfile: () => new Profile { GameId = Constants.GameID, Id = "Profile" },
-                getLoadOrder: () => loadOrder,
-                setLoadOrder: lo => loadOrder = lo,
+                loadLoadOrder: null!,
+                saveLoadOrder: lo => loadOrder = lo,
                 sendNotification: (id, type, message, ms) => { },
-                translateString: (text) => text,
+                sendDialog: null!,
                 setGameParameters: (executable, parameters) => { },
-                getActiveGameId: null!,
-                getProfileById: null!,
-                getInstallPath: () => Path.GetFullPath(GamePath),
-                readFileContent: path => File.ReadAllText(path.ToString()),
-                readDirectoryFileList: path => Directory.GetFiles(path.ToString()),
-                readDirectoryList: path => Directory.GetDirectories(path.ToString()));
+                getInstallPath: () => Path.GetFullPath(GamePath)!,
+                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                writeFileContent: null!,
+                readDirectoryFileList: Directory.GetFiles,
+                readDirectoryList: Directory.GetDirectories,
+                getModuleViewModels: () => moduleViewModels,
+                setModuleViewModels: null!,
+                getOptions: null!,
+                getState: null!);
+
+            var modules = handler.GetModules();
+            moduleViewModels = new IModuleViewModel[]
+            {
+                new ModuleViewModel()
+                {
+                    ModuleInfoExtended = modules.First(x => x.Id == "Test"),
+                    IsValid = true,
+                    IsSelected = true,
+                    IsDisabled = false,
+                    Index = 0,
+                },
+                new ModuleViewModel()
+                {
+                    ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
+                    IsValid = true,
+                    IsSelected = true,
+                    IsDisabled = false,
+                    Index = 1,
+                },
+            };
 
             handler.Sort();
 
-            Assert.AreEqual(expectedLoadOrderIds, loadOrder.OrderBy(x => x.Value.Pos).Select(x => x.Key).ToArray());
+            Assert.AreEqual(expectedLoadOrderIds, loadOrder.Select(x => x.Key).ToArray());
         }
 
         [Test]
         public void ModuleProvider_GetModules_Test()
         {
-            var handler = new VortexExtensionHandler();
+            var handler = new LauncherManagerHandler();
             handler.RegisterCallbacks(
-                getActiveProfile: null!,
-                getLoadOrder: null!,
-                setLoadOrder: null!,
+                loadLoadOrder: null!,
+                saveLoadOrder: null!,
                 sendNotification: null!,
-                translateString: null!,
+                sendDialog: null!,
                 setGameParameters: null!,
-                getActiveGameId: null!,
-                getProfileById: null!,
                 getInstallPath: () => Path.GetFullPath(GamePath),
-                readFileContent: path => File.ReadAllText(path.ToString()),
-                readDirectoryFileList: path => Directory.GetFiles(path.ToString()),
-                readDirectoryList: path => Directory.GetDirectories(path.ToString()));
+                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                writeFileContent: null!,
+                readDirectoryFileList: null!,
+                readDirectoryList: s => Directory.GetDirectories(s),
+                getModuleViewModels: null!,
+                setModuleViewModels: null!,
+                getOptions: null!,
+                getState: null!);
             var modules = handler.GetModules().ToList();
 
             Assert.GreaterOrEqual(modules.Count, 1);
@@ -73,21 +110,23 @@ namespace Bannerlord.LauncherManager.Tests
                 "Test\\SubModule.xml",
             };
 
-            var handler = new VortexExtensionHandler();
+            var handler = new LauncherManagerHandler();
             handler.RegisterCallbacks(
-                getActiveProfile: null!,
-                getLoadOrder: null!,
-                setLoadOrder: null!,
+                loadLoadOrder: null!,
+                saveLoadOrder: null!,
                 sendNotification: null!,
-                translateString: null!,
+                sendDialog: null!,
                 setGameParameters: null!,
-                getActiveGameId: null!,
-                getProfileById: null!,
-                getInstallPath: () => Path.GetFullPath(GamePath),
+                getInstallPath: null!,
                 readFileContent: null!,
+                writeFileContent: null!,
                 readDirectoryFileList: null!,
-                readDirectoryList: null!);
-            var installResult = handler.TestModuleContent(files, Constants.GameID);
+                readDirectoryList: null!,
+                getModuleViewModels: null!,
+                setModuleViewModels: null!,
+                getOptions: null!,
+                getState: null!);
+            var installResult = handler.TestModuleContent(files);
             Assert.NotNull(installResult);
             Assert.IsTrue(installResult.Supported);
         }
@@ -101,26 +140,28 @@ namespace Bannerlord.LauncherManager.Tests
                 "Test\\SubModule.xml",
             };
 
-            var handler = new VortexExtensionHandler();
+            var handler = new LauncherManagerHandler();
             handler.RegisterCallbacks(
-                getActiveProfile: null!,
-                getLoadOrder: null!,
-                setLoadOrder: null!,
+                loadLoadOrder: null!,
+                saveLoadOrder: null!,
                 sendNotification: null!,
-                translateString: null!,
+                sendDialog: null!,
                 setGameParameters: null!,
-                getActiveGameId: null!,
-                getProfileById: null!,
-                getInstallPath: () => Path.GetFullPath(GamePath),
-                readFileContent: path => File.ReadAllText(path.ToString()),
-                readDirectoryFileList: path => Directory.GetFiles(path.ToString()),
-                readDirectoryList: path => Directory.GetDirectories(path.ToString()));
+                getInstallPath: null!,
+                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                writeFileContent: null!,
+                readDirectoryFileList: null!,
+                readDirectoryList: null!,
+                getModuleViewModels: null!,
+                setModuleViewModels: null!,
+                getOptions: null!,
+                getState: null!);
             var installResult = handler.InstallModuleContent(files, Path.GetFullPath(VortexTestMod));
             Assert.NotNull(installResult);
             Assert.NotNull(installResult.Instructions);
             Assert.AreEqual(2, installResult.Instructions.Count);
-            Assert.AreEqual(InstructionType.copy, installResult.Instructions[0].Type);
-            Assert.AreEqual(InstructionType.attribute, installResult.Instructions[1].Type);
+            Assert.AreEqual(InstallInstructionType.Copy, installResult.Instructions[0].Type);
+            Assert.AreEqual(InstallInstructionType.Attribute, installResult.Instructions[1].Type);
         }
     }
 }

@@ -97,6 +97,7 @@ namespace Bannerlord.BUTRLoader.Helpers
         public bool IsControllerConnected() => InputManager.IsControllerConnected();
         public InputKey GetControllerClickKey() => InputManager.GetControllerClickKey();
 
+        /*
         public void SetRumbleEffect(float[] lowFrequencyLevels, float[] lowFrequencyDurations, int numLowFrequencyElements, float[] highFrequencyLevels,
             float[] highFrequencyDurations, int numHighFrequencyElements) =>
             InputManager.SetRumbleEffect(lowFrequencyLevels, lowFrequencyDurations, numLowFrequencyElements, highFrequencyLevels, highFrequencyDurations, numHighFrequencyElements);
@@ -109,6 +110,7 @@ namespace Bannerlord.BUTRLoader.Helpers
             InputManager.SetTriggerVibration(leftTriggerAmplitudes, leftTriggerFrequencies, leftTriggerDurations, numLeftTriggerElements, rightTriggerAmplitudes,
                 rightTriggerFrequencies, rightTriggerDurations, numRightTriggerElements);
         public void SetLightbarColor(float red, float green, float blue) => InputManager.SetLightbarColor(red, green, blue);
+        */
 
         private static TReturn IsAction<TReturn>(InputKey key, Func<Keys, TReturn> action, Func<InputKey, TReturn> fallback)
         {
@@ -116,7 +118,7 @@ namespace Bannerlord.BUTRLoader.Helpers
             {
                 InputKey.BackSpace => Keys.Back,
                 InputKey.Enter => Keys.Enter,
-                var any => Enum.TryParse<Keys>(key.ToString(), out var keyVal) ? keyVal : Keys.None
+                _ => Enum.TryParse<Keys>(key.ToString(), out var keyVal) ? keyVal : Keys.None
             };
             if (key is >= InputKey.ControllerLStickUp and <= InputKey.ControllerRTrigger or InputKey.ControllerLStick or InputKey.ControllerRStick)
             {

@@ -1,30 +1,30 @@
-﻿using Bannerlord.ModuleManager;
+﻿using Bannerlord.LauncherManager.Localization;
+using Bannerlord.LauncherManager.Models;
+using Bannerlord.ModuleManager;
 
-namespace Bannerlord.LauncherManager
+using System;
+using System.Linq;
+
+namespace Bannerlord.LauncherManager;
+
+public partial class LauncherManagerHandler
 {
-    public partial class LauncherManagerHandler
+    private const int SORTING = 1;
+    private const int NOTSORTING = 0;
+    public bool IsSorting;
+    // if (Interlocked.CompareExchange(ref IsSorting, SORTING, NOTSORTING) == NOTSORTING)
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public void Sort()
     {
-        private const int SORTING = 1;
-        private const int NOTSORTING = 0;
-        public bool IsSorting;
-        // if (Interlocked.CompareExchange(ref IsSorting, SORTING, NOTSORTING) == NOTSORTING)
+        IsSorting = true;
+        var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended).ToArray() ?? Array.Empty<ModuleInfoExtendedWithPath>();
+        var sorted = ModuleSorter.Sort(modules);
+        SaveLoadOrder(GetFromModules(sorted));
 
-        public void Sort()
-        {
-            var activeProfile = GetActiveProfile();
-            if (string.IsNullOrEmpty(activeProfile.GameId))
-            {
-                IsSorting = false;
-                return;
-            }
-
-            var loadOrder = GetLoadOrder();
-            var modules = GetFromLoadOrder(loadOrder);
-            var sorted = ModuleSorter.Sort(modules);
-            SetLoadOrder(GetFromModules(sorted));
-
-            var translated = TranslateString("Finished sorting");
-            SendNotification("mnb2-sort-finished", "info", translated, 3000);
-        }
+        SendNotification("sort-finished", NotificationType.Info, new BUTRTextObject("{=J7dh36Dy}Finished sorting!").ToString(), 3000);
+        IsSorting = false;
     }
 }

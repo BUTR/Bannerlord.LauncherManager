@@ -1,4 +1,6 @@
-﻿using BUTR.NativeAOT.Shared;
+﻿using Bannerlord.LauncherManager.Models;
+
+using BUTR.NativeAOT.Shared;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -11,6 +13,24 @@ using System.Text.Unicode;
 
 namespace Bannerlord.LauncherManager.Native.Tests
 {
+    public class InstallInstructionJsonConverter : JsonConverter<IInstallInstruction>
+    {
+        public override IInstallInstruction Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var readerCopy = reader;
+            var data = JsonDocument.ParseValue(ref reader);
+            var t = Enum.TryParse<InstallInstructionType>(data.RootElement.GetProperty("type").GetString(), out var val1) ? val1 : InstallInstructionType.None;
+            return (Enum.TryParse<InstallInstructionType>(data.RootElement.GetProperty("type").GetString(), out var val) ? val : InstallInstructionType.None) switch
+            {
+                InstallInstructionType.Copy => JsonSerializer.Deserialize<CopyInstallInstruction>(ref readerCopy, options)!,
+                InstallInstructionType.Attribute => JsonSerializer.Deserialize<AttributeInstallInstruction>(ref readerCopy, options)!,
+                _ => new NoneInstallInstruction()
+            };
+        }
+
+        public override void Write(Utf8JsonWriter writer, IInstallInstruction value, JsonSerializerOptions options) => throw new NotSupportedException();
+    }
+
     internal static partial class Utils2
     {
 #if DEBUG
@@ -18,7 +38,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
 #else
         public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Release/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
 #endif
-        
+
 
         [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static unsafe partial void* common_alloc(nuint size);
@@ -35,7 +55,12 @@ namespace Bannerlord.LauncherManager.Native.Tests
             IncludeFields = false,
             WriteIndented = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin),
+            Converters =
+            {
+                new InstallInstructionJsonConverter(),
+                new JsonStringEnumConverter(),
+            }
         };
         internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(Options);
 
@@ -43,7 +68,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
         public static int LibraryAliveCount() => common_alloc_alive_count();
 
         public static unsafe ReadOnlySpan<char> ToSpan(param_string* value) => new SafeStringMallocHandle((char*) value, false).ToSpan();
-        public static SafeStringMallocHandle ToJson<T>(T value) => Utils.SerializeJsonCopy(value, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)), true);
+        public static SafeStringMallocHandle ToJson<T>(T value) => BUTR.NativeAOT.Shared.Utils.SerializeJsonCopy(value, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)), true);
         private static TValue DeserializeJson<TValue>(SafeStringMallocHandle json, JsonTypeInfo<TValue> jsonTypeInfo, [CallerMemberName] string? caller = null)
         {
             if (json.DangerousGetHandle() == IntPtr.Zero)
@@ -70,7 +95,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             }
         }
 
-        public static unsafe T? GetResult<T>(return_value_json* ret)
+        public static unsafe T? GetResult<T>(return_value_json* ret) where T : class
         {
             using var result = SafeStructMallocHandle.Create(ret, true);
             return result.ValueAsJson((JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)));
@@ -100,6 +125,11 @@ namespace Bannerlord.LauncherManager.Native.Tests
         {
             using var result = SafeStructMallocHandle.Create(ret, true);
             result.ValueAsVoid();
+        }
+        public static unsafe void* GetResult(return_value_ptr* ret)
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            return result.ValueAsPointer();
         }
     }
 }

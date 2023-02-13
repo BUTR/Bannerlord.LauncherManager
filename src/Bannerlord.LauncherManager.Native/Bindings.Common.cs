@@ -1,22 +1,58 @@
-﻿using System.Text.Encodings.Web;
+﻿using Bannerlord.LauncherManager.Models;
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
 
-namespace Bannerlord.LauncherManager.Native
+namespace Bannerlord.LauncherManager.Native;
+
+public static partial class Bindings
 {
-    public static partial class Bindings
+    private class CallbackStorage
     {
-        private static readonly JsonSerializerOptions _options = new()
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            IgnoreReadOnlyFields = true,
-            IgnoreReadOnlyProperties = true,
-            IncludeFields = false,
-            WriteIndented = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
-        };
-        internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(_options);
+        private readonly Action<object> _action;
+        public CallbackStorage(Action<object> action) => _action = action;
+        public void SetResult(object result) => _action(result);
     }
+
+    public class InstallInstructionJsonConverter : JsonConverter<IInstallInstruction>
+    {
+        public override IInstallInstruction Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotSupportedException();
+
+        [RequiresUnreferencedCode("")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+        public override void Write(Utf8JsonWriter writer, IInstallInstruction value, JsonSerializerOptions options)
+        {
+            switch (value)
+            {
+                case AttributeInstallInstruction attributeInstallInstruction:
+                    JsonSerializer.Serialize(writer, attributeInstallInstruction, options);
+                    break;
+                case CopyInstallInstruction copyInstallInstruction:
+                    JsonSerializer.Serialize(writer, copyInstallInstruction, options);
+                    break;
+            }
+        }
+    }
+
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    private static readonly JsonSerializerOptions _options = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        IgnoreReadOnlyFields = true,
+        IgnoreReadOnlyProperties = true,
+        IncludeFields = false,
+        WriteIndented = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin),
+        Converters =
+        {
+            new InstallInstructionJsonConverter(),
+            new JsonStringEnumConverter(),
+        }
+    };
+    internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(_options);
 }

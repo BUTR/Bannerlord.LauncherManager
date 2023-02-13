@@ -146,7 +146,7 @@ namespace Bannerlord.BUTRLoader.TPac
             }
             finally
             {
-                if (bitmapData != null)
+                if (bitmapData is not null)
                 {
                     bitmap.UnlockBits(bitmapData);
                 }
@@ -1079,7 +1079,6 @@ namespace Bannerlord.BUTRLoader.TPac
         private sealed class ARGB32Writer : PipelineWriter
         {
             private readonly int lineLimiter;
-            private readonly int pointer;
             private readonly int stride;
             private readonly int[] buffer;
             private IntPtr data;

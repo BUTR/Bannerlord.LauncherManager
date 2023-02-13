@@ -1,9 +1,11 @@
-#ifndef VE_VORTEXEXTENSIONMANAGER_GUARD_HPP_
-#define VE_VORTEXEXTENSIONMANAGER_GUARD_HPP_
+#ifndef VE_LAUNCHERMANAGER_GUARD_HPP_
+#define VE_LAUNCHERMANAGER_GUARD_HPP_
 
 #include "utils.hpp"
 #include "Bannerlord.LauncherManager.Native.h"
 #include <codecvt>
+#include <sstream>
+#include <string>
 
 using namespace Napi;
 using namespace Utils;
@@ -11,7 +13,6 @@ using namespace Bannerlord::LauncherManager::Native;
 
 namespace Bannerlord::LauncherManager
 {
-
     class LauncherManager : public Napi::ObjectWrap<LauncherManager>
     {
     public:
@@ -21,28 +22,47 @@ namespace Bannerlord::LauncherManager
         FunctionReference FSetGameParameters;
         FunctionReference FGetLoadOrder;
         FunctionReference FSetLoadOrder;
-        FunctionReference FTranslateString;
         FunctionReference FSendNotification;
+        FunctionReference FSendDialog;
         FunctionReference FGetInstallPath;
         FunctionReference FReadFileContent;
+        FunctionReference FWriteFileContent;
         FunctionReference FReadDirectoryFileList;
         FunctionReference FReadDirectoryList;
+        FunctionReference FGetModuleViewModels;
+        FunctionReference FSetModuleViewModels;
+        FunctionReference FGetOptions;
+        FunctionReference FGetState;
 
         static Object Init(const Napi::Env env, const Object exports);
 
         LauncherManager(const CallbackInfo &info);
         ~LauncherManager();
 
-        void RegisterCallbacks(const CallbackInfo &info);
+        void CheckForRootHarmony(const CallbackInfo &info);
         Napi::Value GetGameVersion(const CallbackInfo &info);
-        Napi::Value TestModule(const CallbackInfo &info);
+        Napi::Value GetModules(const CallbackInfo &info);
+        Napi::Value GetSaveFilePath(const CallbackInfo &info);
+        Napi::Value GetSaveFiles(const CallbackInfo &info);
+        Napi::Value GetSaveMetadata(const CallbackInfo &info);
         Napi::Value InstallModule(const CallbackInfo &info);
         Napi::Value IsSorting(const CallbackInfo &info);
-        void Sort(const CallbackInfo &info);
-        Napi::Value GetLoadOrder(const CallbackInfo &info);
-        void SetLoadOrder(const CallbackInfo &info);
-        Napi::Value GetModules(const CallbackInfo &info);
+        void LoadLocalization(const CallbackInfo &info);
+        void ModuleListHandlerExport(const CallbackInfo &info);
+        void ModuleListHandlerExportSaveFile(const CallbackInfo &info);
+        Napi::Value ModuleListHandlerImport(const CallbackInfo &info);
+        Napi::Value ModuleListHandlerImportSaveFile(const CallbackInfo &info);
+        Napi::Value OrderByLoadOrder(const CallbackInfo &info);
         void RefreshGameParameters(const CallbackInfo &info);
+        void RefreshModules(const CallbackInfo &info);
+        void RegisterCallbacks(const CallbackInfo &info);
+        void Sort(const CallbackInfo &info);
+        Napi::Value SortHelperChangeModulePosition(const CallbackInfo &info);
+        Napi::Value SortHelperToggleModuleSelection(const CallbackInfo &info);
+        Napi::Value SortHelperValidateModule(const CallbackInfo &info);
+        Napi::Value TestModule(const CallbackInfo &info);
+        Napi::Value DialogTestFileOpen(const CallbackInfo &info);
+        Napi::Value DialogTestWarning(const CallbackInfo &info);
 
     private:
         void *_pInstance;
@@ -59,16 +79,30 @@ namespace Bannerlord::LauncherManager
         // This method is used to hook the accessor and method callbacks
         const auto func = DefineClass(env, "LauncherManager",
                                       {
-                                          InstanceMethod<&LauncherManager::RegisterCallbacks>("registerCallbacks", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::CheckForRootHarmony>("checkForRootHarmony", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetGameVersion>("getGameVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&LauncherManager::TestModule>("testModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetSaveFilePath>("getSaveFilePath", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetSaveFiles>("getSaveFiles", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetSaveMetadata>("getSaveMetadata", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::InstallModule>("installModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::IsSorting>("isSorting", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&LauncherManager::Sort>("sort", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&LauncherManager::GetLoadOrder>("getLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&LauncherManager::SetLoadOrder>("setLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&LauncherManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::LoadLocalization>("loadLocalization", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::ModuleListHandlerExport>("moduleListHandlerExport", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::ModuleListHandlerExportSaveFile>("moduleListHandlerExportSaveFile", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::ModuleListHandlerImport>("moduleListHandlerImport", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::ModuleListHandlerImportSaveFile>("moduleListHandlerImportSaveFile", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::OrderByLoadOrder>("orderByLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::RefreshGameParameters>("refreshGameParameters", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::RefreshModules>("refreshModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::RegisterCallbacks>("registerCallbacks", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::Sort>("sort", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SortHelperChangeModulePosition>("sortHelperChangeModulePosition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SortHelperToggleModuleSelection>("sortHelperToggleModuleSelection", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SortHelperValidateModule>("sortHelperValidateModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::TestModule>("testModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::DialogTestFileOpen>("dialogTestFileOpen", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::DialogTestWarning>("dialogTestWarning", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
         auto *const constructor = new FunctionReference();
@@ -102,82 +136,69 @@ namespace Bannerlord::LauncherManager
 
     LauncherManager::~LauncherManager()
     {
-        this->FGetActiveProfile.Unref();
-        this->FGetProfileById.Unref();
-        this->FGetActiveGameId.Unref();
         this->FSetGameParameters.Unref();
         this->FGetLoadOrder.Unref();
         this->FSetLoadOrder.Unref();
-        this->FTranslateString.Unref();
         this->FSendNotification.Unref();
+        this->FSendDialog.Unref();
         this->FGetInstallPath.Unref();
         this->FReadFileContent.Unref();
+        this->FWriteFileContent.Unref();
         this->FReadDirectoryFileList.Unref();
         this->FReadDirectoryList.Unref();
+        this->FGetModuleViewModels.Unref();
+        this->FSetModuleViewModels.Unref();
+        this->FGetOptions.Unref();
+        this->FGetState.Unref();
         ve_dispose_handler(this->_pInstance);
     }
 
-    static return_value_json *const get_active_profile(const void *const p_owner)
+    static Napi::Value CallbackString(const Napi::CallbackInfo &info)
     {
+        const auto data = static_cast<param_callback *>(info.Data());
+        const auto env = info.Env();
+
         try
         {
-            const auto manager = static_cast<const LauncherManager *const>(p_owner);
-            const auto env = manager->Env();
+            const auto str = info[0].As<String>();
 
-            const auto result = manager->FGetActiveProfile({}).As<Object>();
-            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
+            const auto strCopy = CopyWithFree(str.Utf16Value());
+
+            ConsoleLog(env, String::New(env, "14"));
+            std::stringstream ss;
+            ss << data;
+            ConsoleLog(env, String::New(env, ss.str()));
+            ss = std::stringstream();
+            ss << data->p_callback_ptr;
+            ConsoleLog(env, String::New(env, ss.str()));
+            ss = std::stringstream();
+            ss << data->p_callback;
+            ConsoleLog(env, String::New(env, ss.str()));
+
+            data->p_callback(data->p_callback_ptr, strCopy.get());
+            ConsoleLog(env, String::New(env, "15"));
+            delete data;
+            return info.Env().Null();
         }
         catch (const std::exception &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            ConsoleLog(env, String::New(env, conv.from_bytes(e.what())));
+            return info.Env().Null();
         }
     }
-    static return_value_json *const getProfileById(const void *const p_owner, const char16_t *const p_profile_id) noexcept
+
+    static return_value_void *setGameParameters(void *p_owner, char16_t *p_executable, char16_t *p_game_parameters) noexcept
     {
         try
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
-            const auto profileId = String::New(env, p_profile_id);
-            const auto result = manager->FGetProfileById({profileId}).As<Object>();
-            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
-        }
-        catch (const std::exception &e)
-        {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-    }
-    static return_value_string *const getActiveGameId(const void *const p_owner) noexcept
-    {
-        try
-        {
-            const auto manager = static_cast<const LauncherManager *const>(p_owner);
-            const auto env = manager->Env();
-
-            const auto result = manager->FGetActiveGameId({}).As<String>();
-            return Create(return_value_string{nullptr, Copy(result.Utf16Value())});
-        }
-        catch (const std::exception &e)
-        {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-    }
-    static return_value_void *const setGameParameters(const void *const p_owner, const char16_t *const p_game_id, const char16_t *const p_executable, const char16_t *const p_game_parameters) noexcept
-    {
-        try
-        {
-            const auto manager = static_cast<const LauncherManager *const>(p_owner);
-            const auto env = manager->Env();
-
-            const auto gameId = String::New(env, p_game_id);
             const auto executable = String::New(env, p_executable);
             const auto gameParameters = JSONParse(env, String::New(env, Copy(p_game_parameters)));
 
-            manager->FSetGameParameters({gameId, executable, gameParameters}).As<Object>();
+            manager->FSetGameParameters({executable, gameParameters}).As<Object>();
             return Create(return_value_void{nullptr});
         }
         catch (const std::exception &e)
@@ -186,7 +207,7 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_json *const getLoadOrder(const void *const p_owner) noexcept
+    static return_value_json *getLoadOrder(void *p_owner) noexcept
     {
         try
         {
@@ -202,7 +223,7 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_void *const setLoadOrder(const void *const p_owner, const char16_t *const p_load_order) noexcept
+    static return_value_void *setLoadOrder(void *p_owner, char16_t *p_load_order) noexcept
     {
         try
         {
@@ -219,25 +240,7 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_string *const translateString(const void *const p_owner, const char16_t *const p_text, const char16_t *const p_ns) noexcept
-    {
-        try
-        {
-            const auto manager = static_cast<const LauncherManager *const>(p_owner);
-            const auto env = manager->Env();
-
-            const auto text = String::New(env, p_text);
-            const auto ns = String::New(env, p_ns);
-            const auto result = manager->FTranslateString({text, ns}).As<String>();
-            return Create(return_value_string{nullptr, Copy(result.Utf16Value())});
-        }
-        catch (const std::exception &e)
-        {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-    }
-    static return_value_void *const sendNotification(const void *const p_owner, const char16_t *const p_id, const char16_t *const p_type, const char16_t *const p_message, uint32_t displayMs) noexcept
+    static return_value_void *sendNotification(void *p_owner, char16_t *p_id, char16_t *p_type, char16_t *p_message, uint32_t displayMs) noexcept
     {
         try
         {
@@ -257,7 +260,43 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
     }
-    static return_value_string *const getInstallPath(const void *const p_owner) noexcept
+    static return_value_void *sendDialog(void *p_owner, char16_t *p_type, char16_t *p_title, char16_t *p_message, char16_t *p_filters, void *p_callback_ptr, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+
+            const auto type = String::New(env, p_type);
+            const auto title = String::New(env, p_title);
+            const auto message = String::New(env, p_message);
+            const auto filters = JSONParse(env, String::New(env, p_filters));
+
+            const auto result = manager->FSendDialog({type, title, message, filters});
+            const auto promise = result.As<Promise>();
+            const auto then = promise.Get("then").As<Function>();
+            auto data = new param_callback{p_callback_ptr, reinterpret_cast<void(__cdecl *)(void *, void *)>(p_callback)};
+            std::stringstream ss;
+            ss << &data;
+            ConsoleLog(env, String::New(env, ss.str()));
+            ss = std::stringstream();
+            ss << data->p_callback_ptr;
+            ConsoleLog(env, String::New(env, ss.str()));
+            ss = std::stringstream();
+            ss << data->p_callback;
+            ConsoleLog(env, String::New(env, ss.str()));
+            const auto callback = Function::New(env, CallbackString, "cpp_callback", static_cast<void *>(data));
+            then.Call(promise, {callback});
+
+            return Create(return_value_void{nullptr});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+        }
+    }
+    static return_value_string *getInstallPath(void *p_owner) noexcept
     {
         try
         {
@@ -273,7 +312,7 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_string *const readFileContent(const void *const p_owner, const char16_t *const p_file_path) noexcept
+    static return_value_data *readFileContent(void *p_owner, char16_t *p_file_path) noexcept
     {
         try
         {
@@ -282,20 +321,51 @@ namespace Bannerlord::LauncherManager
             const auto filePath = String::New(env, p_file_path);
 
             const auto result = manager->FReadFileContent({filePath});
+
             if (result.IsNull())
             {
-                return Create(return_value_string{nullptr, nullptr});
+                return Create(return_value_data{nullptr, nullptr, 0});
             }
 
-            return Create(return_value_string{nullptr, Copy(result.As<String>().Utf16Value())});
+            if (!result.IsBuffer())
+            {
+                std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+                return Create(return_value_data{Copy(conv.from_bytes("Not an Buffer<uint8_t>")), nullptr, 0});
+            }
+
+            auto buffer = result.As<Buffer<uint8_t>>();
+            return Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())});
         }
         catch (const std::exception &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_data{Copy(conv.from_bytes(e.what())), nullptr, 0});
         }
     }
-    static return_value_json *const readDirectoryFileList(const void *const p_owner, const char16_t *const p_directory_path) noexcept
+    static return_value_void *writeFileContent(void *p_owner, char16_t *p_file_path, uint8_t *p_data, int32_t length) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+            const auto filePath = String::New(env, p_file_path);
+            const auto data = Buffer<uint8_t>::New(env, p_data, static_cast<size_t>(length));
+
+            const auto result = manager->FWriteFileContent({filePath, data});
+            if (result.IsNull())
+            {
+                return Create(return_value_void{nullptr});
+            }
+
+            return Create(return_value_void{nullptr});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+        }
+    }
+    static return_value_json *readDirectoryFileList(void *p_owner, char16_t *p_directory_path) noexcept
     {
         try
         {
@@ -317,7 +387,7 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_json *const readDirectoryList(const void *const p_owner, const char16_t *const p_directory_path) noexcept
+    static return_value_json *readDirectoryList(void *p_owner, char16_t *p_directory_path) noexcept
     {
         try
         {
@@ -339,35 +409,125 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
+    static return_value_json *getModuleViewModels(void *p_owner) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+
+            const auto result = manager->FGetModuleViewModels({});
+            if (result.IsNull())
+            {
+                return Create(return_value_json{nullptr, nullptr});
+            }
+
+            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+        }
+    }
+    static return_value_void *setModuleViewModels(void *p_owner, char16_t *p_module_view_models) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+            const auto moduleViewModels = JSONParse(env, String::New(env, Copy(p_module_view_models)));
+
+            const auto result = manager->FSetModuleViewModels({moduleViewModels});
+            if (result.IsNull())
+            {
+                return Create(return_value_void{nullptr});
+            }
+
+            return Create(return_value_void{nullptr});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+        }
+    }
+    static return_value_json *getOptions(void *p_owner) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+
+            const auto result = manager->FGetOptions({});
+            if (result.IsNull())
+            {
+                return Create(return_value_json{nullptr, nullptr});
+            }
+
+            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+        }
+    }
+    static return_value_json *getState(void *p_owner) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+
+            const auto result = manager->FGetState({});
+            if (result.IsNull())
+            {
+                return Create(return_value_json{nullptr, nullptr});
+            }
+
+            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+        }
+    }
+
     void LauncherManager::RegisterCallbacks(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        this->FGetActiveProfile = Persistent(info[0].As<Function>());
-        this->FGetProfileById = Persistent(info[1].As<Function>());
-        this->FGetActiveGameId = Persistent(info[2].As<Function>());
-        this->FSetGameParameters = Persistent(info[3].As<Function>());
-        this->FGetLoadOrder = Persistent(info[4].As<Function>());
-        this->FSetLoadOrder = Persistent(info[5].As<Function>());
-        this->FTranslateString = Persistent(info[6].As<Function>());
-        this->FSendNotification = Persistent(info[7].As<Function>());
-        this->FGetInstallPath = Persistent(info[8].As<Function>());
-        this->FReadFileContent = Persistent(info[9].As<Function>());
-        this->FReadDirectoryFileList = Persistent(info[10].As<Function>());
-        this->FReadDirectoryList = Persistent(info[11].As<Function>());
+        this->FSetGameParameters = Persistent(info[0].As<Function>());
+        this->FGetLoadOrder = Persistent(info[1].As<Function>());
+        this->FSetLoadOrder = Persistent(info[2].As<Function>());
+        this->FSendNotification = Persistent(info[3].As<Function>());
+        this->FSendDialog = Persistent(info[4].As<Function>());
+        this->FGetInstallPath = Persistent(info[5].As<Function>());
+        this->FReadFileContent = Persistent(info[6].As<Function>());
+        this->FWriteFileContent = Persistent(info[7].As<Function>());
+        this->FReadDirectoryFileList = Persistent(info[8].As<Function>());
+        this->FReadDirectoryList = Persistent(info[9].As<Function>());
+        this->FGetModuleViewModels = Persistent(info[10].As<Function>());
+        this->FSetModuleViewModels = Persistent(info[11].As<Function>());
+        this->FGetOptions = Persistent(info[12].As<Function>());
+        this->FGetState = Persistent(info[13].As<Function>());
 
         ThrowOrReturn(env, ve_register_callbacks(this->_pInstance,
-                                                 get_active_profile,
-                                                 getProfileById,
-                                                 getActiveGameId,
                                                  setGameParameters,
                                                  getLoadOrder,
                                                  setLoadOrder,
-                                                 translateString,
                                                  sendNotification,
+                                                 sendDialog,
                                                  getInstallPath,
                                                  readFileContent,
+                                                 writeFileContent,
                                                  readDirectoryFileList,
-                                                 readDirectoryList));
+                                                 readDirectoryList,
+                                                 getModuleViewModels,
+                                                 setModuleViewModels,
+                                                 getOptions,
+                                                 getState));
     }
 
     Value LauncherManager::GetGameVersion(const CallbackInfo &info)
@@ -382,12 +542,10 @@ namespace Bannerlord::LauncherManager
     {
         const auto env = info.Env();
         const auto files = JSONStringify(env, info[0].As<Object>());
-        const auto gameId = info[1].As<String>();
 
         const auto filesCopy = CopyWithFree(files.Utf16Value());
-        const auto gameIdCopy = CopyWithFree(gameId.Utf16Value());
 
-        const auto result = ve_test_module(this->_pInstance, filesCopy.get(), gameIdCopy.get());
+        const auto result = ve_test_module(this->_pInstance, filesCopy.get());
         return ThrowOrReturnJson(env, result);
     }
 
@@ -420,25 +578,6 @@ namespace Bannerlord::LauncherManager
         ThrowOrReturn(env, result);
     }
 
-    Value LauncherManager::GetLoadOrder(const CallbackInfo &info)
-    {
-        const auto env = info.Env();
-
-        const auto result = ve_get_load_order(this->_pInstance);
-        return ThrowOrReturnJson(env, result);
-    }
-
-    void LauncherManager::SetLoadOrder(const CallbackInfo &info)
-    {
-        const auto env = info.Env();
-        const auto loadOrder = JSONStringify(env, info[0].As<Object>());
-
-        const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
-
-        const auto result = ve_set_load_order(this->_pInstance, loadOrderCopy.get());
-        ThrowOrReturn(env, result);
-    }
-
     Value LauncherManager::GetModules(const CallbackInfo &info)
     {
         const auto env = info.Env();
@@ -450,12 +589,178 @@ namespace Bannerlord::LauncherManager
     void LauncherManager::RefreshGameParameters(const CallbackInfo &info)
     {
         const auto env = info.Env();
+
+        const auto result = ve_refresh_game_parameters(this->_pInstance);
+        ThrowOrReturn(env, result);
+    }
+
+    void LauncherManager::CheckForRootHarmony(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_check_for_root_harmony(this->_pInstance);
+        ThrowOrReturn(env, result);
+    }
+
+    void LauncherManager::LoadLocalization(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto xml = info[0].As<String>();
+
+        const auto xmlCopy = CopyWithFree(xml.Utf16Value());
+
+        const auto result = ve_load_localization(this->_pInstance, xmlCopy.get());
+        ThrowOrReturn(env, result);
+    }
+
+    void LauncherManager::ModuleListHandlerExport(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_module_list_handler_export(this->_pInstance);
+        ThrowOrReturn(env, result);
+    }
+
+    void LauncherManager::ModuleListHandlerExportSaveFile(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto saveFile = info[0].As<String>();
+
+        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+
+        const auto result = ve_module_list_handler_export_save_file(this->_pInstance, saveFileCopy.get());
+        ThrowOrReturn(env, result);
+    }
+
+    Napi::Value LauncherManager::ModuleListHandlerImport(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        auto deferred = Promise::Deferred::New(env);
+        auto callbackStorage = CallbackStorage<param_bool>{env, deferred};
+        const auto result = ve_module_list_handler_import(this->_pInstance, static_cast<void *>(&callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_bool)>(&callbackStorage.Callback));
+        ThrowOrReturn(env, result);
+        return deferred.Promise();
+    }
+
+    Napi::Value LauncherManager::ModuleListHandlerImportSaveFile(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto saveFile = info[0].As<String>();
+
+        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+
+        auto deferred = Promise::Deferred::New(env);
+        auto callbackStorage = CallbackStorage<param_bool>{env, deferred};
+        const auto result = ve_module_list_handler_import_save_file(this->_pInstance, saveFileCopy.get(), static_cast<void *>(&callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_bool)>(&callbackStorage.Callback));
+        ThrowOrReturn(env, result);
+        return deferred.Promise();
+    }
+
+    void LauncherManager::RefreshModules(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_refresh_modules(this->_pInstance);
+        ThrowOrReturn(env, result);
+    }
+
+    Napi::Value LauncherManager::SortHelperChangeModulePosition(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto moduleViewModel = JSONStringify(env, info[0].As<Object>());
+        const auto insertIndex = info[1].As<Number>();
+
+        const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
+
+        const auto result = ve_sort_helper_change_module_position(this->_pInstance, moduleViewModelCopy.get(), insertIndex.Int32Value());
+        return ThrowOrReturnBoolean(env, result);
+    }
+
+    Napi::Value LauncherManager::SortHelperToggleModuleSelection(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto moduleViewModel = JSONStringify(env, info[0].As<Object>());
+
+        const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
+
+        const auto result = ve_sort_helper_toggle_module_selection(this->_pInstance, moduleViewModelCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
+
+    Napi::Value LauncherManager::SortHelperValidateModule(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto moduleViewModel = JSONStringify(env, info[0].As<Object>());
+
+        const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
+
+        const auto result = ve_sort_helper_validate_module(this->_pInstance, moduleViewModelCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
+
+    Napi::Value LauncherManager::GetSaveFiles(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_get_save_files(this->_pInstance);
+        return ThrowOrReturnJson(env, result);
+    }
+
+    Napi::Value LauncherManager::GetSaveMetadata(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto saveFile = info[0].As<String>();
+        auto data = info[1].As<Buffer<uint8_t>>();
+
+        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+        const auto dataCopy = CopyWithFree(data.Data(), data.ByteLength());
+
+        const auto result = ve_get_save_metadata(this->_pInstance, saveFileCopy.get(), dataCopy.get(), data.ByteLength());
+        return ThrowOrReturnJson(env, result);
+    }
+
+    Napi::Value LauncherManager::GetSaveFilePath(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto saveFile = info[0].As<String>();
+
+        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+
+        const auto result = ve_get_save_file_path(this->_pInstance, saveFileCopy.get());
+        return ThrowOrReturnString(env, result);
+    }
+
+    Napi::Value LauncherManager::OrderByLoadOrder(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
         const auto loadOrder = JSONStringify(env, info[0].As<Object>());
 
         const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
 
-        const auto result = ve_refresh_game_parameters(this->_pInstance, loadOrderCopy.get());
+        const auto result = ve_order_by_load_order(this->_pInstance, loadOrderCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
+
+    Napi::Value LauncherManager::DialogTestWarning(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        auto deferred = Promise::Deferred::New(env);
+        auto callbackStorage = new CallbackStorage<param_string *>{env, deferred};
+        const auto result = ve_dialog_test_warning(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_string *)>(callbackStorage->Callback));
         ThrowOrReturn(env, result);
+        return deferred.Promise();
+    }
+    Napi::Value LauncherManager::DialogTestFileOpen(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        auto deferred = Promise::Deferred::New(env);
+        auto callbackStorage = new CallbackStorage<param_string *>{env, deferred};
+        const auto result = ve_dialog_test_file_open(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_string *)>(callbackStorage->Callback));
+        ThrowOrReturn(env, result);
+        return deferred.Promise();
     }
 
 }

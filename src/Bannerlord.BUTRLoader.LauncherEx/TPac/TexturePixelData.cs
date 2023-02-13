@@ -21,7 +21,7 @@ namespace Bannerlord.BUTRLoader.TPac
         /*public const string KEY_PIXELSIZE = "pixelSize";
         public const string KEY_ALIGN = "align";*/
 
-        public byte[][][] RawImage { set; get; }
+        public byte[][][] RawImage { set; get; } = Array.Empty<byte[][]>();
 
         public byte[] PrimaryRawImage => RawImage[0][0];
 

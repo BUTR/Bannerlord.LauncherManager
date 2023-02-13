@@ -37,7 +37,8 @@
     "untracked",
     "launcherextension",
     "VORTEXEXTENSIONMANAGER",
-    "Кириллица"
+    "Кириллица",
+    "launchermanager"
   ],
   "flagWords": [],
   "ignorePaths": [

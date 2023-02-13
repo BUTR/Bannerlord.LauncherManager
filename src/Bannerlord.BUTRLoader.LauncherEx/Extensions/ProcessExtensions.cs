@@ -16,7 +16,7 @@ namespace Bannerlord.BUTRLoader.Extensions
         public static int ParentProcessId(this Process process) => ParentProcessId(process.Id);
         public static Process? ParentProcess(this Process process) => ParentProcessId(process.Id) is var pId && pId is not -1 ? Process.GetProcessById(pId) : null;
 
-        private static int ParentProcessId(int Id)
+        private static int ParentProcessId(int id)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -24,7 +24,7 @@ namespace Bannerlord.BUTRLoader.Extensions
                 {
                     dwSize = (uint) Marshal.SizeOf(typeof(PROCESSENTRY32))
                 };
-                using var hSnapshot = new SafeSnapshotHandle(PInvoke.CreateToolhelp32Snapshot(CREATE_TOOLHELP_SNAPSHOT_FLAGS.TH32CS_SNAPPROCESS, (uint) Id));
+                using var hSnapshot = new SafeSnapshotHandle(PInvoke.CreateToolhelp32Snapshot(CREATE_TOOLHELP_SNAPSHOT_FLAGS.TH32CS_SNAPPROCESS, (uint) id));
                 if (hSnapshot.IsInvalid) return -1;
 
                 if (!PInvoke.Process32First(hSnapshot, ref pe32))
@@ -32,7 +32,7 @@ namespace Bannerlord.BUTRLoader.Extensions
 
                 do
                 {
-                    if (pe32.th32ProcessID == (uint) Id)
+                    if (pe32.th32ProcessID == (uint) id)
                         return (int) pe32.th32ParentProcessID;
                 } while (PInvoke.Process32Next(hSnapshot, ref pe32));
             }

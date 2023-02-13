@@ -139,8 +139,7 @@ namespace Bannerlord.BUTRLoader.ResourceManagers
 
         private static bool GetCustomTypePrefix(WidgetFactory __instance, string typeName, ref WidgetPrefab __result)
         {
-            if (_liveCustomTypes?.Invoke(__instance) is { } ____liveCustomTypes &&
-                ____liveCustomTypes.Contains(typeName) || !CustomTypes.ContainsKey(typeName))
+            if (_liveCustomTypes?.Invoke(__instance) is { } ____liveCustomTypes && ____liveCustomTypes.Contains(typeName) || !CustomTypes.ContainsKey(typeName))
                 return true;
 
             if (LiveCustomTypes.TryGetValue(typeName, out var liveWidgetPrefab))

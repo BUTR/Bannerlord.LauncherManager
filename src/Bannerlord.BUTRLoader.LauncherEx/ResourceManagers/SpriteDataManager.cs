@@ -195,8 +195,8 @@ namespace Bannerlord.BUTRLoader.ResourceManagers
         public static Sprite? CreateGeneric(string name) => GraphicsContextManager.Instance.TryGetTarget(out var gc) && gc is not null
             ? new SpriteGenericFromTexture(name, new Texture(gc.GetTexture(name))) : null;
         public static void Register(Func<Sprite> func) => DeferredInitialization.Add(func);
-        public static void CreateAndRegister(string name) => Register(() => Create(name));
-        public static void CreateGenericAndRegister(string name) => Register(() => CreateGeneric(name));
+        public static void CreateAndRegister(string name) => Register(() => Create(name)!);
+        public static void CreateGenericAndRegister(string name) => Register(() => CreateGeneric(name)!);
 
         public static void Clear()
         {

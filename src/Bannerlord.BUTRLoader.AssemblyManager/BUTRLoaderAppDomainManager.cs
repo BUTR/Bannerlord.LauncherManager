@@ -20,7 +20,7 @@ namespace Bannerlord.BUTRLoader.AssemblyManager
     {
         [DllImport("user32.dll")]
         private static extern bool SetProcessDPIAware();
-        
+
         private static readonly Harmony _featureHarmony = new("bannerlord.blse.features");
 
         public override void InitializeNewDomain(AppDomainSetup appDomainInfo)
@@ -46,12 +46,12 @@ namespace Bannerlord.BUTRLoader.AssemblyManager
                 {
                     File.Delete(file);
                 }
-                catch (Exception) { }
+                catch (Exception) { /* ignore */ }
             }
 
             Initialize();
 
-            AppDomain.CurrentDomain.AssemblyLoad += (sender, args) =>
+            AppDomain.CurrentDomain.AssemblyLoad += (_, args) =>
             {
                 if (args.LoadedAssembly.GetName().Name == "TaleWorlds.MountAndBlade.Launcher.Library")
                 {
@@ -68,7 +68,7 @@ namespace Bannerlord.BUTRLoader.AssemblyManager
                 .AppendLine(!string.IsNullOrWhiteSpace(ex.Message) ? $"Message: {ex.Message}" : string.Empty)
                 .AppendLine(!string.IsNullOrWhiteSpace(ex.Source) ? $"Source: {ex.Source}" : string.Empty)
                 .AppendLine(!string.IsNullOrWhiteSpace(ex.StackTrace) ? $@"CallStack:{Environment.NewLine}{string.Join(Environment.NewLine, ex.StackTrace.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))}" : string.Empty)
-                .AppendLine(ex.InnerException != null ? $@"{Environment.NewLine}{Environment.NewLine}Inner {GetRecursiveException(ex.InnerException)}" : string.Empty)
+                .AppendLine(ex.InnerException is not null ? $@"{Environment.NewLine}{Environment.NewLine}Inner {GetRecursiveException(ex.InnerException)}" : string.Empty)
                 .ToString();
 
             using var fs = File.Open("BUTRLoader_lasterror.log", FileMode.OpenOrCreate, FileAccess.Write);

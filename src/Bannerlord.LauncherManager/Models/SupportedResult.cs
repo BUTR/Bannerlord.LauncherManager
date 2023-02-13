@@ -1,39 +1,37 @@
 ﻿using System.Collections.Generic;
 
-namespace Bannerlord.LauncherManager.Models
+namespace Bannerlord.LauncherManager.Models;
+
+public record SupportedResult
 {
-    public sealed record SupportedResult
+    public static SupportedResult AsNotSupported { get; } = new()
     {
-        public static SupportedResult AsNotSupported { get; } = new()
+        Supported = false,
+        RequiredFiles = new()
+    };
+    public static SupportedResult AsSupported { get; } = new()
+    {
+        Supported = true,
+        RequiredFiles = new()
+    };
+    public static SupportedResult AsSupportedWithBUTRLoader { get; } = new()
+    {
+        Supported = true,
+        RequiredFiles = new()
         {
-            Supported = false,
-            RequiredFiles = new()
-        };
-        public static SupportedResult AsSupported { get; } = new()
+            "Bannerlord.BUTRLoader.dll",
+            "TaleWorlds.MountAndBlade.Launcher.exe.config",
+        }
+    };
+    public static SupportedResult AsSupportedWithBLSE { get; } = new()
+    {
+        Supported = true,
+        RequiredFiles = new()
         {
-            Supported = true,
-            RequiredFiles = new()
-        };
-        public static SupportedResult AsSupportedWithBUTRLoader { get; } = new()
-        {
-            Supported = true,
-            RequiredFiles = new()
-            {
-                "Bannerlord.BUTRLoader.dll"
-            }
-        };
-        public static SupportedResult AsSupportedWithBLSE { get; } = new()
-        {
-            Supported = true,
-            RequiredFiles = new()
-            {
-                "Bannerlord.BUTRLoader.dll"
-            }
-        };
+            "Bannerlord.BLSE.exe"
+        }
+    };
 
-        public bool Supported { get; set; }
-        public List<string> RequiredFiles { get; set; } = new();
-
-        public override string ToString() => $"Supported: {Supported}; RequiredFiles: {string.Join(", ", RequiredFiles)}";
-    }
+    public bool Supported { get; set; }
+    public List<string> RequiredFiles { get; set; } = new();
 }

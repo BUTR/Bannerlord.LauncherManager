@@ -34,15 +34,11 @@ try {
         $tag = If ($Configuration -eq "Release") { "--release" } Else { $tag }
         $tag = If ($Configuration -eq "Debug") { "--debug" } Else { $tag }
         Invoke-Command -ScriptBlock {
-            npx node-gyp rebuild $tag;
+            npx node-gyp rebuild --arch=x64 $tag;
         }
-
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.dll" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
     }
     # Build JS
-    if ($type -eq "build" -or $type -eq "test" -or $type -or $type -eq "test-build" -eq "build-ts") {
+    if ($type -eq "build" -or $type -eq "test" -or $type -eq "test-build" -or $type -eq "build-ts") {
         Write-Host "Building @butr/vortexextensionnative";
 
         Invoke-Command -ScriptBlock {
@@ -63,9 +59,6 @@ try {
         Copy-Item2 -Path "src/test/Version.xml" -Destination "dist/module/test/bin/Win64_Shipping_Client/" | Out-Null;
         Copy-Item2 -Path "src/test/Harmony.xml" -Destination "dist/module/test/Modules/Bannerlord.Harmony/SubModule.xml" | Out-Null;
         Copy-Item2 -Path "src/test/UIExtenderEx.xml" -Destination "dist/module/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml" | Out-Null;
-        
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net7.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
     }
     if ($type -eq "test" -or $type -eq "test-build" -or $type -eq "test-no-build") {
         Write-Host "Testing with Configuration $Configuration";
