@@ -57,7 +57,7 @@ public static unsafe partial class Bindings
 
     private static void SendNotification(LauncherManagerHandlerNative handler, ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs)
     {
-        Logger.LogInput();
+        Logger.LogInput(displayMs);
 
         fixed (char* pId = id)
         fixed (char* pType = type)
@@ -126,15 +126,15 @@ public static unsafe partial class Bindings
         return returnResult;
     }
 
-    private static byte[]? ReadFileContent(LauncherManagerHandlerNative handler, ReadOnlySpan<char> filePath)
+    private static byte[]? ReadFileContent(LauncherManagerHandlerNative handler, ReadOnlySpan<char> filePath, int offset, int length)
     {
-        Logger.LogInput();
+        Logger.LogInput(offset, length);
 
         fixed (char* pFilePath = filePath)
         {
             Logger.LogPinned(pFilePath);
 
-            using var result = SafeStructMallocHandle.Create(handler.D_ReadFileContent(handler.OwnerPtr, (param_string*) pFilePath), true);
+            using var result = SafeStructMallocHandle.Create(handler.D_ReadFileContent(handler.OwnerPtr, (param_string*) pFilePath, offset, length), true);
             using var content = result.ValueAsData();
             if (content.IsInvalid) return null;
 
@@ -146,7 +146,7 @@ public static unsafe partial class Bindings
 
     private static void WriteFileContent(LauncherManagerHandlerNative handler, ReadOnlySpan<char> filePath, ReadOnlySpan<byte> data, int length)
     {
-        Logger.LogInput();
+        Logger.LogInput(length);
 
         fixed (char* pFilePath = filePath)
         fixed (byte* pData = data)
@@ -168,9 +168,7 @@ public static unsafe partial class Bindings
             Logger.LogPinned(pDirectoryPath);
 
             using var result = SafeStructMallocHandle.Create(handler.D_ReadDirectoryFileList(handler.OwnerPtr, (param_string*) pDirectoryPath), true);
-            if (result.IsNull) return null;
 
-            // TODO: Check null handle
             var returnResult = result.ValueAsJson(CustomSourceGenerationContext.StringArray)!;
             Logger.LogOutput(returnResult);
             return returnResult;
@@ -253,7 +251,7 @@ public static unsafe partial class Bindings
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, return_value_void*> p_send_notification,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void>, return_value_void*> p_send_dialog,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_get_install_path,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_data*> p_read_file_content,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_int, return_value_void*> p_write_file_content,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_file_list,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list,
@@ -290,8 +288,8 @@ public static unsafe partial class Bindings
                 saveLoadOrder: (loadOrder) => SaveLoadOrder(handler, loadOrder),
                 sendNotification: (id, type, message, displayMs) => SendNotification(handler, id, type.ToString().ToLowerInvariant(), message, displayMs),
                 sendDialog: (type, title, message, filters, onResult) => SendDialog(handler, type.ToString().ToLowerInvariant(), title, message, filters, onResult),
-                getInstallPath: () => GetInstallPath(handler),
-                readFileContent: (filePath) => ReadFileContent(handler, filePath),
+                getInstallPath: () => GetInstallPath(handler), 
+                readFileContent: (filePath, offset, length) => ReadFileContent(handler, filePath, offset, length),
                 writeFileContent: (filePath, data) => WriteFileContent(handler, filePath, data, data?.Length ?? 0),
                 readDirectoryFileList: (directoryPath) => ReadDirectoryFileList(handler, directoryPath),
                 readDirectoryList: (directoryPath) => ReadDirectoryList(handler, directoryPath),

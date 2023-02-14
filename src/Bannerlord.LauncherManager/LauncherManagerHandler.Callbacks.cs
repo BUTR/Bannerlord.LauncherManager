@@ -14,7 +14,7 @@ public partial class LauncherManagerHandler
     private SendNotificationDelegate D_SendNotification = (_, _, _, _) => throw new CallbacksNotRegisteredException();
     private SendDialogDelegate D_SendDialog = (_, _, _, _, _) => throw new CallbacksNotRegisteredException();
     private GetInstallPathDelegate D_GetInstallPath = () => throw new CallbacksNotRegisteredException();
-    private ReadFileContentDelegate D_ReadFileContent = (_) => throw new CallbacksNotRegisteredException();
+    private ReadFileContentDelegate D_ReadFileContent = (_, _, _) => throw new CallbacksNotRegisteredException();
     private WriteFileContentDelegate D_WriteFileContent = (_, _) => throw new CallbacksNotRegisteredException();
     private ReadDirectoryFileListDelegate D_ReadDirectoryFileList = (_) => throw new CallbacksNotRegisteredException();
     private ReadDirectoryListDelegate D_ReadDirectoryList = (_) => throw new CallbacksNotRegisteredException();
@@ -62,7 +62,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
+    protected internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -72,7 +72,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal LoadOrder LoadLoadOrder()
+    protected internal LoadOrder LoadLoadOrder()
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -82,7 +82,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal void SaveLoadOrder(LoadOrder loadOrder)
+    protected internal void SaveLoadOrder(LoadOrder loadOrder)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -94,7 +94,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
+    protected internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -104,7 +104,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
+    protected internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -114,7 +114,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal string GetInstallPath()
+    protected internal string GetInstallPath()
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -124,17 +124,17 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal byte[]? ReadFileContent(string filePath)
+    protected internal byte[]? ReadFileContent(string filePath, int offset, int length)
     {
         ThrowIfNoCallbacksRegistered();
 
-        return D_ReadFileContent(filePath);
+        return D_ReadFileContent(filePath, offset, length);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal void WriteFileContent(string filePath, byte[]? data)
+    protected internal void WriteFileContent(string filePath, byte[]? data)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -144,7 +144,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal string[]? ReadDirectoryFileList(string directoryPath)
+    protected internal string[]? ReadDirectoryFileList(string directoryPath)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -154,7 +154,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal string[]? ReadDirectoryList(string directoryPath)
+    protected internal string[]? ReadDirectoryList(string directoryPath)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -164,7 +164,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal IModuleViewModel[]? GetModuleViewModels()
+    protected internal IModuleViewModel[]? GetModuleViewModels()
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -174,7 +174,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
+    protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -184,7 +184,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal LauncherOptions GetOptions()
+    protected internal LauncherOptions GetOptions()
     {
         ThrowIfNoCallbacksRegistered();
 
@@ -194,7 +194,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    internal LauncherState GetState()
+    protected internal LauncherState GetState()
     {
         ThrowIfNoCallbacksRegistered();
 

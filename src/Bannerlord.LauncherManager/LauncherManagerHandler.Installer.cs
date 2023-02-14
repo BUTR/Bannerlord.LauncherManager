@@ -55,7 +55,7 @@ public partial class LauncherManagerHandler
         var instructions = files.Where(x => x.EndsWith(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase)).Select(file =>
         {
             var path = Path.Combine(destinationPath, file);
-            var data = ReadFileContent(path);
+            var data = ReadFileContent(path, 0, -1);
             if (data is null) return new List<IInstallInstruction>();
             var module = ModuleInfoExtended.FromXml(ReaderUtils.Read(data));
             if (module is null) return new List<IInstallInstruction>();

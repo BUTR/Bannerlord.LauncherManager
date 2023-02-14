@@ -20,7 +20,7 @@ internal unsafe delegate return_value_void* N_SendDialogDelegate(param_ptr* p_ow
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_string* N_GetInstallPathDelegate(param_ptr* p_owner);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_data* N_ReadFileContentDelegate(param_ptr* p_owner, param_string* p_file_path);
+internal unsafe delegate return_value_data* N_ReadFileContentDelegate(param_ptr* p_owner, param_string* p_file_path, param_int offset, param_int length);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_WriteFileContentDelegate(param_ptr* p_owner, param_string* p_file_path, param_data* data, param_int length);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

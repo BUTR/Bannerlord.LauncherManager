@@ -166,7 +166,26 @@ namespace Bannerlord.BUTRLoader
                     _executableParameters = string.Join(" ", parameters);
                 },
                 getInstallPath: () => _installPath,
-                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                readFileContent: (path, offset, length) =>
+                {
+                    if (!File.Exists(path)) return null;
+
+                    if (offset == 0 && length == -1)
+                    {
+                        return File.ReadAllBytes(path);
+                    }
+                    else if (offset >= 0 && length > 0)
+                    {
+                        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        var data = new byte[length];
+                        fs.Read(data, offset, length);
+                        return data;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                },
                 writeFileContent: File.WriteAllBytes,
                 readDirectoryFileList: Directory.GetFiles,
                 readDirectoryList: Directory.GetDirectories,

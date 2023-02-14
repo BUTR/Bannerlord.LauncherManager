@@ -4,11 +4,44 @@ using BUTR.NativeAOT.Shared;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization.Metadata;
 
 using static Bannerlord.LauncherManager.Native.Tests.Utils2;
+using static Bannerlord.LauncherManager.Native.Tests.Test;
 
 namespace Bannerlord.LauncherManager.Native.Tests
 {
+    internal static class Test
+    {
+        public static unsafe T? GetResult2<T>(return_value_json* ret) where T : class
+        {
+            using var result = SafeStructMallocHandle.Create(ret, true);
+            return result.ValueAsJson2((JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)));
+        }
+        
+        // SafeStructMallocHandle<TStruct> : SafeStructMallocHandle where TStruct : unmanaged
+        public static unsafe TValue? ValueAsJson2<TStruct, TValue>(this SafeStructMallocHandle<TStruct> structMallocHandle, JsonTypeInfo<TValue> jsonTypeInfo, [CallerMemberName] string? caller = null)
+            where TStruct : unmanaged
+            where TValue : class
+        {
+            if (typeof(TStruct) != typeof(return_value_json))
+                throw new Exception();
+
+            var ptr = (return_value_json*) structMallocHandle.Value;
+            if (ptr->Error is null)
+            {
+                if (ptr->Value is null)
+                    return null;
+                
+                using var json = new SafeStringMallocHandle(ptr->Value, structMallocHandle.IsOwner);
+                return BUTR.NativeAOT.Shared.Utils.DeserializeJson(json, jsonTypeInfo, caller);
+            }
+
+            using var hError = new SafeStringMallocHandle(ptr->Error, structMallocHandle.IsOwner);
+            throw new NativeCallException(new string(hError));
+        }
+    }
+    
     [StructLayout(LayoutKind.Sequential)]
     public readonly unsafe struct param_data : IParameter<param_data>, IParameterSpanFormattable<param_data>, IParameterRawPtr<param_data, byte>, IParameterIntPtr<param_data>
     {
@@ -84,16 +117,29 @@ namespace Bannerlord.LauncherManager.Native.Tests
             return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Unsupported", false), false);
         }
 
-        public static return_value_data* ReadFileContent(param_ptr* handler, param_string* pFilePath)
+        public static return_value_data* ReadFileContent(param_ptr* handler, param_string* pFilePath, param_int offset, param_int length)
         {
-            var filePath = new string(param_string.ToSpan(pFilePath));
-
             var handle = GCHandle.FromIntPtr(new IntPtr(handler)).Target as LauncherManagerWrapper;
-            var data = File.Exists(filePath) ? File.ReadAllBytes(filePath) : null;
-            return return_value_data.AsValue(Copy(data, false), data?.Length ?? 0, false);
+            var path = new string(param_string.ToSpan(pFilePath));
 
+            if (!File.Exists(path)) return null;
 
-            return return_value_data.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Unsupported", false), false);
+            if (offset == 0 && length == -1)
+            {
+                var data = File.ReadAllBytes(path);
+                return return_value_data.AsValue(Copy(data, false), data.Length, false);
+            }
+            else if (offset >= 0 && length > 0)
+            {
+                using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var data = new byte[length];
+                fs.Read(data, offset, length);
+                return return_value_data.AsValue(Copy(data, false), data.Length, false);
+            }
+            else
+            {
+                return return_value_data.AsValue(null, 0, false);
+            }
         }
 
         public static return_value_void* WriteFileContent(param_ptr* handler, param_string* filePath, param_data* data, param_int length)
@@ -101,9 +147,12 @@ namespace Bannerlord.LauncherManager.Native.Tests
             return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Unsupported", false), false);
         }
 
-        public static return_value_json* ReadDirectoryFileList(param_ptr* handler, param_string* directoryPath)
+        public static return_value_json* ReadDirectoryFileList(param_ptr* handler, param_string* pDirectoryPath)
         {
-            return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Unsupported", false), false);
+            var handle = GCHandle.FromIntPtr(new IntPtr(handler)).Target as LauncherManagerWrapper;
+            var directoryPath = new string(param_string.ToSpan(pDirectoryPath));
+
+            return return_value_json.AsValue(Directory.Exists(directoryPath) ? Directory.GetFiles(directoryPath) : null, CustomSourceGenerationContext.StringArray, false);
         }
 
         public static return_value_json* ReadDirectoryList(param_ptr* handler, param_string* directoryPath)
@@ -145,7 +194,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             delegate*<param_ptr*, param_string*, param_string*, param_string*, param_uint, return_value_void*> p_send_notification,
             delegate*<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate*<param_ptr*, param_string*, void>, return_value_void*> p_send_dialog,
             delegate*<param_ptr*, return_value_string*> p_get_install_path,
-            delegate*<param_ptr*, param_string*, return_value_data*> p_read_file_content,
+            delegate*<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
             delegate*<param_ptr*, param_string*, param_data*, param_int, return_value_void*> p_write_file_content,
             delegate*<param_ptr*, param_string*, return_value_json*> p_read_directory_file_list,
             delegate*<param_ptr*, param_string*, return_value_json*> p_read_directory_list,
@@ -157,6 +206,15 @@ namespace Bannerlord.LauncherManager.Native.Tests
         [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static unsafe partial return_value_json* ve_install_module(param_ptr* p_handle, param_json* p_files, param_string* p_destination_path);
 
+        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+        public static unsafe partial return_value_json* ve_get_save_files(param_ptr* p_handle);
+
+        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+        public static unsafe partial return_value_json* ve_get_save_metadata(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len);
+
+        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+        public static unsafe partial return_value_string* ve_get_save_file_path(param_ptr* p_handle, param_string* p_save_file);
+        
         [Test]
         public unsafe void Test_Main()
         {
@@ -205,6 +263,10 @@ namespace Bannerlord.LauncherManager.Native.Tests
 
                 var result = GetResult<InstallResult>(ve_install_module((param_ptr*) launcherManagerPtr, (param_json*) files, (param_string*) destinationPath));
 
+                var res1 = GetResult2<string[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
+                var res2 = GetResult2<string[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
+                var res3 = GetResult2<string[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
+                
                 ;
             });
 

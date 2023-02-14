@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Xml;
 
 using ApplicationVersion = Bannerlord.ModuleManager.ApplicationVersion;
@@ -283,7 +282,7 @@ public class ModuleListHandler
             },
             fileName =>
             {
-                if (string.IsNullOrEmpty(fileName) || _launcherManager.ReadFileContent(fileName) is not { } data) return;
+                if (string.IsNullOrEmpty(fileName) || _launcherManager.ReadFileContent(fileName, 0, -1) is not { } data) return;
 
                 try
                 {
@@ -329,7 +328,7 @@ public class ModuleListHandler
             return;
         }
 
-        if (_launcherManager.ReadFileContent(saveFilePath) is not { } data)
+        if (_launcherManager.ReadFileContent(saveFilePath, 0, -1) is not { } data)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
             onResult(false);
@@ -527,7 +526,7 @@ public class ModuleListHandler
             return;
         }
 
-        if (_launcherManager.ReadFileContent(saveFilePath) is not { } data)
+        if (_launcherManager.ReadFileContent(saveFilePath, 0, -1) is not { } data)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
             return;

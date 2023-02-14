@@ -49,9 +49,16 @@ test('Main', async (t) => {
   const getInstallPath = (): string => {
     return gamePath;
   };
-  const readFileContent = (filePath: string): Uint8Array | null => {
+  const readFileContent = (filePath: string, offset: number, length: number): Uint8Array | null => {
     if (fs.existsSync(filePath)) {
-      return fs.readFileSync(filePath);
+      if (offset === 0 && length === -1) {
+        length = fs.statSync(filePath).size;
+        return Uint8Array.prototype.slice.call(fs.readFileSync(filePath), offset, length);
+      } else if (offset >= 0 && length > 0) {
+        return Uint8Array.prototype.slice.call(fs.readFileSync(filePath), offset, length);
+      } else {
+        return null;
+      }
     }
     return null;
   };

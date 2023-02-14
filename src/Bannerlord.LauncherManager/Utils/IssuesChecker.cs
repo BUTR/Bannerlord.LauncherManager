@@ -13,7 +13,7 @@ public static class IssuesChecker
         if (!string.IsNullOrEmpty(folder)) return;
 
         var harmonyFilePath = Path.Combine(folder, "bin", "Win64_Shipping_Client", "0Harmony.dll");
-        if (launcherManagerHandler.ReadFileContent(harmonyFilePath) is not { } data) return;
+        if (launcherManagerHandler.ReadFileContent(harmonyFilePath, 0, -1) is not { } data) return;
 
         launcherManagerHandler.ShowWarning("{=dDprK7Mz}WARNING!", "{=tqjPGPtP}BUTRLoader detected 0Harmony.dll inside the game's root bin folder!{NL}This could lead to issues, remove it?", string.Empty, result =>
         {

@@ -38,7 +38,7 @@ public partial class LauncherManagerHandler
         foreach (var modulePath in GetModulePaths())
         {
             var subModulePath = Path.Combine(modulePath, Constants.SubModuleName);
-            if (ReadFileContent(subModulePath) is { } data)
+            if (ReadFileContent(subModulePath, 0, -1) is { } data)
             {
                 ModuleInfoExtended? moduleInfoExtended;
                 try

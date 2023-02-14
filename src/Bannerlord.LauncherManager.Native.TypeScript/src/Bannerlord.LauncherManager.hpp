@@ -312,15 +312,17 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
-    static return_value_data *readFileContent(void *p_owner, char16_t *p_file_path) noexcept
+    static return_value_data *readFileContent(void *p_owner, char16_t *p_file_path, int32_t p_offset, int32_t p_length) noexcept
     {
         try
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
             const auto filePath = String::New(env, p_file_path);
+            const auto offset = Number::New(env, p_offset);
+            const auto length = Number::New(env, p_length);
 
-            const auto result = manager->FReadFileContent({filePath});
+            const auto result = manager->FReadFileContent({filePath, offset, length});
 
             if (result.IsNull())
             {
