@@ -3,6 +3,8 @@ using Bannerlord.LauncherManager.Models;
 
 using BUTR.NativeAOT.Shared;
 
+using FetchBannerlordVersion;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -111,4 +113,17 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     }
 
     public override string? GetSaveFilePath(string saveFile) => Path.Combine(SavePath, $"{saveFile}.sav");
+    
+    
+    public override string GetGameVersion()
+    {
+        var gamePath = GetInstallPath();
+        return Fetcher.GetVersion(gamePath, "TaleWorlds.Library.dll");
+    }
+
+    public override int GetChangeset()
+    {
+        var gamePath = GetInstallPath();
+        return Fetcher.GetChangeSet(gamePath, "TaleWorlds.Library.dll");
+    }
 }

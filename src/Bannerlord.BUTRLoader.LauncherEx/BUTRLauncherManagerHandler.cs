@@ -55,7 +55,7 @@ namespace Bannerlord.BUTRLoader
 
             var ids = new ConcurrentDictionary<string, object?>();
             RegisterCallbacks(
-                loadLoadOrder: LoadLoadOrder,
+                loadLoadOrder: LoadTWLoadOrder,
                 saveLoadOrder: loadOrder =>
                 {
                     var userGameTypeData = _userDataManager.UserData.SingleplayerData;
@@ -192,7 +192,7 @@ namespace Bannerlord.BUTRLoader
                 readDirectoryList: Directory.GetDirectories,
                 getModuleViewModels: () => _getModuleViewModels?.Invoke()?.ToArray() ?? Array.Empty<IModuleViewModel>(),
                 setModuleViewModels: (orderedViewModels) => _setModuleViewModels?.Invoke(orderedViewModels),
-                getOptions: GetOptions,
+                getOptions: GetTWOptions,
                 getState: () => _getState?.Invoke() ?? LauncherState.Empty
             );
         }
@@ -212,7 +212,7 @@ namespace Bannerlord.BUTRLoader
             _setModuleViewModels = setModuleViewModels;
         }
 
-        public LoadOrder LoadLoadOrder()
+        public LoadOrder LoadTWLoadOrder()
         {
             var state = _getState?.Invoke() ?? LauncherState.Empty;
 
@@ -226,7 +226,7 @@ namespace Bannerlord.BUTRLoader
             }));
         }
 
-        public LauncherOptions GetOptions() => new()
+        public LauncherOptions GetTWOptions() => new()
         {
             BetaSorting = LauncherSettings.BetaSorting,
             FixCommonIssues = LauncherSettings.FixCommonIssues,

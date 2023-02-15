@@ -284,7 +284,7 @@ namespace Bannerlord.BUTRLoader.ViewModels
             if (hasChanges)
             {
                 File.WriteAllText(ConfigReader.GameConfigPath, sb.ToString());
-                var options = _launcherManagerHandler.GetOptions();
+                var options = _launcherManagerHandler.GetTWOptions();
                 BUTRLocalizationManager.ActiveLanguage = options.Language;
             }
         }

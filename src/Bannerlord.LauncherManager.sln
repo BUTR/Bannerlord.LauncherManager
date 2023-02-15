@@ -13,6 +13,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{FA205CE3-25C8-4140-A0B9-843AC92340C6}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\publish-native-ts.yml = ..\.github\workflows\publish-native-ts.yml
+		..\.github\workflows\publish-nuget.yml = ..\.github\workflows\publish-nuget.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.LauncherManager.Native.Tests", "..\test\Bannerlord.LauncherManager.Native.Tests\Bannerlord.LauncherManager.Native.Tests.csproj", "{35FD1D55-D155-4950-9608-25129B0135B2}"

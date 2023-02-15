@@ -1,7 +1,5 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
-using FetchBannerlordVersion;
-
 using System.Linq;
 
 namespace Bannerlord.LauncherManager;
@@ -16,20 +14,12 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual string GetGameVersion()
-    {
-        var gamePath = GetInstallPath();
-        return Fetcher.GetVersion(gamePath, "TaleWorlds.Library.dll");
-    }
+    public virtual string GetGameVersion() => string.Empty;
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual int GetChangeset()
-    {
-        var gamePath = GetInstallPath();
-        return Fetcher.GetChangeSet(gamePath, "TaleWorlds.Library.dll");
-    }
+    public virtual int GetChangeset() => -1;
 
     /// <summary>
     /// External<br/>
