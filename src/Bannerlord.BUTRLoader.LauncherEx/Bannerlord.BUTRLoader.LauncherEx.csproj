@@ -50,6 +50,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Bannerlord.BUTR.Shared needs the package, but Bannerlord.LauncherManager provides the types already -->
+    <PackageReference Include="Bannerlord.ModuleManager.Source" Version="5.0.198" PrivateAssets="all" IncludeAssets="none" />
     <PackageReference Include="Bannerlord.BUTR.Shared" Version="3.0.0.130" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Harmony.Extensions" Version="3.2.0.73" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="Lib.Harmony" Version="2.2.2" />
@@ -58,6 +60,11 @@
     <PackageReference Include="Ookii.Dialogs.WinForms" Version="4.0.0" />
     <PackageReference Include="PolySharp" Version="1.12.1" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="StbSharp" Version="0.7.2.38" PrivateAssets="all" IncludeAssets="compile" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

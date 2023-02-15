@@ -1,13 +1,10 @@
-﻿using Bannerlord.LauncherManager.Models;
-
-using BUTR.NativeAOT.Shared;
+﻿using BUTR.NativeAOT.Shared;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization.Metadata;
 
 using static Bannerlord.LauncherManager.Native.Tests.Utils2;
-using static Bannerlord.LauncherManager.Native.Tests.Test;
 
 namespace Bannerlord.LauncherManager.Native.Tests
 {
@@ -18,7 +15,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             using var result = SafeStructMallocHandle.Create(ret, true);
             return result.ValueAsJson2((JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T)));
         }
-        
+
         // SafeStructMallocHandle<TStruct> : SafeStructMallocHandle where TStruct : unmanaged
         public static unsafe TValue? ValueAsJson2<TStruct, TValue>(this SafeStructMallocHandle<TStruct> structMallocHandle, JsonTypeInfo<TValue> jsonTypeInfo, [CallerMemberName] string? caller = null)
             where TStruct : unmanaged
@@ -32,7 +29,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             {
                 if (ptr->Value is null)
                     return null;
-                
+
                 using var json = new SafeStringMallocHandle(ptr->Value, structMallocHandle.IsOwner);
                 return BUTR.NativeAOT.Shared.Utils.DeserializeJson(json, jsonTypeInfo, caller);
             }
@@ -41,7 +38,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             throw new NativeCallException(new string(hError));
         }
     }
-    
+
     [StructLayout(LayoutKind.Sequential)]
     public readonly unsafe struct param_data : IParameter<param_data>, IParameterSpanFormattable<param_data>, IParameterRawPtr<param_data, byte>, IParameterIntPtr<param_data>
     {
@@ -80,7 +77,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
 
     public sealed unsafe class LauncherManagerWrapper
     {
-        public static unsafe byte* Copy(in ReadOnlySpan<byte> data, bool isOwner)
+        private static byte* Copy(in ReadOnlySpan<byte> data, bool isOwner)
         {
             var dst = (byte*) Allocator.Alloc(new UIntPtr((uint) data.Length));
             data.CopyTo(new Span<byte>(dst, data.Length));
@@ -153,7 +150,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             var handle = GCHandle.FromIntPtr(new IntPtr(handler)).Target as LauncherManagerWrapper;
             var directoryPath = new string(param_string.ToSpan(pDirectoryPath));
 
-            return return_value_json.AsValue(Directory.Exists(directoryPath) ? Directory.GetFiles(directoryPath) : null, CustomSourceGenerationContext.StringArray, false);
+            return return_value_json.AsValue(Directory.Exists(directoryPath) ? Directory.GetFiles(directoryPath) : null, CustomSourceGenerationContext.StringArray!, false);
         }
 
         public static return_value_json* ReadDirectoryList(param_ptr* handler, param_string* directoryPath)
@@ -215,7 +212,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
 
         [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
         public static unsafe partial return_value_string* ve_get_save_file_path(param_ptr* p_handle, param_string* p_save_file);
-        
+
         /*
         [Test]
         public unsafe void Test_Main()

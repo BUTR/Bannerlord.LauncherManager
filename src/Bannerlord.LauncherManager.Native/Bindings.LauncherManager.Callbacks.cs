@@ -288,7 +288,7 @@ public static unsafe partial class Bindings
                 saveLoadOrder: (loadOrder) => SaveLoadOrder(handler, loadOrder),
                 sendNotification: (id, type, message, displayMs) => SendNotification(handler, id, type.ToString().ToLowerInvariant(), message, displayMs),
                 sendDialog: (type, title, message, filters, onResult) => SendDialog(handler, type.ToString().ToLowerInvariant(), title, message, filters, onResult),
-                getInstallPath: () => GetInstallPath(handler), 
+                getInstallPath: () => GetInstallPath(handler),
                 readFileContent: (filePath, offset, length) => ReadFileContent(handler, filePath, offset, length),
                 writeFileContent: (filePath, data) => WriteFileContent(handler, filePath, data, data?.Length ?? 0),
                 readDirectoryFileList: (directoryPath) => ReadDirectoryFileList(handler, directoryPath),

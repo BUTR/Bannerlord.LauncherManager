@@ -11,10 +11,10 @@ namespace Bannerlord.LauncherManager.Tests
 {
     public class LauncherManagerHandlerExposer : LauncherManagerHandler
     {
-        public IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
+        public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
 
     }
-    
+
     public class HandlerTests
     {
         private record ModuleViewModel : IModuleViewModel
@@ -50,7 +50,7 @@ namespace Bannerlord.LauncherManager.Tests
                 return null;
             }
         }
-        
+
         [Test]
         public void Sorter_Sort_Test()
         {

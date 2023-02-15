@@ -601,8 +601,8 @@ public static unsafe partial class Bindings
             return return_value_json.AsException(e, false);
         }
     }
-    
-    
+
+
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_executable", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* SetGameParameterExecutable(param_ptr* p_handle, param_string* p_executable)
     {
@@ -625,7 +625,7 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    
+
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* SetGameParameterSaveFile(param_ptr* p_handle, param_string* p_save_file)
     {
@@ -648,7 +648,7 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    
+
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* DialogTestWarning(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)

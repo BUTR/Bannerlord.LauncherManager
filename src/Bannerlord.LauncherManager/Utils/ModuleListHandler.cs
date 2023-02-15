@@ -535,7 +535,7 @@ public class ModuleListHandler
         var modules = ReadSaveFileModuleList(data);
         if (modules.Length == 0)
             return;
-        
+
         _launcherManager.ShowFileSave(
             new BUTRTextObject("{=XSxlKweM}Save a Bannerlord Module List File").ToString(),
             $"{saveFile}.bmlist",

@@ -19,7 +19,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
 {
     private static readonly string SavePath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Mount and Blade II Bannerlord", "Game Saves");
-    
+
     public static LauncherManagerHandlerNative? FromPointer(void* ptr) => GCHandle.FromIntPtr(new IntPtr(ptr)).Target as LauncherManagerHandlerNative;
 
     public N_SetGameParametersDelegate D_SetGameParameters = (_, _, _) => throw new CallbacksNotRegisteredException();
@@ -113,8 +113,8 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     }
 
     public override string? GetSaveFilePath(string saveFile) => Path.Combine(SavePath, $"{saveFile}.sav");
-    
-    
+
+
     public override string GetGameVersion()
     {
         var gamePath = GetInstallPath();
