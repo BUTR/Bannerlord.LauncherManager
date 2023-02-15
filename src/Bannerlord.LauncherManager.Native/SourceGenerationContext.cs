@@ -21,6 +21,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 [JsonSerializable(typeof(IReadOnlyList<DialogFileFilter>))]
 
+[JsonSerializable(typeof(TWSaveMetadata))]
 [JsonSerializable(typeof(SaveMetadata))]
 [JsonSerializable(typeof(SaveMetadata[]))]
 

@@ -178,7 +178,8 @@ namespace Bannerlord.BUTRLoader
                     {
                         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                         var data = new byte[length];
-                        fs.Read(data, offset, length);
+                        fs.Seek(offset, SeekOrigin.Begin);
+                        fs.Read(data, 0, length);
                         return data;
                     }
                     else

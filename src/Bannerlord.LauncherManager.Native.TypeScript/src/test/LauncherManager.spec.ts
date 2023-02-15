@@ -52,10 +52,12 @@ test('Main', async (t) => {
   const readFileContent = (filePath: string, offset: number, length: number): Uint8Array | null => {
     if (fs.existsSync(filePath)) {
       if (offset === 0 && length === -1) {
-        length = fs.statSync(filePath).size;
-        return Uint8Array.prototype.slice.call(fs.readFileSync(filePath), offset, length);
+        return fs.readFileSync(filePath);
       } else if (offset >= 0 && length > 0) {
-        return Uint8Array.prototype.slice.call(fs.readFileSync(filePath), offset, length);
+        const fd = fs.openSync(filePath, 'r');
+        const buffer = Buffer.alloc(length);
+        fs.readSync(fd, buffer, offset, length, 0);
+        return buffer;
       } else {
         return null;
       }

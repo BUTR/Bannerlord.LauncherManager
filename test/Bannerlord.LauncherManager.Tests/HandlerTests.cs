@@ -3,11 +3,18 @@
 using NUnit.Framework;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace Bannerlord.LauncherManager.Tests
 {
+    public class LauncherManagerHandlerExposer : LauncherManagerHandler
+    {
+        public IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
+
+    }
+    
     public class HandlerTests
     {
         private record ModuleViewModel : IModuleViewModel
@@ -22,6 +29,28 @@ namespace Bannerlord.LauncherManager.Tests
         private const string GamePath = "./Data/game/";
         private const string VortexTestMod = "./Data/vortex/mountandblade2bannerlord/mods/Test/";
 
+        private static byte[]? Read(string filePath, int offset, int length)
+        {
+            if (!File.Exists(filePath)) return null;
+
+            if (offset == 0 && length == -1)
+            {
+                return File.ReadAllBytes(filePath);
+            }
+            else if (offset >= 0 && length > 0)
+            {
+                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var data = new byte[length];
+                fs.Seek(offset, SeekOrigin.Begin);
+                fs.Read(data, 0, length);
+                return data;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
         [Test]
         public void Sorter_Sort_Test()
         {
@@ -34,7 +63,7 @@ namespace Bannerlord.LauncherManager.Tests
 
             var moduleViewModels = Array.Empty<IModuleViewModel>();
 
-            var handler = new LauncherManagerHandler();
+            var handler = new LauncherManagerHandlerExposer();
             handler.RegisterCallbacks(
                 loadLoadOrder: null!,
                 saveLoadOrder: lo => loadOrder = lo,
@@ -42,7 +71,7 @@ namespace Bannerlord.LauncherManager.Tests
                 sendDialog: null!,
                 setGameParameters: (executable, parameters) => { },
                 getInstallPath: () => Path.GetFullPath(GamePath)!,
-                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: Directory.GetFiles,
                 readDirectoryList: Directory.GetDirectories,
@@ -80,7 +109,7 @@ namespace Bannerlord.LauncherManager.Tests
         [Test]
         public void ModuleProvider_GetModules_Test()
         {
-            var handler = new LauncherManagerHandler();
+            var handler = new LauncherManagerHandlerExposer();
             handler.RegisterCallbacks(
                 loadLoadOrder: null!,
                 saveLoadOrder: null!,
@@ -88,7 +117,7 @@ namespace Bannerlord.LauncherManager.Tests
                 sendDialog: null!,
                 setGameParameters: null!,
                 getInstallPath: () => Path.GetFullPath(GamePath),
-                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
                 readDirectoryList: s => Directory.GetDirectories(s),
@@ -110,7 +139,7 @@ namespace Bannerlord.LauncherManager.Tests
                 "Test\\SubModule.xml",
             };
 
-            var handler = new LauncherManagerHandler();
+            var handler = new LauncherManagerHandlerExposer();
             handler.RegisterCallbacks(
                 loadLoadOrder: null!,
                 saveLoadOrder: null!,
@@ -140,7 +169,7 @@ namespace Bannerlord.LauncherManager.Tests
                 "Test\\SubModule.xml",
             };
 
-            var handler = new LauncherManagerHandler();
+            var handler = new LauncherManagerHandlerExposer();
             handler.RegisterCallbacks(
                 loadLoadOrder: null!,
                 saveLoadOrder: null!,
@@ -148,7 +177,7 @@ namespace Bannerlord.LauncherManager.Tests
                 sendDialog: null!,
                 setGameParameters: null!,
                 getInstallPath: null!,
-                readFileContent: (path) => File.Exists(path) ? File.ReadAllBytes(path) : null,
+                readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
                 readDirectoryList: null!,

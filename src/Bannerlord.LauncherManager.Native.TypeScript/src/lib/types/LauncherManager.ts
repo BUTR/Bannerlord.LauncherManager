@@ -36,7 +36,7 @@ export interface LauncherState {
 
 export interface SaveMetadata {
   [key: string]: string;
-  name: string;
+  Name: string;
 }
 
 export type NotificationType = 'hint' | 'info';

@@ -55,6 +55,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             IncludeFields = false,
             WriteIndented = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
             Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin),
             Converters =
             {

@@ -133,7 +133,8 @@ namespace Bannerlord.LauncherManager.Native.Tests
             {
                 using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var data = new byte[length];
-                fs.Read(data, offset, length);
+                fs.Seek(offset, SeekOrigin.Begin);
+                fs.Read(data, 0, length);
                 return return_value_data.AsValue(Copy(data, false), data.Length, false);
             }
             else
@@ -263,9 +264,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
 
                 var result = GetResult<InstallResult>(ve_install_module((param_ptr*) launcherManagerPtr, (param_json*) files, (param_string*) destinationPath));
 
-                var res1 = GetResult2<string[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
-                var res2 = GetResult2<string[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
-                var res3 = GetResult2<string[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
+                var res1 = GetResult2<SaveMetadata[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
                 
                 ;
             });

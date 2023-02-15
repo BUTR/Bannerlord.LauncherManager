@@ -2,17 +2,30 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace Bannerlord.LauncherManager.Models;
 
+public class TWSaveMetadata
+{
+    [Newtonsoft.Json.JsonProperty("List")]
+    [System.Text.Json.Serialization.JsonPropertyName("List")]
+    public Dictionary<string, string> List { get; set; } = new();
+}
+
 public class SaveMetadata : Dictionary<string, string>
 {
+    [Newtonsoft.Json.JsonIgnore]
+    [System.Text.Json.Serialization.JsonIgnore]
     public string Name => this[nameof(Name)];
 
-    [JsonConstructor]
+    [Newtonsoft.Json.JsonConstructor]
+    [System.Text.Json.Serialization.JsonConstructor]
     public SaveMetadata() { }
     public SaveMetadata(string name)
+    {
+        this[nameof(Name)] = name;
+    }
+    public SaveMetadata(string name, TWSaveMetadata metadata) : base(metadata.List)
     {
         this[nameof(Name)] = name;
     }

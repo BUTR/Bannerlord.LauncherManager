@@ -5,10 +5,10 @@ using BUTR.NativeAOT.Shared;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 
 namespace Bannerlord.LauncherManager.Native;
@@ -16,7 +16,7 @@ namespace Bannerlord.LauncherManager.Native;
 internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandler, IDisposable
 {
     private static readonly string SavePath =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Mount and Blade II Bannerlord", "Game Saves", "Native");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Mount and Blade II Bannerlord", "Game Saves");
     
     public static LauncherManagerHandlerNative? FromPointer(void* ptr) => GCHandle.FromIntPtr(new IntPtr(ptr)).Target as LauncherManagerHandlerNative;
 
@@ -66,44 +66,44 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public new void ShowHint(BUTRTextObject message) => base.ShowHint(message);
     public new void ShowHint(string message) => base.ShowHint(message);
 
-    private bool TryReadSaveMetadata(string fileName, Span<byte> data, out int length, [NotNullWhen(true)] out SaveMetadata? saveMetadata)
-    {
-        length = BitConverter.ToInt32(data.Slice(0, 4));
-        if (length > data.Length)
-        {
-            length = length + 4;
-            saveMetadata = null;
-            return false;
-        }
-        saveMetadata = JsonSerializer.Deserialize(data.Slice(4), Bindings.CustomSourceGenerationContext.SaveMetadata);
-        if (saveMetadata is null) return false;
-        
-        saveMetadata["Name"] = fileName;
-        return true;
-    }
-    
     public override SaveMetadata? GetSaveMetadata(string fileName, byte[] data)
     {
-        if (TryReadSaveMetadata(fileName, data, out _, out var saveMetadata))
-            return saveMetadata;
-        return null;
+        var length = BitConverter.ToInt32(data.AsSpan(0, 4));
+        if (length > 5 * 1024 * 1024) return null; // 5MB JSON? Orly?
+        if (length > data.Length - 4) return null;
+
+        try
+        {
+            var metadata = JsonSerializer.Deserialize(Encoding.UTF8.GetString(data.AsSpan(4, length)), Bindings.CustomSourceGenerationContext.TWSaveMetadata);
+            if (metadata == null) return null;
+            return new SaveMetadata(Path.GetFileName(fileName), metadata);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public override SaveMetadata[] GetSaveFiles()
     {
         IEnumerable<SaveMetadata> GetSaveFilesInternal()
         {
-            foreach (var file in ReadDirectoryFileList(SavePath) ?? Array.Empty<string>())
+            foreach (var filePath in ReadDirectoryFileList(SavePath) ?? Array.Empty<string>())
             {
-                if (ReadFileContent(file, 0, 1024) is not { } data) continue;
-                if (!TryReadSaveMetadata(file, data, out var length, out var saveMetadata))
+                if (ReadFileContent(filePath, 0, 4) is not { } lengthData) continue;
+                var length = BitConverter.ToInt32(lengthData, 0);
+                if (length > 5 * 1024 * 1024) continue; // 5MB JSON? Orly?
+                if (ReadFileContent(filePath, 4, length) is not { } jsonData) continue;
+
+                SaveMetadata? saveMetadata;
+                try
                 {
-                    Span<byte> dataFull = new byte[length];
-                    data.CopyTo(dataFull);
-                    if (ReadFileContent(file, 1024, length - 1024) is not { } dataExtended) continue;
-                    dataExtended.CopyTo(dataFull.Slice(1024));
-                    if (!TryReadSaveMetadata(file, data, out _, out saveMetadata)) continue;
+                    var metadata = JsonSerializer.Deserialize(jsonData, Bindings.CustomSourceGenerationContext.TWSaveMetadata);
+                    saveMetadata = metadata is not null ? new SaveMetadata(JsonSerializer.Serialize(metadata, Bindings.CustomSourceGenerationContext.TWSaveMetadata), metadata) : null;
                 }
+                catch (JsonException) { saveMetadata = null; }
+                if (saveMetadata is null) continue;
+
                 yield return saveMetadata;
             }
         }

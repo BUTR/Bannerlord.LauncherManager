@@ -25,5 +25,6 @@ namespace Bannerlord.LauncherManager.Native.Tests
     [JsonSerializable(typeof(AttributeInstallInstruction))]
     [JsonSerializable(typeof(CopyInstallInstruction))]
     [JsonSerializable(typeof(NoneInstallInstruction))]
+    [JsonSerializable(typeof(SaveMetadata[]))]
     internal partial class SourceGenerationContext : JsonSerializerContext { }
 }
