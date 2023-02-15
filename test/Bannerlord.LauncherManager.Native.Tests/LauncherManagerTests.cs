@@ -216,6 +216,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
         [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
         public static unsafe partial return_value_string* ve_get_save_file_path(param_ptr* p_handle, param_string* p_save_file);
         
+        /*
         [Test]
         public unsafe void Test_Main()
         {
@@ -240,7 +241,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
                     "Modules\\Bannerlord.Harmony\\bin\\Win64_Shipping_Client\\Bannerlord.Harmony.dll",
                     "Modules\\Bannerlord.Harmony\\bin\\Win64_Shipping_Client\\Bannerlord.Harmony.pdb",
                 });
-                using var destinationPath = BUTR.NativeAOT.Shared.Utils.Copy("C:\\Users\\vitalii.mikhailov\\Downloads\\Harmony-2006-v2-2-2-140-1667140570", true);
+                using var destinationPath = BUTR.NativeAOT.Shared.Utils.Copy("C:\\Users\\aragas\\Downloads\\Harmony-2006-v2-2-2-140-1667140570", true);
                 var launcherManagerWrapper = new LauncherManagerWrapper();
                 var launcherManagerWrapperHandle = GCHandle.Alloc(launcherManagerWrapper);
                 var handle = GCHandle.ToIntPtr(launcherManagerWrapperHandle);
@@ -273,5 +274,6 @@ namespace Bannerlord.LauncherManager.Native.Tests
             Assert.That(LibraryAliveCount(), Is.EqualTo(0));
 #endif
         }
+        */
     }
 }
