@@ -99,7 +99,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
                 try
                 {
                     var metadata = JsonSerializer.Deserialize(jsonData, Bindings.CustomSourceGenerationContext.TWSaveMetadata);
-                    saveMetadata = metadata is not null ? new SaveMetadata(JsonSerializer.Serialize(metadata, Bindings.CustomSourceGenerationContext.TWSaveMetadata), metadata) : null;
+                    saveMetadata = metadata is not null ? new SaveMetadata(Path.GetFileName(filePath), metadata) : null;
                 }
                 catch (JsonException) { saveMetadata = null; }
                 if (saveMetadata is null) continue;
