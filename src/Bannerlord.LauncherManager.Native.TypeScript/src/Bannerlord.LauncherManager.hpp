@@ -56,6 +56,8 @@ namespace Bannerlord::LauncherManager
         void RefreshGameParameters(const CallbackInfo &info);
         void RefreshModules(const CallbackInfo &info);
         void RegisterCallbacks(const CallbackInfo &info);
+        void SetGameParameterExecutable(const CallbackInfo &info);
+        void SetGameParameterSaveFile(const CallbackInfo &info);
         void Sort(const CallbackInfo &info);
         Napi::Value SortHelperChangeModulePosition(const CallbackInfo &info);
         Napi::Value SortHelperToggleModuleSelection(const CallbackInfo &info);
@@ -96,6 +98,8 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::RefreshGameParameters>("refreshGameParameters", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::RefreshModules>("refreshModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::RegisterCallbacks>("registerCallbacks", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SetGameParameterExecutable>("setGameParameterExecutable", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SetGameParameterSaveFile>("setGameParameterSaveFile", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::Sort>("sort", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SortHelperChangeModulePosition>("sortHelperChangeModulePosition", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SortHelperToggleModuleSelection>("sortHelperToggleModuleSelection", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -742,6 +746,28 @@ namespace Bannerlord::LauncherManager
 
         const auto result = ve_order_by_load_order(this->_pInstance, loadOrderCopy.get());
         return ThrowOrReturnJson(env, result);
+    }
+
+    void LauncherManager::SetGameParameterExecutable(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto executable = info[0].As<String>();
+
+        const auto executableCopy = CopyWithFree(executable.Utf16Value());
+
+        const auto result = ve_set_game_parameter_executable(this->_pInstance, executableCopy.get());
+        ThrowOrReturn(env, result);
+    }
+
+    void LauncherManager::SetGameParameterSaveFile(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto saveName = info[0].As<String>();
+
+        const auto saveNameCopy = CopyWithFree(saveName.Utf16Value());
+
+        const auto result = ve_set_game_parameter_save_file(this->_pInstance, saveNameCopy.get());
+        ThrowOrReturn(env, result);
     }
 
     Napi::Value LauncherManager::DialogTestWarning(const CallbackInfo &info)

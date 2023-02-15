@@ -51,21 +51,21 @@ public partial class LauncherManagerHandler
     }
 
     /// <summary>
-    /// External<br/>
-    /// </summary>
-    public void SetGameParameterExecutable(string executable)
-    {
-        _currentExecutable = executable;
-        RefreshGameParameters();
-    }
-
-    /// <summary>
     /// Internal<br/>
     /// </summary>
     internal void SetGameParameterLoadOrder(LoadOrder loadOrder)
     {
         var activeLoadOrder = loadOrder.Where(x => x.Value.IsSelected).Select(x => x.Key).ToArray();
         _currentLoadOrder = activeLoadOrder.Length > 0 ? $"_MODULES_*{string.Join("*", activeLoadOrder)}*_MODULES_" : string.Empty;
+        RefreshGameParameters();
+    }
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public void SetGameParameterExecutable(string executable)
+    {
+        _currentExecutable = executable;
         RefreshGameParameters();
     }
 

@@ -75,6 +75,12 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
       getState
     );
   }
+  public setGameParameterExecutable(executable: string): void {
+    return this.manager.setGameParameterExecutable(executable);
+  }
+  public setGameParameterSaveFile(saveName: string): void {
+    return this.manager.setGameParameterSaveFile(saveName);
+  }
   public sort = (): void => {
     return this.manager.sort();
   }

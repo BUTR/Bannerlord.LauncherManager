@@ -105,6 +105,8 @@ export type LauncherManager = {
     getOptions: () => LauncherOptions,
     getState: () => LauncherState,
   ): void;
+  setGameParameterExecutable(executable: string): void;
+  setGameParameterSaveFile(saveName: string): void;
   sort(): void;
   sortHelperChangeModulePosition(moduleViewModel: ModuleViewModel, insertIndex: number): boolean;
   sortHelperToggleModuleSelection(moduleViewModel: ModuleViewModel): ModuleViewModel;

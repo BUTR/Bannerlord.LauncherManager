@@ -601,6 +601,54 @@ public static unsafe partial class Bindings
             return return_value_json.AsException(e, false);
         }
     }
+    
+    
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_executable", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_void* SetGameParameterExecutable(param_ptr* p_handle, param_string* p_executable)
+    {
+        Logger.LogInput(p_executable);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            var executable = new string(param_string.ToSpan(p_executable));
+
+            handler.SetGameParameterExecutable(executable);
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
+    
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_void* SetGameParameterSaveFile(param_ptr* p_handle, param_string* p_save_file)
+    {
+        Logger.LogInput(p_save_file);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            var saveFile = new string(param_string.ToSpan(p_save_file));
+
+            handler.SetGameParameterSaveFile(saveFile);
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
+    
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* DialogTestWarning(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
