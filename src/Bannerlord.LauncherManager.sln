@@ -18,10 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.LauncherManager.Native.Tests", "..\test\Bannerlord.LauncherManager.Native.Tests\Bannerlord.LauncherManager.Native.Tests.csproj", "{35FD1D55-D155-4950-9608-25129B0135B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.BUTRLoader.LauncherEx", "Bannerlord.BUTRLoader.LauncherEx\Bannerlord.BUTRLoader.LauncherEx.csproj", "{E789F852-FFD1-4422-ABC7-12B183458447}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bannerlord.BUTRLoader.AssemblyManager", "Bannerlord.BUTRLoader.AssemblyManager\Bannerlord.BUTRLoader.AssemblyManager.csproj", "{234946BE-FCDC-4895-8820-A0B2D71D0DAF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,21 +40,11 @@ Global
 		{35FD1D55-D155-4950-9608-25129B0135B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35FD1D55-D155-4950-9608-25129B0135B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35FD1D55-D155-4950-9608-25129B0135B2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{234946BE-FCDC-4895-8820-A0B2D71D0DAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{234946BE-FCDC-4895-8820-A0B2D71D0DAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{234946BE-FCDC-4895-8820-A0B2D71D0DAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{234946BE-FCDC-4895-8820-A0B2D71D0DAF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E789F852-FFD1-4422-ABC7-12B183458447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E789F852-FFD1-4422-ABC7-12B183458447}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E789F852-FFD1-4422-ABC7-12B183458447}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E789F852-FFD1-4422-ABC7-12B183458447}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AE4F1B85-E0A1-4DD0-BB5D-0BBD3C09C5FF} = {EBC69772-7E45-4996-844B-EB7D6D456E26}
 		{187F7140-F60E-4B54-8D9E-36B743625069} = {C8EDF62A-BBD6-475C-AA91-7F2F560E89C2}
 		{092F3FB1-0028-4F59-B4AC-AAA90AE91287} = {EBC69772-7E45-4996-844B-EB7D6D456E26}
 		{35FD1D55-D155-4950-9608-25129B0135B2} = {C8EDF62A-BBD6-475C-AA91-7F2F560E89C2}
-		{E789F852-FFD1-4422-ABC7-12B183458447} = {EBC69772-7E45-4996-844B-EB7D6D456E26}
-		{234946BE-FCDC-4895-8820-A0B2D71D0DAF} = {EBC69772-7E45-4996-844B-EB7D6D456E26}
 	EndGlobalSection
 EndGlobal
