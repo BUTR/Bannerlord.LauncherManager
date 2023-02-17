@@ -86,7 +86,7 @@ namespace Utils
         return dst;
     }
 
-    std::unique_ptr<uint8_t[], deleter<uint8_t>> CopyWithFree(const uint8_t *const data, int32_t length)
+    std::unique_ptr<uint8_t[], deleter<uint8_t>> CopyWithFree(const uint8_t *const data, size_t length)
     {
         return std::unique_ptr<uint8_t[], deleter<uint8_t>>(Copy(data, length));
     }

@@ -722,7 +722,7 @@ namespace Bannerlord::LauncherManager
         const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
         const auto dataCopy = CopyWithFree(data.Data(), data.ByteLength());
 
-        const auto result = ve_get_save_metadata(this->_pInstance, saveFileCopy.get(), dataCopy.get(), data.ByteLength());
+        const auto result = ve_get_save_metadata(this->_pInstance, saveFileCopy.get(), dataCopy.get(), static_cast<int32_t>(data.ByteLength()));
         return ThrowOrReturnJson(env, result);
     }
 
