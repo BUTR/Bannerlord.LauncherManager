@@ -69,6 +69,12 @@ namespace Utils
         return dst;
     }
 
+    char16_t *const Copy(const std::string str)
+    {
+        return nullptr;
+    }
+
+
     char16_t *const Copy(const std::u16string str)
     {
         const auto src = str.c_str();

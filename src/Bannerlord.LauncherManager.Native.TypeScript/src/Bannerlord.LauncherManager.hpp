@@ -186,8 +186,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            ConsoleLog(env, String::New(env, conv.from_bytes(e.what())));
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            ConsoleLog(env, String::New(env, e.what()));
             return info.Env().Null();
         }
     }
@@ -207,8 +207,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
     static return_value_json *getLoadOrder(void *p_owner) noexcept
@@ -223,8 +223,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(e.what()), nullptr});
         }
     }
     static return_value_void *setLoadOrder(void *p_owner, char16_t *p_load_order) noexcept
@@ -240,8 +240,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
     static return_value_void *sendNotification(void *p_owner, char16_t *p_id, char16_t *p_type, char16_t *p_message, uint32_t displayMs) noexcept
@@ -260,11 +260,11 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
-    static return_value_void *sendDialog(void *p_owner, char16_t *p_type, char16_t *p_title, char16_t *p_message, char16_t *p_filters, void *p_callback_ptr, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *sendDialog(void *p_owner, char16_t *p_type, char16_t *p_title, char16_t *p_message, char16_t *p_filters, void *p_callback_ptr, void(*p_callback)(void *, char16_t *)) noexcept
     {
         try
         {
@@ -279,7 +279,7 @@ namespace Bannerlord::LauncherManager
             const auto result = manager->FSendDialog({type, title, message, filters});
             const auto promise = result.As<Promise>();
             const auto then = promise.Get("then").As<Function>();
-            auto data = new param_callback{p_callback_ptr, reinterpret_cast<void(__cdecl *)(void *, void *)>(p_callback)};
+            auto data = new param_callback{p_callback_ptr, reinterpret_cast<void(*)(void *, void *)>(p_callback)};
             std::stringstream ss;
             ss << &data;
             ConsoleLog(env, String::New(env, ss.str()));
@@ -296,8 +296,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            #//std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
     static return_value_string *getInstallPath(void *p_owner) noexcept
@@ -312,8 +312,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_string{Copy(e.what()), nullptr});
         }
     }
     static return_value_data *readFileContent(void *p_owner, char16_t *p_file_path, int32_t p_offset, int32_t p_length) noexcept
@@ -335,8 +335,8 @@ namespace Bannerlord::LauncherManager
 
             if (!result.IsBuffer())
             {
-                std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-                return Create(return_value_data{Copy(conv.from_bytes("Not an Buffer<uint8_t>")), nullptr, 0});
+                //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+                return Create(return_value_data{Copy("Not an Buffer<uint8_t>"), nullptr, 0});
             }
 
             auto buffer = result.As<Buffer<uint8_t>>();
@@ -344,8 +344,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_data{Copy(conv.from_bytes(e.what())), nullptr, 0});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_data{Copy(e.what()), nullptr, 0});
         }
     }
     static return_value_void *writeFileContent(void *p_owner, char16_t *p_file_path, uint8_t *p_data, int32_t length) noexcept
@@ -367,8 +367,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
     static return_value_json *readDirectoryFileList(void *p_owner, char16_t *p_directory_path) noexcept
@@ -389,8 +389,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(e.what()), nullptr});
         }
     }
     static return_value_json *readDirectoryList(void *p_owner, char16_t *p_directory_path) noexcept
@@ -411,8 +411,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(e.what()), nullptr});
         }
     }
     static return_value_json *getModuleViewModels(void *p_owner) noexcept
@@ -432,8 +432,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(e.what()), nullptr});
         }
     }
     static return_value_void *setModuleViewModels(void *p_owner, char16_t *p_module_view_models) noexcept
@@ -454,8 +454,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
     static return_value_json *getOptions(void *p_owner) noexcept
@@ -475,8 +475,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(e.what()), nullptr});
         }
     }
     static return_value_json *getState(void *p_owner) noexcept
@@ -496,8 +496,8 @@ namespace Bannerlord::LauncherManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(e.what()), nullptr});
         }
     }
 
@@ -644,7 +644,7 @@ namespace Bannerlord::LauncherManager
 
         auto deferred = Promise::Deferred::New(env);
         auto callbackStorage = CallbackStorage<param_bool>{env, deferred};
-        const auto result = ve_module_list_handler_import(this->_pInstance, static_cast<void *>(&callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_bool)>(&callbackStorage.Callback));
+        const auto result = ve_module_list_handler_import(this->_pInstance, static_cast<void *>(&callbackStorage), static_cast<void(*)(param_ptr *, param_bool)>(&callbackStorage.Callback));
         ThrowOrReturn(env, result);
         return deferred.Promise();
     }
@@ -658,7 +658,7 @@ namespace Bannerlord::LauncherManager
 
         auto deferred = Promise::Deferred::New(env);
         auto callbackStorage = CallbackStorage<param_bool>{env, deferred};
-        const auto result = ve_module_list_handler_import_save_file(this->_pInstance, saveFileCopy.get(), static_cast<void *>(&callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_bool)>(&callbackStorage.Callback));
+        const auto result = ve_module_list_handler_import_save_file(this->_pInstance, saveFileCopy.get(), static_cast<void *>(&callbackStorage), static_cast<void(*)(param_ptr *, param_bool)>(&callbackStorage.Callback));
         ThrowOrReturn(env, result);
         return deferred.Promise();
     }
@@ -776,7 +776,7 @@ namespace Bannerlord::LauncherManager
 
         auto deferred = Promise::Deferred::New(env);
         auto callbackStorage = new CallbackStorage<param_string *>{env, deferred};
-        const auto result = ve_dialog_test_warning(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_string *)>(callbackStorage->Callback));
+        const auto result = ve_dialog_test_warning(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(*)(param_ptr *, param_string *)>(callbackStorage->Callback));
         ThrowOrReturn(env, result);
         return deferred.Promise();
     }
@@ -786,7 +786,7 @@ namespace Bannerlord::LauncherManager
 
         auto deferred = Promise::Deferred::New(env);
         auto callbackStorage = new CallbackStorage<param_string *>{env, deferred};
-        const auto result = ve_dialog_test_file_open(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_string *)>(callbackStorage->Callback));
+        const auto result = ve_dialog_test_file_open(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(*)(param_ptr *, param_string *)>(callbackStorage->Callback));
         ThrowOrReturn(env, result);
         return deferred.Promise();
     }

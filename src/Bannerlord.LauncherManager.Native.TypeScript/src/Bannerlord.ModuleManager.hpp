@@ -30,8 +30,8 @@ namespace Bannerlord::ModuleManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_bool{Copy(e.what()), false});
         }
     }
 
@@ -56,8 +56,8 @@ namespace Bannerlord::ModuleManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_bool{Copy(e.what()), false});
         }
     }
     static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
@@ -75,8 +75,8 @@ namespace Bannerlord::ModuleManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
     static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module_id) noexcept
@@ -92,8 +92,8 @@ namespace Bannerlord::ModuleManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_bool{Copy(e.what()), false});
         }
     }
     static return_value_void *setDisabled(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
@@ -111,8 +111,8 @@ namespace Bannerlord::ModuleManager
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_void{Copy(e.what())});
         }
     }
 
