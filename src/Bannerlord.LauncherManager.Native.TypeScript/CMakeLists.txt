@@ -8,17 +8,18 @@ project(launchermanager)
 add_library(${PROJECT_NAME} SHARED
   src/main.cpp
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 
 # Set include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
-  ${CMAKE_JS_INC}
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_JS_INC}
 )
 
 # Set linker libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  ${CMAKE_JS_LIB}
   ${CMAKE_CURRENT_SOURCE_DIR}/Bannerlord.LauncherManager.Native.lib
+  ${CMAKE_JS_LIB}
 )
 
 # Set compiler options
