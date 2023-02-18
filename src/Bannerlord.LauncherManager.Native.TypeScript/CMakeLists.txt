@@ -5,7 +5,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(launchermanager)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/node-api-stub)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/node-api-headers)
 
 add_library(${PROJECT_NAME} SHARED
   src/main.cpp
@@ -17,6 +17,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_JS_INC}
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+#add_library(node_api SHARED IMPORTED)
 
 # Set linker libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -42,6 +44,7 @@ execute_process(
     OUTPUT_VARIABLE NODE_ADDON_API_DIR
 )
 string(REGEX REPLACE "[\r\n\"]" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE external/node-api-stub)
 target_include_directories(${PROJECT_NAME} PRIVATE ${NODE_ADDON_API_DIR})
 
 add_definitions(-DNAPI_VERSION=6)
