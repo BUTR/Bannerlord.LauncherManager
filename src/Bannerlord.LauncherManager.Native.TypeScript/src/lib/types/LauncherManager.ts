@@ -1,4 +1,4 @@
-import { ModuleInfoExtendedWithPath } from "./BannerlordModuleManager";
+import { ModuleInfoExtended, ModuleInfoExtendedWithPath } from "./BannerlordModuleManager";
 
 export interface INativeExtension {
   LauncherManager: new () => LauncherManager
@@ -42,13 +42,12 @@ export interface SaveMetadata {
 export type NotificationType = 'hint' | 'info';
 export type DialogType = 'warning' | 'fileOpen' | 'fileSave';
 
-export type InstructionType = 'Copy' | 'Attribute';
+export type InstructionType = 'Copy' | 'ModuleInfo';
 export interface InstallInstruction {
   type: InstructionType;
+  moduleInfo?: ModuleInfoExtended;
   source?: string;
   destination?: string;
-  key?: string;
-  value?: any;
 }
 export interface InstallResult {
   instructions: InstallInstruction[];

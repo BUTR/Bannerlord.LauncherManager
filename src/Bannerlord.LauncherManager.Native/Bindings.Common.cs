@@ -26,8 +26,8 @@ public static partial class Bindings
         {
             switch (value)
             {
-                case AttributeInstallInstruction attributeInstallInstruction:
-                    JsonSerializer.Serialize(writer, attributeInstallInstruction, CustomSourceGenerationContext.AttributeInstallInstruction);
+                case ModuleInfoInstallInstruction moduleInfoInstallInstruction:
+                    JsonSerializer.Serialize(writer, moduleInfoInstallInstruction, CustomSourceGenerationContext.ModuleInfoInstallInstruction);
                     break;
                 case CopyInstallInstruction copyInstallInstruction:
                     JsonSerializer.Serialize(writer, copyInstallInstruction, CustomSourceGenerationContext.CopyInstallInstruction);

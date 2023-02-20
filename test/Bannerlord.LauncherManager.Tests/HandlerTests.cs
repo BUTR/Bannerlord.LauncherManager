@@ -190,7 +190,7 @@ namespace Bannerlord.LauncherManager.Tests
             Assert.NotNull(installResult.Instructions);
             Assert.AreEqual(2, installResult.Instructions.Count);
             Assert.AreEqual(InstallInstructionType.Copy, installResult.Instructions[0].Type);
-            Assert.AreEqual(InstallInstructionType.Attribute, installResult.Instructions[1].Type);
+            Assert.AreEqual(InstallInstructionType.ModuleInfo, installResult.Instructions[1].Type);
         }
     }
 }

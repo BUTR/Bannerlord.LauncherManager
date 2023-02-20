@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Bannerlord.ModuleManager;
+
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -15,15 +17,14 @@ public record CopyInstallInstruction : IInstallInstruction
     [SetsRequiredMembers, JsonConstructor]
     public CopyInstallInstruction(string moduleId, string source, string destination) => (ModuleId, Source, Destination) = (moduleId, source, destination);
 }
-public record AttributeInstallInstruction : IInstallInstruction
+public record ModuleInfoInstallInstruction : IInstallInstruction
 {
-    public InstallInstructionType Type { get; set; } = InstallInstructionType.Attribute;
-    public required string Key { get; set; }
-    public required string Value { get; set; }
+    public InstallInstructionType Type { get; set; } = InstallInstructionType.ModuleInfo;
+    public required ModuleInfoExtended ModuleInfo { get; set; }
 
-    public AttributeInstallInstruction() { }
+    public ModuleInfoInstallInstruction() { }
     [SetsRequiredMembers, JsonConstructor]
-    public AttributeInstallInstruction(string key, string value) => (Key, Value) = (key, value);
+    public ModuleInfoInstallInstruction(ModuleInfoExtended moduleInfo) => (ModuleInfo) = (moduleInfo);
 }
 
 public record NoneInstallInstruction : IInstallInstruction
@@ -39,7 +40,7 @@ public enum InstallInstructionType
 {
     None,
     Copy,
-    Attribute
+    ModuleInfo,
 }
 
 public interface IInstallInstruction

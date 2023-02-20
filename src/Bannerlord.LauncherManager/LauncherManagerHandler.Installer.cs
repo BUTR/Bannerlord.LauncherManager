@@ -68,12 +68,7 @@ public partial class LauncherManagerHandler
                 Destination = Path.Combine(Constants.ModulesFolder, module.Id, file2.Substring(subModuleFileIdx))
             }).Concat(new IInstallInstruction[]
             {
-                new AttributeInstallInstruction("Id", module.Id),
-                new AttributeInstallInstruction("Version", module.Version.ToString()),
-                new AttributeInstallInstruction("Url", module.Url),
-                new AttributeInstallInstruction("IsOfficial", module.IsOfficial.ToString().ToLowerInvariant()),
-                new AttributeInstallInstruction("IsSingleplayer", module.IsSingleplayerModule.ToString().ToLowerInvariant()),
-                new AttributeInstallInstruction("IsMultiplayer", module.IsMultiplayerModule.ToString().ToLowerInvariant()),
+                new ModuleInfoInstallInstruction(module),
             }).ToList();
         }).SelectMany(x => x).ToList();
 

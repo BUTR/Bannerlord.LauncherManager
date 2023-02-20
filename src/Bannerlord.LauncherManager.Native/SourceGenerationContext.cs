@@ -29,7 +29,7 @@ namespace Bannerlord.LauncherManager.Native;
 [JsonSerializable(typeof(List<String>))]
 
 [JsonSerializable(typeof(InstallResult))]
-[JsonSerializable(typeof(AttributeInstallInstruction))]
+[JsonSerializable(typeof(ModuleInfoInstallInstruction))]
 [JsonSerializable(typeof(CopyInstallInstruction))]
 [JsonSerializable(typeof(NoneInstallInstruction))]
 
