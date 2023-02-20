@@ -22,17 +22,15 @@ public static partial class Bindings
     {
         public override IInstallInstruction Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotSupportedException();
 
-        [RequiresUnreferencedCode("")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         public override void Write(Utf8JsonWriter writer, IInstallInstruction value, JsonSerializerOptions options)
         {
             switch (value)
             {
                 case AttributeInstallInstruction attributeInstallInstruction:
-                    JsonSerializer.Serialize(writer, attributeInstallInstruction, options);
+                    JsonSerializer.Serialize(writer, attributeInstallInstruction, CustomSourceGenerationContext.AttributeInstallInstruction);
                     break;
                 case CopyInstallInstruction copyInstallInstruction:
-                    JsonSerializer.Serialize(writer, copyInstallInstruction, options);
+                    JsonSerializer.Serialize(writer, copyInstallInstruction, CustomSourceGenerationContext.CopyInstallInstruction);
                     break;
             }
         }
