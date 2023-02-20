@@ -65,20 +65,11 @@ public partial class LauncherManagerHandler
             var moduleBasePath = file.Substring(0, subModuleFileIdx);
             return files.Where(y => y.StartsWith(moduleBasePath)).Select(file2 => new CopyInstallInstruction
             {
+                ModId = module.Id,
                 Source = file2,
                 Destination = Path.Combine(Constants.ModulesFolder, module.Id, file2.Substring(subModuleFileIdx))
             }).Cast<IInstallInstruction>().ToList();
         }).SelectMany(x => x).ToList();
-
-        if (instructions.Count > 0)
-        {
-            // Vortex Specific
-            instructions.Add(new AttributeInstallInstruction
-            {
-                Key = "ModuleIds",
-                Value = moduleIds
-            });
-        }
 
         return new InstallResult { Instructions = instructions };
     }

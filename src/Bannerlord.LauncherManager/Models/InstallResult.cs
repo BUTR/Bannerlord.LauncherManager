@@ -7,22 +7,13 @@ namespace Bannerlord.LauncherManager.Models;
 public record CopyInstallInstruction : IInstallInstruction
 {
     public InstallInstructionType Type { get; set; } = InstallInstructionType.Copy;
+    public required string ModId { get; set; }
     public required string Source { get; set; }
     public required string Destination { get; set; }
 
     public CopyInstallInstruction() { }
     [SetsRequiredMembers, JsonConstructor]
-    public CopyInstallInstruction(string source, string destination) => (Source, Destination) = (source, destination);
-}
-public record AttributeInstallInstruction : IInstallInstruction
-{
-    public InstallInstructionType Type { get; set; } = InstallInstructionType.Attribute;
-    public required string Key { get; set; }
-    public required List<string> Value { get; set; }
-
-    public AttributeInstallInstruction() { }
-    [SetsRequiredMembers, JsonConstructor]
-    public AttributeInstallInstruction(string key, List<string> value) => (Key, Value) = (key, value);
+    public CopyInstallInstruction(string modId, string source, string destination) => (ModId, Source, Destination) = (modId, source, destination);
 }
 
 public record NoneInstallInstruction : IInstallInstruction
