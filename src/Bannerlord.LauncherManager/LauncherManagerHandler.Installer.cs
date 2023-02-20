@@ -51,7 +51,6 @@ public partial class LauncherManagerHandler
 
         files = files.Where(x => !EndsInDirectorySeparator(x)).ToArray();
 
-        var moduleIds = new List<string>();
         var instructions = files.Where(x => x.EndsWith(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase)).Select(file =>
         {
             var path = Path.Combine(destinationPath, file);
@@ -59,16 +58,23 @@ public partial class LauncherManagerHandler
             if (data is null) return new List<IInstallInstruction>();
             var module = ModuleInfoExtended.FromXml(ReaderUtils.Read(data));
             if (module is null) return new List<IInstallInstruction>();
-            moduleIds.Add(module.Id);
 
             var subModuleFileIdx = file.IndexOf(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase);
             var moduleBasePath = file.Substring(0, subModuleFileIdx);
             return files.Where(y => y.StartsWith(moduleBasePath)).Select(file2 => new CopyInstallInstruction
             {
-                ModId = module.Id,
+                ModuleId = module.Id,
                 Source = file2,
                 Destination = Path.Combine(Constants.ModulesFolder, module.Id, file2.Substring(subModuleFileIdx))
-            }).Cast<IInstallInstruction>().ToList();
+            }).Concat(new IInstallInstruction[]
+            {
+                new AttributeInstallInstruction("Id", module.Id),
+                new AttributeInstallInstruction("Version", module.Version.ToString()),
+                new AttributeInstallInstruction("Url", module.Url),
+                new AttributeInstallInstruction("IsOfficial", module.IsOfficial.ToString().ToLowerInvariant()),
+                new AttributeInstallInstruction("IsSingleplayer", module.IsSingleplayerModule.ToString().ToLowerInvariant()),
+                new AttributeInstallInstruction("IsMultiplayer", module.IsMultiplayerModule.ToString().ToLowerInvariant()),
+            }).ToList();
         }).SelectMany(x => x).ToList();
 
         return new InstallResult { Instructions = instructions };

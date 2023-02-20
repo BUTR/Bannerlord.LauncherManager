@@ -22,6 +22,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
     [JsonSerializable(typeof(DependentModuleMetadata[]))]
     [JsonSerializable(typeof(string[]))]
     [JsonSerializable(typeof(InstallResult))]
+    [JsonSerializable(typeof(AttributeInstallInstruction))]
     [JsonSerializable(typeof(CopyInstallInstruction))]
     [JsonSerializable(typeof(NoneInstallInstruction))]
     [JsonSerializable(typeof(SaveMetadata[]))]

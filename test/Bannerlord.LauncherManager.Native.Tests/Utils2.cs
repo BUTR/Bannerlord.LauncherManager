@@ -23,6 +23,7 @@ namespace Bannerlord.LauncherManager.Native.Tests
             return (Enum.TryParse<InstallInstructionType>(data.RootElement.GetProperty("type").GetString(), out var val) ? val : InstallInstructionType.None) switch
             {
                 InstallInstructionType.Copy => JsonSerializer.Deserialize<CopyInstallInstruction>(ref readerCopy, options)!,
+                InstallInstructionType.Attribute => JsonSerializer.Deserialize<AttributeInstallInstruction>(ref readerCopy, options)!,
                 _ => new NoneInstallInstruction()
             };
         }
