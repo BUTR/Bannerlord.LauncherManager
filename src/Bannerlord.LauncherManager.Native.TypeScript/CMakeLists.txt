@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -28,7 +29,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 )
 if(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /MT)
+  if(CMAKE_BUILD_TYPE EQUAL "DEBUG")
+    target_compile_options(${PROJECT_NAME} PRIVATE /MTd)
+  else()
+    target_compile_options(${PROJECT_NAME} PRIVATE /MT)
+  endif()
   target_compile_options(${PROJECT_NAME} PRIVATE /EHsc)
   target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 endif()

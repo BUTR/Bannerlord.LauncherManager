@@ -34,8 +34,8 @@ try {
         $tag = If ($Configuration -eq "Release") { "--release" } Else { $tag }
         $tag = If ($Configuration -eq "Debug") { "--debug" } Else { $tag }
         Invoke-Command -ScriptBlock {
-            #npx node-gyp rebuild --arch=x64 $tag;
-            npx cmake-js compile $tag;
+            npx node-gyp rebuild --arch=x64 $tag;
+            #npx cmake-js compile --arch=x64 $tag;
         }
     }
     # Build JS
