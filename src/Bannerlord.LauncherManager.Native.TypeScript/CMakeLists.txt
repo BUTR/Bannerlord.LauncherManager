@@ -28,6 +28,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 )
 if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /MT)
   target_compile_options(${PROJECT_NAME} PRIVATE /EHsc)
   target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 endif()
