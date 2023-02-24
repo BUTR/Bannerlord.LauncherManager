@@ -71,6 +71,10 @@ export class BannerlordModuleManager {
         return BannerlordModuleManager.addon.getSubModuleInfo(xml);
     }
 
+    public static parseApplicationVersion(content: string): types.ApplicationVersion {
+        BannerlordModuleManager.initialize();
+        return BannerlordModuleManager.addon.parseApplicationVersion(content);
+    }
     public static compareVersions(x: types.ApplicationVersion, y: types.ApplicationVersion): number {
         BannerlordModuleManager.initialize();
         return BannerlordModuleManager.addon.compareVersions(x, y);

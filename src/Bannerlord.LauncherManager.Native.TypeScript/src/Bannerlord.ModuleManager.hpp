@@ -284,6 +284,16 @@ namespace Bannerlord::ModuleManager
         return ThrowOrReturnJson(env, result);
     }
 
+    Value ParseApplicationVersion(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto content = info[0].As<String>();
+
+        const auto contentCopy = CopyWithFree(content.Utf16Value());
+
+        const auto result = bmm_parse_application_version(contentCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
     Value CompareVersions(const CallbackInfo &info)
     {
         const auto env = info.Env();
@@ -358,6 +368,7 @@ namespace Bannerlord::ModuleManager
         exports.Set("getModuleInfoWithPath", Function::New(env, GetModuleInfoWithPath));
         exports.Set("getSubModuleInfo", Function::New(env, GetSubModuleInfo));
 
+        exports.Set("parseApplicationVersion", Function::New(env, ParseApplicationVersion));
         exports.Set("compareVersions", Function::New(env, CompareVersions));
 
         exports.Set("getDependenciesAll", Function::New(env, GetDependenciesAll));

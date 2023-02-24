@@ -109,6 +109,7 @@ export interface IBannerlordModuleManager {
     getModuleInfoWithPath(xml: string, path: string): ModuleInfoExtendedWithPath | undefined;
     getSubModuleInfo(xml: string): SubModuleInfoExtended | undefined;
 
+    parseApplicationVersion(content: string): ApplicationVersion;
     compareVersions(x: ApplicationVersion, y: ApplicationVersion): number;
 
     getDependenciesAll(module: ModuleInfoExtended): DependentModuleMetadata[];

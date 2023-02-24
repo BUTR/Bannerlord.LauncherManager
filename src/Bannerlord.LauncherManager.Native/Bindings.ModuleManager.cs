@@ -435,6 +435,22 @@ public static unsafe partial class Bindings
         }
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "bmm_parse_application_version", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    public static return_value_json* ParseApplicationVersion([IsConst<IsPtrConst>] param_string* p_application_version)
+    {
+        Logger.LogInput(p_application_version);
+        try
+        {
+            var result = ApplicationVersion.TryParse(new string(param_string.ToSpan(p_application_version)), out var v) ? v : ApplicationVersion.Empty;
+
+            return return_value_json.AsValue(result, CustomSourceGenerationContext.ApplicationVersion, false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_json.AsException(e, false);
+        }
+    }
 
     [UnmanagedCallersOnly(EntryPoint = "bmm_compare_versions", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
     public static return_value_int32* CompareVersions([IsConst<IsPtrConst>] param_json* p_x, [IsConst<IsPtrConst>] param_json* p_y)
