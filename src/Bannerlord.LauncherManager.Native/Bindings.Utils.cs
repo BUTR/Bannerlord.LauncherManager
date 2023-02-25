@@ -51,24 +51,4 @@ public static unsafe partial class Bindings
             return return_value_string.AsException(e, false);
         }
     }
-
-    [UnmanagedCallersOnly(EntryPoint = "utils_translate", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
-    public static return_value_string* UtilsTranslate([IsConst<IsPtrConst>] param_string* p_text)
-    {
-        Logger.LogInput(p_text);
-        try
-        {
-            var text = new string(param_string.ToSpan(p_text));
-
-            var result = new BUTRTextObject(text).ToString();
-
-            Logger.LogOutput(result, nameof(UtilsTranslate));
-            return return_value_string.AsValue(result, false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_string.AsException(e, false);
-        }
-    }
 }

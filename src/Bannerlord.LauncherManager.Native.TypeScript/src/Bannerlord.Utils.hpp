@@ -33,24 +33,11 @@ namespace Bannerlord::Utils
         return ThrowOrReturnString(env, result);
     }
 
-    Value UtilsTranslate(const CallbackInfo &info)
-    {
-        const auto env = info.Env();
-        const auto text = info[0].As<String>();
-
-        const auto textCopy = CopyWithFree(text.Utf16Value());
-
-        const auto result = utils_translate(textCopy.get());
-        return ThrowOrReturnString(env, result);
-    }
-
     Object Init(const Env env, const Object exports)
     {
         exports.Set("isLoadOrderCorrect", Function::New(env, IsLoadOrderCorrect));
 
         exports.Set("getDependencyHint", Function::New(env, GetDependencyHint));
-
-        exports.Set("utilsTranslate", Function::New(env, UtilsTranslate));
 
         return exports;
     }
