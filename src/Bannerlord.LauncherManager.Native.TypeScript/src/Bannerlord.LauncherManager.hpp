@@ -631,7 +631,7 @@ namespace Bannerlord::LauncherManager
         const auto valuesCopy = CopyWithFree(values.Utf16Value());
 
         const auto result = ve_localize_string(this->_pInstance, templateStrCopy.get(), valuesCopy.get());
-        ThrowOrReturnString(env, result);
+        return ThrowOrReturnString(env, result);
     }
 
     void LauncherManager::ModuleListHandlerExport(const CallbackInfo &info)
