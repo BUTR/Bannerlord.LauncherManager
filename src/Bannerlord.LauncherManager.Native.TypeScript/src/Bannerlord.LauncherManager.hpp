@@ -48,6 +48,7 @@ namespace Bannerlord::LauncherManager
         Napi::Value InstallModule(const CallbackInfo &info);
         Napi::Value IsSorting(const CallbackInfo &info);
         void LoadLocalization(const CallbackInfo &info);
+        Napi::Value LocalizeString(const CallbackInfo &info);
         void ModuleListHandlerExport(const CallbackInfo &info);
         void ModuleListHandlerExportSaveFile(const CallbackInfo &info);
         Napi::Value ModuleListHandlerImport(const CallbackInfo &info);
@@ -90,6 +91,7 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::InstallModule>("installModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::IsSorting>("isSorting", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::LoadLocalization>("loadLocalization", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::LocalizeString>("localizeString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::ModuleListHandlerExport>("moduleListHandlerExport", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::ModuleListHandlerExportSaveFile>("moduleListHandlerExportSaveFile", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::ModuleListHandlerImport>("moduleListHandlerImport", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -617,6 +619,19 @@ namespace Bannerlord::LauncherManager
 
         const auto result = ve_load_localization(this->_pInstance, xmlCopy.get());
         ThrowOrReturn(env, result);
+    }
+
+    Value LauncherManager::LocalizeString(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto templateStr = info[0].As<String>();
+        const auto values = JSONStringify(env, info[1].As<Object>());
+
+        const auto templateStrCopy = CopyWithFree(templateStr.Utf16Value());
+        const auto valuesCopy = CopyWithFree(values.Utf16Value());
+
+        const auto result = ve_localize_string(this->_pInstance, templateStrCopy.get(), valuesCopy.get());
+        ThrowOrReturnString(env, result);
     }
 
     void LauncherManager::ModuleListHandlerExport(const CallbackInfo &info)

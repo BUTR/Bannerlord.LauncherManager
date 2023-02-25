@@ -648,6 +648,31 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
+    
+    
+    [UnmanagedCallersOnly(EntryPoint = "ve_localize_string", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_string* LocalizeString(param_ptr* p_handle, param_string* p_template, param_json* p_values)
+    {
+        Logger.LogInput(p_template, p_values);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            var template = new string(param_string.ToSpan(p_template));
+            var values = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_values, CustomSourceGenerationContext.DictionaryStringString) ?? new();
+
+            var result = new BUTRTextObject(template, values).ToString();
+
+            Logger.LogOutput(result);
+            return return_value_string.AsValue(result, false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_string.AsException(e, false);
+        }
+    }
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning", CallConvs = new[] { typeof(CallConvCdecl) })]

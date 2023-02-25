@@ -81,6 +81,7 @@ export type LauncherManager = {
   installModule(files: string[], destinationPath: string): InstallResult;
   isSorting(): boolean;
   loadLocalization(xml: string): void;
+  localizeString(template: string, values: { [value: string]: string }): string;
   moduleListHandlerExport(): void;
   moduleListHandlerExportSaveFile(saveFile: string): void;
   moduleListHandlerImport(): Promise<boolean>;
