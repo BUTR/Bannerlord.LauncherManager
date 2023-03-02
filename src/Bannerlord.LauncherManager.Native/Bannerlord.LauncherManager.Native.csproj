@@ -37,7 +37,7 @@
     <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
     <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Update="Bannerlord.LauncherManager.Native.h">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -56,7 +56,7 @@
     <PackageReference Include="BUTR.NativeAOT.Shared.Source" Version="1.0.78" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="ConcurrentHashSet" Version="1.3.0" />
     <PackageReference Include="FetchBannerlordVersion" Version="1.0.6.36" />
-    <PackageReference Include="Microsoft.DotNet.ILCompiler; runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="8.0.0-preview.3.23152.1" />
+    <PackageReference Include="Microsoft.DotNet.ILCompiler; runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="8.0.0-preview.2.23119.4" />
   </ItemGroup>
 
 </Project>
