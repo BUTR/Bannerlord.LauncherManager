@@ -71,11 +71,11 @@ partial class LauncherManagerHandler
         var existingOrderedModules = rawOrderedModules
             .Where(x => moduleViewModelLookup.ContainsKey(x.Id))
             .ToList();
-        
+
         var existingOrderedViewModels = existingOrderedModules
             .Select(x => moduleViewModelLookup[x.Id])
             .ToList();
-        
+
         var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules).ToList();
         if (!overwriteWhenFailure && existingLoadOrderValidationIssues.Count != 0)
         {
@@ -137,11 +137,11 @@ partial class LauncherManagerHandler
         var existingOrderedModules = rawOrderedModules
             .Where(x => moduleViewModelLookup.ContainsKey(x.Id))
             .ToList();
-        
+
         var existingOrderedViewModels = existingOrderedModules
             .Select(x => moduleViewModelLookup[x.Id])
             .ToList();
-        
+
         // Check the present load order
         var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(presentOrderedIds.Select(x => ExtendedModuleInfoCache[x]).ToList()).ToList();
         if (loadOrderValidationIssues.Count != 0)
@@ -150,7 +150,7 @@ partial class LauncherManagerHandler
             orderedModules = existingOrderedViewModels;
             return false;
         }
-        
+
         var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules).ToList();
         if (existingLoadOrderValidationIssues.Count != 0)
         {

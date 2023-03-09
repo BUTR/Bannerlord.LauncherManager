@@ -174,7 +174,7 @@ public partial class LauncherManagerHandler
 
         return D_GetAllModuleViewModels();
     }
-    
+
     /// <summary>
     /// Callback<br/>
     /// Returns the current shown sorted ViewModels

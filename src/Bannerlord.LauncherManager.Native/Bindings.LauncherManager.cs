@@ -648,8 +648,8 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    
-    
+
+
     [UnmanagedCallersOnly(EntryPoint = "ve_localize_string", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_string* LocalizeString(param_ptr* p_handle, param_string* p_template, param_json* p_values)
     {

@@ -32,6 +32,17 @@ public class ModuleListHandler
         _launcherManager = launcherManager;
     }
 
+    private void ShowMissingWarning(IEnumerable<string> missingModuleIds, Action<bool> onResult)
+    {
+        var missing = new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}")
+            .SetTextVariable("MODULES", "").ToString();
+        _launcherManager.ShowWarning(
+            new BUTRTextObject("Import Warning").ToString(),
+            missing,
+            $"{string.Join("\n", missingModuleIds)}{Environment.NewLine}{Environment.NewLine}{new BUTRTextObject("{=hgew15HH}Continue import?")}",
+            onResult
+        );
+    }
     private void ShowVersionWarning(IEnumerable<string> mismatchedVersions, Action<bool> onResult)
     {
         var mismatched = new BUTRTextObject("{=BuMom4Jt}Mismatched Module Versions:{NL}{MODULEVERSIONS}")
@@ -91,30 +102,10 @@ public class ModuleListHandler
 
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleIds = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).ToHashSet();
-        var mismatchedModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
-        if (mismatchedModuleIds.Count > 0)
+        var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
+        if (missingModuleIds.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", mismatchedModuleIds))}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
-            return;
-        }
-
-        var mismatchedVersions = new List<ModuleMismatch>();
-        foreach (var (id, version, _) in importedModules)
-        {
-            if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
-
-            var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-            if (launcherModuleVersion != version)
-                mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
-        }
-
-
-        ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
-
-        if (mismatchedVersions.Count > 0)
-        {
-            ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+            ShowMissingWarning(missingModuleIds, result =>
             {
                 if (!result)
                 {
@@ -122,11 +113,36 @@ public class ModuleListHandler
                     return;
                 }
 
+                var mismatchedVersions = new List<ModuleMismatch>();
+                foreach (var (id, version, _) in importedModules)
+                {
+                    if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
+
+                    var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
+                    if (launcherModuleVersion != version)
+                        mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
+                }
+
+
+                ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+
+                if (mismatchedVersions.Count > 0)
+                {
+                    ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+                    {
+                        if (!result)
+                        {
+                            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                            return;
+                        }
+
+                        onResult(GetResult());
+                    });
+                    return;
+                }
                 onResult(GetResult());
             });
-            return;
         }
-        onResult(GetResult());
     }
     private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
     {
@@ -158,30 +174,10 @@ public class ModuleListHandler
 
         var importedModuleNames = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleNames = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).ToHashSet();
-        var mismatchedModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
-        if (mismatchedModuleNames.Count > 0)
+        var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
+        if (missingModuleNames.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=GtDRbC3m}issing Modules:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", mismatchedModuleNames))}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
-            return;
-        }
-
-        var mismatchedVersions = new List<ModuleMismatch>();
-        foreach (var (name, version, _) in importedModules)
-        {
-            if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Name == name) is not { } moduleVM) continue;
-
-            var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-            if (launcherModuleVersion != version)
-                mismatchedVersions.Add(new ModuleMismatch(name, version, launcherModuleVersion));
-        }
-
-
-        ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
-
-        if (mismatchedVersions.Count > 0)
-        {
-            ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+            ShowMissingWarning(missingModuleNames.Select(x => x.ToString()), result =>
             {
                 if (!result)
                 {
@@ -189,11 +185,36 @@ public class ModuleListHandler
                     return;
                 }
 
+                var mismatchedVersions = new List<ModuleMismatch>();
+                foreach (var (name, version, _) in importedModules)
+                {
+                    if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Name == name) is not { } moduleVM) continue;
+
+                    var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
+                    if (launcherModuleVersion != version)
+                        mismatchedVersions.Add(new ModuleMismatch(name, version, launcherModuleVersion));
+                }
+
+
+                ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+
+                if (mismatchedVersions.Count > 0)
+                {
+                    ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+                    {
+                        if (!result)
+                        {
+                            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                            return;
+                        }
+
+                        onResult(GetResult());
+                    });
+                    return;
+                }
                 onResult(GetResult());
             });
-            return;
         }
-        onResult(GetResult());
     }
     private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
     {
@@ -230,29 +251,10 @@ public class ModuleListHandler
 
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleIds = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).ToHashSet();
-        var mismatchedModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
-        if (mismatchedModuleIds.Count > 0)
+        var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
+        if (missingModuleIds.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", mismatchedModuleIds))}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
-            return;
-        }
-
-        var mismatchedVersions = new List<ModuleMismatch>();
-        foreach (var (id, version, _) in importedModules)
-        {
-            if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
-
-            var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-            if (launcherModuleVersion != version)
-                mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
-        }
-
-        ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
-
-        if (mismatchedVersions.Count > 0)
-        {
-            ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+            ShowMissingWarning(missingModuleIds.Select(x => x.ToString()), result =>
             {
                 if (!result)
                 {
@@ -260,11 +262,35 @@ public class ModuleListHandler
                     return;
                 }
 
+                var mismatchedVersions = new List<ModuleMismatch>();
+                foreach (var (id, version, _) in importedModules)
+                {
+                    if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
+
+                    var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
+                    if (launcherModuleVersion != version)
+                        mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
+                }
+
+                ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).OfType<IModuleViewModel>().Select(x => x.ModuleInfoExtended).ToArray();
+
+                if (mismatchedVersions.Count > 0)
+                {
+                    ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+                    {
+                        if (!result)
+                        {
+                            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                            return;
+                        }
+
+                        onResult(GetResult());
+                    });
+                    return;
+                }
                 onResult(GetResult());
             });
-            return;
         }
-        onResult(GetResult());
     }
     /// <summary>
     /// External<br/>
@@ -398,10 +424,10 @@ public class ModuleListHandler
 
         var importedModuleNames = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleNames = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).ToHashSet();
-        var mismatchedModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
-        if (mismatchedModuleNames.Count > 0)
+        var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
+        if (missingModuleNames.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", mismatchedModuleNames))}");
+            _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", missingModuleNames))}");
             return Array.Empty<ModuleListEntry>();
         }
 
