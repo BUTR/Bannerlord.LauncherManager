@@ -29,6 +29,7 @@ namespace Bannerlord::LauncherManager
         FunctionReference FWriteFileContent;
         FunctionReference FReadDirectoryFileList;
         FunctionReference FReadDirectoryList;
+        FunctionReference FGetAllModuleViewModels;
         FunctionReference FGetModuleViewModels;
         FunctionReference FSetModuleViewModels;
         FunctionReference FGetOptions;
@@ -417,6 +418,27 @@ namespace Bannerlord::LauncherManager
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
     }
+    static return_value_json *getAllModuleViewModels(void *p_owner) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *const>(p_owner);
+            const auto env = manager->Env();
+
+            const auto result = manager->FGetAllModuleViewModels({});
+            if (result.IsNull())
+            {
+                return Create(return_value_json{nullptr, nullptr});
+            }
+
+            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
+        }
+        catch (const std::exception &e)
+        {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+        }
+    }
     static return_value_json *getModuleViewModels(void *p_owner) noexcept
     {
         try
@@ -516,10 +538,11 @@ namespace Bannerlord::LauncherManager
         this->FWriteFileContent = Persistent(info[7].As<Function>());
         this->FReadDirectoryFileList = Persistent(info[8].As<Function>());
         this->FReadDirectoryList = Persistent(info[9].As<Function>());
-        this->FGetModuleViewModels = Persistent(info[10].As<Function>());
-        this->FSetModuleViewModels = Persistent(info[11].As<Function>());
-        this->FGetOptions = Persistent(info[12].As<Function>());
-        this->FGetState = Persistent(info[13].As<Function>());
+        this->FGetAllModuleViewModels = Persistent(info[10].As<Function>());
+        this->FGetModuleViewModels = Persistent(info[11].As<Function>());
+        this->FSetModuleViewModels = Persistent(info[12].As<Function>());
+        this->FGetOptions = Persistent(info[13].As<Function>());
+        this->FGetState = Persistent(info[14].As<Function>());
 
         ThrowOrReturn(env, ve_register_callbacks(this->_pInstance,
                                                  setGameParameters,
@@ -532,6 +555,7 @@ namespace Bannerlord::LauncherManager
                                                  writeFileContent,
                                                  readDirectoryFileList,
                                                  readDirectoryList,
+                                                 getAllModuleViewModels,
                                                  getModuleViewModels,
                                                  setModuleViewModels,
                                                  getOptions,

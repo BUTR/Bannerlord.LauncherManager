@@ -18,6 +18,7 @@ public partial class LauncherManagerHandler
     private WriteFileContentDelegate D_WriteFileContent = (_, _) => throw new CallbacksNotRegisteredException();
     private ReadDirectoryFileListDelegate D_ReadDirectoryFileList = (_) => throw new CallbacksNotRegisteredException();
     private ReadDirectoryListDelegate D_ReadDirectoryList = (_) => throw new CallbacksNotRegisteredException();
+    private GetAllModuleViewModelsDelegate D_GetAllModuleViewModels = () => throw new CallbacksNotRegisteredException();
     private GetModuleViewModelsDelegate D_GetModuleViewModels = () => throw new CallbacksNotRegisteredException();
     private SetModuleViewModelsDelegate D_SetModuleViewModels = (_) => throw new CallbacksNotRegisteredException();
     private GetOptionsDelegate D_GetOptions = () => throw new CallbacksNotRegisteredException();
@@ -36,6 +37,7 @@ public partial class LauncherManagerHandler
         , WriteFileContentDelegate writeFileContent
         , ReadDirectoryFileListDelegate readDirectoryFileList
         , ReadDirectoryListDelegate readDirectoryList
+        , GetAllModuleViewModelsDelegate getAllModuleViewModels
         , GetModuleViewModelsDelegate getModuleViewModels
         , SetModuleViewModelsDelegate setModuleViewModels
         , GetOptionsDelegate getOptions
@@ -52,6 +54,7 @@ public partial class LauncherManagerHandler
         D_WriteFileContent = writeFileContent;
         D_ReadDirectoryFileList = readDirectoryFileList;
         D_ReadDirectoryList = readDirectoryList;
+        D_GetAllModuleViewModels = getAllModuleViewModels;
         D_GetModuleViewModels = getModuleViewModels;
         D_SetModuleViewModels = setModuleViewModels;
         D_GetOptions = getOptions;
@@ -163,6 +166,18 @@ public partial class LauncherManagerHandler
 
     /// <summary>
     /// Callback<br/>
+    /// Returns all available ViewModels
+    /// </summary>
+    protected internal IModuleViewModel[]? GetAllModuleViewModels()
+    {
+        ThrowIfNoCallbacksRegistered();
+
+        return D_GetAllModuleViewModels();
+    }
+    
+    /// <summary>
+    /// Callback<br/>
+    /// Returns the current shown sorted ViewModels
     /// </summary>
     protected internal IModuleViewModel[]? GetModuleViewModels()
     {
@@ -173,6 +188,7 @@ public partial class LauncherManagerHandler
 
     /// <summary>
     /// Callback<br/>
+    /// Sets the current shown sorted ViewModels
     /// </summary>
     protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {

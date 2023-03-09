@@ -100,6 +100,7 @@ export type LauncherManager = {
     writeFileContent: (filePath: string, data: Uint8Array) => void,
     readDirectoryFileList: (directoryPath: string) => string[] | null,
     readDirectoryList: (directoryPath: string) => string[] | null,
+    getAllModuleViewModels: () => ModuleViewModel[] | null,
     getModuleViewModels: () => ModuleViewModel[] | null,
     setModuleViewModels: (moduleViewModels: ModuleViewModel[]) => void,
     getOptions: () => LauncherOptions,

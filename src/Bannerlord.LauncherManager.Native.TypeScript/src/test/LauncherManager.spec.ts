@@ -79,6 +79,9 @@ test('Main', async (t) => {
     }
     return null;
   };
+  const getAllModuleViewModels = (): ModuleViewModel[] | null => {
+    return moduleViewModels;
+  };
   const getModuleViewModels = (): ModuleViewModel[] | null => {
     return moduleViewModels;
   };
@@ -108,6 +111,7 @@ test('Main', async (t) => {
     writeFileContent,
     readDirectoryFileList,
     readDirectoryList,
+    getAllModuleViewModels,
     getModuleViewModels,
     setModuleViewModels,
     getOptions,

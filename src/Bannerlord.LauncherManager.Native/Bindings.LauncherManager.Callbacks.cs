@@ -193,6 +193,18 @@ public static unsafe partial class Bindings
         }
     }
 
+    private static IModuleViewModel[]? GetAllModuleViewModels(LauncherManagerHandlerNative handler)
+    {
+        Logger.LogInput();
+
+        using var result = SafeStructMallocHandle.Create(handler.D_GetAllModuleViewModels(handler.OwnerPtr), true);
+        if (result.IsNull) return null;
+
+        var returnResult = result.ValueAsJson(CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).ToArray<IModuleViewModel>();
+        Logger.LogOutput(returnResult);
+        return returnResult;
+    }
+
     private static IModuleViewModel[]? GetModuleViewModels(LauncherManagerHandlerNative handler)
     {
         Logger.LogInput();
@@ -255,6 +267,7 @@ public static unsafe partial class Bindings
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_int, return_value_void*> p_write_file_content,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_file_list,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_all_module_view_models,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_module_view_models,
         delegate* unmanaged[Cdecl]<param_ptr*, param_json*, return_value_void*> p_set_module_view_models,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_options,
@@ -277,6 +290,7 @@ public static unsafe partial class Bindings
             handler.D_WriteFileContent = Marshal.GetDelegateForFunctionPointer<N_WriteFileContentDelegate>(new IntPtr(p_write_file_content));
             handler.D_ReadDirectoryFileList = Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryFileList>(new IntPtr(p_read_directory_file_list));
             handler.D_ReadDirectoryList = Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryList>(new IntPtr(p_read_directory_list));
+            handler.D_GetAllModuleViewModels = Marshal.GetDelegateForFunctionPointer<N_GetAllModuleViewModels>(new IntPtr(p_get_all_module_view_models));
             handler.D_GetModuleViewModels = Marshal.GetDelegateForFunctionPointer<N_GetModuleViewModels>(new IntPtr(p_get_module_view_models));
             handler.D_SetModuleViewModels = Marshal.GetDelegateForFunctionPointer<N_SetModuleViewModels>(new IntPtr(p_set_module_view_models));
             handler.D_GetOptions = Marshal.GetDelegateForFunctionPointer<N_GetOptions>(new IntPtr(p_get_options));
@@ -293,6 +307,7 @@ public static unsafe partial class Bindings
                 writeFileContent: (filePath, data) => WriteFileContent(handler, filePath, data, data?.Length ?? 0),
                 readDirectoryFileList: (directoryPath) => ReadDirectoryFileList(handler, directoryPath),
                 readDirectoryList: (directoryPath) => ReadDirectoryList(handler, directoryPath),
+                getAllModuleViewModels: () => GetAllModuleViewModels(handler),
                 getModuleViewModels: () => GetModuleViewModels(handler),
                 setModuleViewModels: (moduleViewModels) => SetModuleViewModels(handler, moduleViewModels),
                 getOptions: () => GetOptions(handler),

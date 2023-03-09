@@ -16,6 +16,7 @@ public delegate byte[]? ReadFileContentDelegate(string filePath, int offset, int
 public delegate void WriteFileContentDelegate(string filePath, byte[]? data);
 public delegate string[]? ReadDirectoryFileListDelegate(string directoryPath);
 public delegate string[]? ReadDirectoryListDelegate(string directoryPath);
+public delegate IModuleViewModel[]? GetAllModuleViewModelsDelegate();
 public delegate IModuleViewModel[]? GetModuleViewModelsDelegate();
 public delegate void SetModuleViewModelsDelegate(IReadOnlyList<IModuleViewModel> moduleViewModels);
 public delegate LauncherOptions GetOptionsDelegate();

@@ -60,7 +60,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public refreshGameParameters = (): void => {
     return this.manager.refreshGameParameters();
   }
-  public registerCallbacks = (setGameParameters: (executable: string, gameParameters: string[]) => void, getLoadOrder: () => types.LoadOrder, setLoadOrder: (loadOrder: types.LoadOrder) => void, sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void, sendDialog: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>, getInstallPath: () => string, readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null, writeFileContent: (filePath: string, data: Uint8Array) => void, readDirectoryFileList: (directoryPath: string) => string[] | null, readDirectoryList: (directoryPath: string) => string[] | null, getModuleViewModels: () => types.ModuleViewModel[] | null, setModuleViewModels: (moduleViewModels: types.ModuleViewModel[]) => void, getOptions: () => types.LauncherOptions, getState: () => types.LauncherState): void => {
+  public registerCallbacks = (setGameParameters: (executable: string, gameParameters: string[]) => void, getLoadOrder: () => types.LoadOrder, setLoadOrder: (loadOrder: types.LoadOrder) => void, sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void, sendDialog: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>, getInstallPath: () => string, readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null, writeFileContent: (filePath: string, data: Uint8Array) => void, readDirectoryFileList: (directoryPath: string) => string[] | null, readDirectoryList: (directoryPath: string) => string[] | null, getAllModuleViewModels: () => types.ModuleViewModel[] | null, getModuleViewModels: () => types.ModuleViewModel[] | null, setModuleViewModels: (moduleViewModels: types.ModuleViewModel[]) => void, getOptions: () => types.LauncherOptions, getState: () => types.LauncherState): void => {
     return this.manager.registerCallbacks(
       setGameParameters,
       getLoadOrder,
@@ -72,6 +72,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
       writeFileContent,
       readDirectoryFileList,
       readDirectoryList,
+      getAllModuleViewModels,
       getModuleViewModels,
       setModuleViewModels,
       getOptions,

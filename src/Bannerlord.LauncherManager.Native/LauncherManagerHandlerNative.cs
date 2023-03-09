@@ -32,6 +32,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public N_WriteFileContentDelegate D_WriteFileContent = (_, _, _, _) => throw new CallbacksNotRegisteredException();
     public N_ReadDirectoryFileList D_ReadDirectoryFileList = (_, _) => throw new CallbacksNotRegisteredException();
     public N_ReadDirectoryList D_ReadDirectoryList = (_, _) => throw new CallbacksNotRegisteredException();
+    public N_GetAllModuleViewModels D_GetAllModuleViewModels = (_) => throw new CallbacksNotRegisteredException();
     public N_GetModuleViewModels D_GetModuleViewModels = (_) => throw new CallbacksNotRegisteredException();
     public N_SetModuleViewModels D_SetModuleViewModels = (_, _) => throw new CallbacksNotRegisteredException();
     public N_GetOptions D_GetOptions = (_) => throw new CallbacksNotRegisteredException();

@@ -22,7 +22,7 @@ partial class LauncherManagerHandler
     /// External<br/>
     /// </summary>
     public bool TryOrderByLoadOrder(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, [NotNullWhen(false)] out IReadOnlyList<string>? issues,
-        [NotNullWhen(true)] out IReadOnlyList<IModuleViewModel>? orderedModules)
+        out IReadOnlyList<IModuleViewModel> orderedModules)
     {
         var options = GetOptions();
         return options.BetaSorting
@@ -34,13 +34,13 @@ partial class LauncherManagerHandler
     /// Internal<br/>
     /// </summary>
     protected internal bool TryOrderByLoadOrderTW(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, [NotNullWhen(false)] out IReadOnlyList<string>? issues,
-        [NotNullWhen(true)] out IReadOnlyList<IModuleViewModel>? orderedModules, bool overwriteWhenFailure = false)
+        out IReadOnlyList<IModuleViewModel> orderedModules, bool overwriteWhenFailure = false)
     {
         var state = GetState();
 
         var semiOrderedModules = new List<ModuleInfoExtendedWithPath>();
 
-        var moduleViewModels = GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = GetAllModuleViewModels() ?? Array.Empty<IModuleViewModel>();
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
         // Load the load order modules
@@ -66,26 +66,41 @@ partial class LauncherManagerHandler
         // Topological sort them
         var rawOrderedModules = ModuleSorter.TopologySort<ModuleInfoExtended>(semiOrderedModules, x => ModuleUtilities.GetDependencies(semiOrderedModules, x))
             .OfType<ModuleInfoExtendedWithPath>()
-            .Select(x => moduleViewModelLookup[x.Id])
             .ToList();
 
-        // Toggle IsSelected
-        foreach (var moduleVM in rawOrderedModules)
+        var existingOrderedModules = rawOrderedModules
+            .Where(x => moduleViewModelLookup.ContainsKey(x.Id))
+            .ToList();
+        
+        var existingOrderedViewModels = existingOrderedModules
+            .Select(x => moduleViewModelLookup[x.Id])
+            .ToList();
+        
+        var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules).ToList();
+        if (!overwriteWhenFailure && existingLoadOrderValidationIssues.Count != 0)
         {
-            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
-                SortHelper.ToggleModuleSelection(rawOrderedModules, moduleViewModelLookup, moduleVM);
+            issues = existingLoadOrderValidationIssues;
+            orderedModules = existingOrderedViewModels;
+            return false;
         }
 
-        var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(rawOrderedModules.Select(x => x.ModuleInfoExtended).ToList()).ToList();
+        // Toggle IsSelected
+        foreach (var moduleVM in existingOrderedViewModels)
+        {
+            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
+                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
+        }
+
+        var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedViewModels.Select(x => x.ModuleInfoExtended).ToList()).ToList();
         if (!overwriteWhenFailure && loadOrderValidationIssues.Count != 0)
         {
             issues = loadOrderValidationIssues;
-            orderedModules = null;
+            orderedModules = existingOrderedViewModels;
             return false;
         }
 
         issues = null;
-        orderedModules = rawOrderedModules;
+        orderedModules = existingOrderedViewModels;
         var idx = 0;
         foreach (var viewModel in orderedModules)
             viewModel.Index = idx++;
@@ -96,13 +111,13 @@ partial class LauncherManagerHandler
     /// Internal<br/>
     /// </summary>
     protected internal bool TryOrderByLoadOrderBeta(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, [NotNullWhen(false)] out IReadOnlyList<string>? issues,
-        [NotNullWhen(true)] out IReadOnlyList<IModuleViewModel>? orderedModules)
+        out IReadOnlyList<IModuleViewModel> orderedModules)
     {
         var state = GetState();
 
         var semiOrderedModules = new List<ModuleInfoExtendedWithPath>();
 
-        var moduleViewModels = GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = GetAllModuleViewModels() ?? Array.Empty<IModuleViewModel>();
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
         // Load all modules
@@ -117,27 +132,34 @@ partial class LauncherManagerHandler
         // Get all present modules, ignore missing
         var presentOrderedIds = loadOrder.Intersect(semiOrderedModules.Select(x => x.Id).ToHashSet()).ToList();
 
+        var rawOrderedModules = semiOrderedModules;
+
+        var existingOrderedModules = rawOrderedModules
+            .Where(x => moduleViewModelLookup.ContainsKey(x.Id))
+            .ToList();
+        
+        var existingOrderedViewModels = existingOrderedModules
+            .Select(x => moduleViewModelLookup[x.Id])
+            .ToList();
+        
         // Check the present load order
         var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(presentOrderedIds.Select(x => ExtendedModuleInfoCache[x]).ToList()).ToList();
         if (loadOrderValidationIssues.Count != 0)
         {
             issues = loadOrderValidationIssues;
-            orderedModules = null;
+            orderedModules = existingOrderedViewModels;
+            return false;
+        }
+        
+        var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules).ToList();
+        if (existingLoadOrderValidationIssues.Count != 0)
+        {
+            issues = existingLoadOrderValidationIssues;
+            orderedModules = existingOrderedViewModels;
             return false;
         }
 
-        var rawOrderedModules = semiOrderedModules
-            .Select(x => moduleViewModelLookup[x.Id])
-            .ToList();
-
-        // Toggle IsSelected
-        foreach (var moduleVM in rawOrderedModules)
-        {
-            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
-                SortHelper.ToggleModuleSelection(rawOrderedModules, moduleViewModelLookup, moduleVM);
-        }
-
-        SortByDefault(rawOrderedModules);
+        SortByDefault(existingOrderedViewModels);
 
         // Not even sure a loop is needed
         // And I'm pretty sure that this is a dumb and non optimal solution.
@@ -154,13 +176,13 @@ partial class LauncherManagerHandler
                 var xId = presentOrderedIds[i];
                 var yId = presentOrderedIds[i + 1];
 
-                var xIdx = rawOrderedModules.IndexOf(z => z.ModuleInfoExtended.Id == xId);
-                var yIdx = rawOrderedModules.IndexOf(z => z.ModuleInfoExtended.Id == yId);
+                var xIdx = existingOrderedViewModels.IndexOf(z => z.ModuleInfoExtended.Id == xId);
+                var yIdx = existingOrderedViewModels.IndexOf(z => z.ModuleInfoExtended.Id == yId);
                 if (xIdx > yIdx)
                 {
-                    if (!SortHelper.ChangeModulePosition(rawOrderedModules, moduleViewModelLookup, moduleViewModelLookup[xId], yIdx))
+                    if (!SortHelper.ChangeModulePosition(existingOrderedViewModels, moduleViewModelLookup, moduleViewModelLookup[xId], yIdx))
                     {
-                        if (!SortHelper.ChangeModulePosition(rawOrderedModules, moduleViewModelLookup, moduleViewModelLookup[yId], xIdx))
+                        if (!SortHelper.ChangeModulePosition(existingOrderedViewModels, moduleViewModelLookup, moduleViewModelLookup[yId], xIdx))
                         {
                             hasInvalid = true;
                         }
@@ -172,12 +194,12 @@ partial class LauncherManagerHandler
         if (retryCount >= retryCountMax)
         {
             issues = new[] { new BUTRTextObject("{=sLf3eIpH}Failed to order the module list!").ToString() };
-            orderedModules = null;
+            orderedModules = existingOrderedViewModels;
             return false;
         }
 
         issues = null;
-        orderedModules = rawOrderedModules;
+        orderedModules = existingOrderedViewModels;
         var idx = 0;
         foreach (var viewModel in orderedModules)
             viewModel.Index = idx++;

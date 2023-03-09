@@ -28,6 +28,8 @@ internal unsafe delegate return_value_json* N_ReadDirectoryFileList(param_ptr* p
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_json* N_ReadDirectoryList(param_ptr* p_owner, param_string* p_directory_path);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+internal unsafe delegate return_value_json* N_GetAllModuleViewModels(param_ptr* p_owner);
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_json* N_GetModuleViewModels(param_ptr* p_owner);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_SetModuleViewModels(param_ptr* p_owner, param_json* p_module_view_model);
