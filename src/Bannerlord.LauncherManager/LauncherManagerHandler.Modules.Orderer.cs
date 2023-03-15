@@ -84,19 +84,21 @@ partial class LauncherManagerHandler
             return false;
         }
 
-        // Toggle IsSelected
-        foreach (var moduleVM in existingOrderedViewModels)
-        {
-            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
-                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
-        }
-
         var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedViewModels.Select(x => x.ModuleInfoExtended).ToList()).ToList();
         if (!overwriteWhenFailure && loadOrderValidationIssues.Count != 0)
         {
             issues = loadOrderValidationIssues;
             orderedModules = existingOrderedViewModels;
             return false;
+        }
+        
+        // Toggle IsSelected
+        foreach (var moduleVM in existingOrderedViewModels)
+        {
+            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
+                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
+            if (!isModuleSelected(moduleVM.ModuleInfoExtended.Id) && moduleVM.IsSelected)
+                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
         }
 
         issues = null;
@@ -157,6 +159,15 @@ partial class LauncherManagerHandler
             issues = existingLoadOrderValidationIssues;
             orderedModules = existingOrderedViewModels;
             return false;
+        }
+        
+        // Toggle IsSelected
+        foreach (var moduleVM in existingOrderedViewModels)
+        {
+            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
+                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
+            if (!isModuleSelected(moduleVM.ModuleInfoExtended.Id) && moduleVM.IsSelected)
+                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
         }
 
         SortByDefault(existingOrderedViewModels);

@@ -147,6 +147,7 @@ public class ModuleListHandler
 
                 ImportListInternal();
             });
+            return;
         }
         
         ImportListInternal();
@@ -226,6 +227,7 @@ public class ModuleListHandler
 
                 ImportSaveInternal();
             });
+            return;
         }
         
         ImportSaveInternal();
@@ -309,6 +311,7 @@ public class ModuleListHandler
 
                 ImportNovusInternal();
             });
+            return;
         }
         
         ImportNovusInternal();
