@@ -100,6 +100,38 @@ public class ModuleListHandler
         using var reader = new StreamReader(stream);
         var importedModules = Deserialize(ReadAllLines(reader)).ToArray();
 
+        void ImportListInternal()
+        {
+            var mismatchedVersions = new List<ModuleMismatch>();
+            foreach (var (id, version, _) in importedModules)
+            {
+                if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
+
+                var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
+                if (launcherModuleVersion != version)
+                    mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
+            }
+
+
+            ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+
+            if (mismatchedVersions.Count > 0)
+            {
+                ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+                {
+                    if (!result)
+                    {
+                        onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                        return;
+                    }
+
+                    onResult(GetResult());
+                });
+                return;
+            }
+            onResult(GetResult());
+        }
+        
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleIds = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).ToHashSet();
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
@@ -113,36 +145,11 @@ public class ModuleListHandler
                     return;
                 }
 
-                var mismatchedVersions = new List<ModuleMismatch>();
-                foreach (var (id, version, _) in importedModules)
-                {
-                    if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
-
-                    var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-                    if (launcherModuleVersion != version)
-                        mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
-                }
-
-
-                ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
-
-                if (mismatchedVersions.Count > 0)
-                {
-                    ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
-                    {
-                        if (!result)
-                        {
-                            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
-                            return;
-                        }
-
-                        onResult(GetResult());
-                    });
-                    return;
-                }
-                onResult(GetResult());
+                ImportListInternal();
             });
         }
+        
+        ImportListInternal();
     }
     private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
     {
@@ -172,6 +179,38 @@ public class ModuleListHandler
             return new ModuleListEntry(x, version);
         }).ToArray();
 
+        void ImportSaveInternal()
+        {
+            var mismatchedVersions = new List<ModuleMismatch>();
+            foreach (var (name, version, _) in importedModules)
+            {
+                if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Name == name) is not { } moduleVM) continue;
+
+                var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
+                if (launcherModuleVersion != version)
+                    mismatchedVersions.Add(new ModuleMismatch(name, version, launcherModuleVersion));
+            }
+
+
+            ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+
+            if (mismatchedVersions.Count > 0)
+            {
+                ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+                {
+                    if (!result)
+                    {
+                        onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                        return;
+                    }
+
+                    onResult(GetResult());
+                });
+                return;
+            }
+            onResult(GetResult());
+        }
+        
         var importedModuleNames = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleNames = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).ToHashSet();
         var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
@@ -185,36 +224,11 @@ public class ModuleListHandler
                     return;
                 }
 
-                var mismatchedVersions = new List<ModuleMismatch>();
-                foreach (var (name, version, _) in importedModules)
-                {
-                    if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Name == name) is not { } moduleVM) continue;
-
-                    var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-                    if (launcherModuleVersion != version)
-                        mismatchedVersions.Add(new ModuleMismatch(name, version, launcherModuleVersion));
-                }
-
-
-                ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
-
-                if (mismatchedVersions.Count > 0)
-                {
-                    ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
-                    {
-                        if (!result)
-                        {
-                            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
-                            return;
-                        }
-
-                        onResult(GetResult());
-                    });
-                    return;
-                }
-                onResult(GetResult());
+                ImportSaveInternal();
             });
         }
+        
+        ImportSaveInternal();
     }
     private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
     {
@@ -249,6 +263,37 @@ public class ModuleListHandler
 
         }
 
+        void ImportNovusInternal()
+        {
+            var mismatchedVersions = new List<ModuleMismatch>();
+            foreach (var (id, version, _) in importedModules)
+            {
+                if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
+
+                var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
+                if (launcherModuleVersion != version)
+                    mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
+            }
+
+            ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).OfType<IModuleViewModel>().Select(x => x.ModuleInfoExtended).ToArray();
+
+            if (mismatchedVersions.Count > 0)
+            {
+                ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
+                {
+                    if (!result)
+                    {
+                        onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                        return;
+                    }
+
+                    onResult(GetResult());
+                });
+                return;
+            }
+            onResult(GetResult());
+        }
+
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleIds = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).ToHashSet();
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
@@ -262,35 +307,11 @@ public class ModuleListHandler
                     return;
                 }
 
-                var mismatchedVersions = new List<ModuleMismatch>();
-                foreach (var (id, version, _) in importedModules)
-                {
-                    if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
-
-                    var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-                    if (launcherModuleVersion != version)
-                        mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
-                }
-
-                ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).OfType<IModuleViewModel>().Select(x => x.ModuleInfoExtended).ToArray();
-
-                if (mismatchedVersions.Count > 0)
-                {
-                    ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
-                    {
-                        if (!result)
-                        {
-                            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
-                            return;
-                        }
-
-                        onResult(GetResult());
-                    });
-                    return;
-                }
-                onResult(GetResult());
+                ImportNovusInternal();
             });
         }
+        
+        ImportNovusInternal();
     }
     /// <summary>
     /// External<br/>
