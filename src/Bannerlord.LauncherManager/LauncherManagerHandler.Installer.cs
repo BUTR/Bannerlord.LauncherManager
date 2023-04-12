@@ -1,6 +1,4 @@
 ﻿using Bannerlord.LauncherManager.Models;
-using Bannerlord.LauncherManager.Utils;
-using Bannerlord.ModuleManager;
 
 using System;
 using System.Collections.Generic;
@@ -45,7 +43,8 @@ public partial class LauncherManagerHandler
     /// </summary>
     public InstallResult InstallModuleContent(string[] files, ModuleInfoExtendedWithPath[] moduleInfos)
     {
-        var (platform, _) = GetPlatformAndStore(GetInstallPath());
+        var installPath = GetInstallPath();
+        var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
 
         var lowerSubModuleName = Constants.SubModuleName.ToLower();
         if (!files.Any(x => x.ToLower().Contains(lowerSubModuleName)))

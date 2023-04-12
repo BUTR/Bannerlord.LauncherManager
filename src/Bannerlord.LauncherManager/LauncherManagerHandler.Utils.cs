@@ -7,41 +7,12 @@ namespace Bannerlord.LauncherManager;
 
 public partial class LauncherManagerHandler
 {
-    private enum GameStore { Steam, GOG, Epic, Xbox, Unknown }
-    private enum GamePlatform { Win64, Xbox, Unknown }
-
-    private (GamePlatform, GameStore) GetPlatformAndStore(string installPath)
-    {
-        var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
-        var hasWin64 = binDirectories.Any(x => x.Contains(Constants.Win64Configuration));
-        var hasXbox = binDirectories.Any(x => x.Contains(Constants.XboxConfiguration));
-
-        var modulesDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder)) ?? Array.Empty<string>();
-        var hasNativeModule = modulesDirectories.Any(x => x.EndsWith("Native", StringComparison.OrdinalIgnoreCase));
-
-        var nativeFiles = hasNativeModule ? ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, "Native")) ?? Array.Empty<string>() : Array.Empty<string>();
-        var hasGdk = nativeFiles.Any(x => x.EndsWith("gdk.target"));
-        var hasEpic = nativeFiles.Any(x => x.EndsWith("epic.target"));
-        var hasGog = nativeFiles.Any(x => x.EndsWith("gog.target"));
-        var hasSteam = nativeFiles.Any(x => x.EndsWith("steam.target"));
-
-        return (hasXbox, hasWin64) switch
-        {
-            (true, false) when hasGdk => (GamePlatform.Xbox, GameStore.Xbox),
-            (false, true) when hasSteam => (GamePlatform.Win64, GameStore.Steam),
-            (false, true) when hasGog => (GamePlatform.Win64, GameStore.GOG),
-            (false, true) when hasEpic => (GamePlatform.Win64, GameStore.Epic),
-            (true, false) => (GamePlatform.Xbox, GameStore.Unknown),
-            (false, true) => (GamePlatform.Win64, GameStore.Unknown),
-            (true, true) => (GamePlatform.Unknown, GameStore.Unknown),
-            (false, false) => (GamePlatform.Unknown, GameStore.Unknown),
-        };
-    }
-
     private string _currentExecutable = Constants.BannerlordExecutable;
     private string? _currentGameMode = "/singleplayer"; // We only support singleplayer
     private string? _currentLoadOrder;
     private string? _currentSaveFile;
+
+    private GameStore? _store;
 
     /// <summary>
     /// External<br/>
@@ -52,6 +23,11 @@ public partial class LauncherManagerHandler
     /// External<br/>
     /// </summary>
     public virtual int GetChangeset() => -1;
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public void SetGameStore(GameStore store) => _store = store;
 
     /// <summary>
     /// External<br/>
@@ -67,7 +43,7 @@ public partial class LauncherManagerHandler
         };
 
         var installPath = GetInstallPath();
-        var (platform, _) = GetPlatformAndStore(installPath);
+        var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
         var win64Executable = System.IO.Path.Combine("bin", Constants.Win64Configuration, _currentExecutable);
         var xboxExecutable = System.IO.Path.Combine("bin", Constants.XboxConfiguration, _currentExecutable);
         var binDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
@@ -114,5 +90,73 @@ public partial class LauncherManagerHandler
     {
         _currentSaveFile = saveName;
         RefreshGameParameters();
+    }
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public GameStore GetStore(string installPath)
+    {
+        var modulesDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder)) ?? Array.Empty<string>();
+        var hasNativeModule = modulesDirectories.Any(x => x.EndsWith("Native", StringComparison.OrdinalIgnoreCase));
+
+        var nativeFiles = hasNativeModule ? ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, "Native")) ?? Array.Empty<string>() : Array.Empty<string>();
+        if (nativeFiles.Any(x => x.EndsWith("gdk.target")))
+            return GameStore.Xbox;
+        if (nativeFiles.Any(x => x.EndsWith("epic.target")))
+            return GameStore.Epic;
+        if (nativeFiles.Any(x => x.EndsWith("gog.target")))
+            return GameStore.GOG;
+        if (nativeFiles.Any(x => x.EndsWith("steam.target")))
+            return GameStore.Steam;
+
+        return GameStore.Unknown;
+    }
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public GamePlatform GetPlatform()
+    {
+        var installPath = GetInstallPath();
+        return GetPlatform(installPath, _store ?? GetStore(installPath));
+    }
+
+    /// <summary>
+    /// Internal<br/>
+    /// </summary>
+    internal GamePlatform GetPlatform(string installPath, GameStore store)
+    {
+        // TODO:
+        GamePlatform GetForUnknownStore()
+        {
+            var internalStore = GetStore(installPath);
+            
+            var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
+            var hasWin64 = binDirectories.Any(x => x.Contains(Constants.Win64Configuration));
+            var hasXbox = binDirectories.Any(x => x.Contains(Constants.XboxConfiguration));
+            
+            return (hasXbox, hasWin64) switch
+            {
+                (true, false) when internalStore == GameStore.Xbox => GamePlatform.Xbox,
+                (false, true) when internalStore == GameStore.Steam => GamePlatform.Win64,
+                (false, true) when internalStore == GameStore.GOG => GamePlatform.Win64,
+                (false, true) when internalStore == GameStore.Epic => GamePlatform.Win64,
+
+                (true, false) => GamePlatform.Xbox,
+                (false, true) => GamePlatform.Win64,
+                (true, true) => GamePlatform.Unknown,
+                (false, false) => GamePlatform.Unknown,
+            };
+        }
+        
+        return store switch
+        {
+            GameStore.Steam => GamePlatform.Win64,
+            GameStore.GOG => GamePlatform.Win64,
+            GameStore.Epic => GamePlatform.Win64,
+            GameStore.Xbox => GamePlatform.Xbox,
+            _ => GetForUnknownStore(),
+        };
     }
 }

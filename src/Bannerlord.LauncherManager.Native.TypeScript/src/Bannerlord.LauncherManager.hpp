@@ -41,6 +41,7 @@ namespace Bannerlord::LauncherManager
         ~LauncherManager();
 
         void CheckForRootHarmony(const CallbackInfo &info);
+        Napi::Value GetGamePlatform(const CallbackInfo &info);
         Napi::Value GetGameVersion(const CallbackInfo &info);
         Napi::Value GetModules(const CallbackInfo &info);
         Napi::Value GetSaveFilePath(const CallbackInfo &info);
@@ -60,6 +61,7 @@ namespace Bannerlord::LauncherManager
         void RegisterCallbacks(const CallbackInfo &info);
         void SetGameParameterExecutable(const CallbackInfo &info);
         void SetGameParameterSaveFile(const CallbackInfo &info);
+        void SetGameStore(const CallbackInfo &info);
         void Sort(const CallbackInfo &info);
         Napi::Value SortHelperChangeModulePosition(const CallbackInfo &info);
         Napi::Value SortHelperToggleModuleSelection(const CallbackInfo &info);
@@ -830,5 +832,23 @@ namespace Bannerlord::LauncherManager
         return deferred.Promise();
     }
 
+    void LauncherManager::SetGameStore(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto gameStore = info[0].As<String>();
+
+        const auto gameStoreCopy = CopyWithFree(gameStore.Utf16Value());
+
+        const auto result = ve_set_game_store(this->_pInstance, gameStoreCopy.get());
+        ThrowOrReturn(env, result);
+    }
+
+    Napi::Value LauncherManager::GetGamePlatform(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_get_game_platform(this->_pInstance);
+        ThrowOrReturnString(env, result);
+    }
 }
 #endif

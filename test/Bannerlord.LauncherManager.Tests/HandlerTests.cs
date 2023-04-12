@@ -194,27 +194,14 @@ namespace Bannerlord.LauncherManager.Tests
                 getInstallPath: () => Path.GetFullPath(GamePath)!,
                 readFileContent: Read,
                 writeFileContent: null!,
-                readDirectoryFileList: x =>
-                {
-                    if (x.EndsWith("Data\\game\\Modules", StringComparison.OrdinalIgnoreCase))
-                        return new[] { "Native" };
-                    if (x.EndsWith("Data\\game\\Modules\\Native", StringComparison.OrdinalIgnoreCase))
-                        return new[] { "steam.target" };
-
-                    return Directory.GetFiles(x);
-                },
-                readDirectoryList: x =>
-                {
-                    if (x.EndsWith("Data\\game\\bin", StringComparison.OrdinalIgnoreCase))
-                        return new[] { "Win64_Shipping_Client" };
-
-                    return Directory.GetDirectories(x);
-                },
+                readDirectoryFileList: null!,
+                readDirectoryList: null!,
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
                 setModuleViewModels: null!,
                 getOptions: null!,
                 getState: null!);
+            handler.SetGameStore(GameStore.Steam);
             var installResult = handler.InstallModuleContent(files, new ModuleInfoExtendedWithPath[] { new(moduleInfo, subModuleFile) });
             Assert.NotNull(installResult);
             Assert.NotNull(installResult.Instructions);

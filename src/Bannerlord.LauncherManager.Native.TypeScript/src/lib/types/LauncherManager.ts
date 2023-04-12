@@ -39,6 +39,9 @@ export interface SaveMetadata {
   Name: string;
 }
 
+export type GameStore = 'Steam' | 'GOG' | 'Epic' | 'Xbox' | 'Unknown';
+export type GamePlatform = 'Win64' | 'Xbox' | 'Unknown';
+
 export type NotificationType = 'hint' | 'info';
 export type DialogType = 'warning' | 'fileOpen' | 'fileSave';
 
@@ -73,6 +76,7 @@ export type LauncherManager = {
   constructor(): LauncherManager;
 
   checkForRootHarmony(): void;
+  getGamePlatform(): GamePlatform;
   getGameVersion(): string;
   getModules(): ModuleInfoExtendedWithPath[];
   getSaveFilePath(saveFile: string): string;
@@ -108,6 +112,7 @@ export type LauncherManager = {
   ): void;
   setGameParameterExecutable(executable: string): void;
   setGameParameterSaveFile(saveName: string): void;
+  setGameStore(gameStore: GameStore): void;
   sort(): void;
   sortHelperChangeModulePosition(moduleViewModel: ModuleViewModel, insertIndex: number): boolean;
   sortHelperToggleModuleSelection(moduleViewModel: ModuleViewModel): ModuleViewModel;

@@ -648,6 +648,50 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
+    
+
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_void* SetGameStore(param_ptr* p_handle, param_string* p_game_store)
+    {
+        Logger.LogInput(p_game_store);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            var gameStoreStr = new string(param_string.ToSpan(p_game_store));
+            var gameStore = Enum.Parse<GameStore>(gameStoreStr);
+
+            handler.SetGameStore(gameStore);
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
+    
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_game_platform", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_string* GetGamePlatform(param_ptr* p_handle)
+    {
+        Logger.LogInput();
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            Logger.LogOutput();
+            return return_value_string.AsValue(handler.GetPlatform().ToString(), false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_string.AsException(e, false);
+        }
+    }
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_localize_string", CallConvs = new[] { typeof(CallConvCdecl) })]

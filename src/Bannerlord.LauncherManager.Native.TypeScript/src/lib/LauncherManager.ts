@@ -1,5 +1,5 @@
 import * as types from './types';
-import { ModuleInfoExtendedWithPath } from './types';
+import { GamePlatform, GameStore, ModuleInfoExtendedWithPath } from './types';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 type LauncherManagerWithoutConstructor = Omit<types.LauncherManager, "constructor">;
@@ -12,6 +12,9 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   }
   public checkForRootHarmony = (): void => {
     return this.manager.checkForRootHarmony();
+  }
+  public getGamePlatform = (): GamePlatform => {
+    return this.manager.getGamePlatform();
   }
   public getGameVersion = (): string => {
     return this.manager.getGameVersion();
@@ -85,6 +88,9 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   }
   public setGameParameterSaveFile(saveName: string): void {
     return this.manager.setGameParameterSaveFile(saveName);
+  }
+  public setGameStore(gameStore: GameStore): void {
+    return this.manager.setGameStore(gameStore);
   }
   public sort = (): void => {
     return this.manager.sort();
