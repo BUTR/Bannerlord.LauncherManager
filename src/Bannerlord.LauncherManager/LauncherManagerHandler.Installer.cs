@@ -45,6 +45,8 @@ public partial class LauncherManagerHandler
     /// </summary>
     public InstallResult InstallModuleContent(string[] files, string destinationPath)
     {
+        var (platform, _) = GetPlatformAndStore(GetInstallPath());
+        
         var lowerSubModuleName = Constants.SubModuleName.ToLower();
         if (!files.Any(x => x.ToLower().Contains(lowerSubModuleName)))
             return InstallResult.AsInvalid;
@@ -61,7 +63,19 @@ public partial class LauncherManagerHandler
 
             var subModuleFileIdx = file.IndexOf(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase);
             var moduleBasePath = file.Substring(0, subModuleFileIdx);
-            return files.Where(y => y.StartsWith(moduleBasePath)).Select(file2 => new CopyInstallInstruction
+            return files.Where(y => y.StartsWith(moduleBasePath)).Where(y =>
+            {
+                var modulePath = y.Substring(moduleBasePath.Length);
+                if (!modulePath.StartsWith("bin", StringComparison.OrdinalIgnoreCase)) return true;
+                var binPath = modulePath.Substring(4);
+                // Avoid unnecessary bin folder copy
+                return platform switch
+                {
+                    GamePlatform.Win64 => binPath.StartsWith(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase),
+                    GamePlatform.Xbox => binPath.StartsWith(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase),
+                    _ => true,
+                };
+            }).Select(file2 => new CopyInstallInstruction
             {
                 ModuleId = module.Id,
                 Source = file2,

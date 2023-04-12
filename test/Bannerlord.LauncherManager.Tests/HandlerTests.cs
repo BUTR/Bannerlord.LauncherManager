@@ -84,7 +84,7 @@ namespace Bannerlord.LauncherManager.Tests
             var modules = handler.GetModules();
             moduleViewModels = new IModuleViewModel[]
             {
-                new ModuleViewModel()
+                new ModuleViewModel
                 {
                     ModuleInfoExtended = modules.First(x => x.Id == "Test"),
                     IsValid = true,
@@ -92,7 +92,7 @@ namespace Bannerlord.LauncherManager.Tests
                     IsDisabled = false,
                     Index = 0,
                 },
-                new ModuleViewModel()
+                new ModuleViewModel
                 {
                     ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
                     IsValid = true,
@@ -121,7 +121,7 @@ namespace Bannerlord.LauncherManager.Tests
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
-                readDirectoryList: s => Directory.GetDirectories(s),
+                readDirectoryList: Directory.GetDirectories,
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
                 setModuleViewModels: null!,
@@ -135,10 +135,12 @@ namespace Bannerlord.LauncherManager.Tests
         [Test]
         public void Handler_TestModule_tTest()
         {
+            var moduleFolder = "Test\\";
+            var subModuleFile = "Test\\SubModule.xml";
             var files = new[]
             {
-                "Test\\",
-                "Test\\SubModule.xml",
+                moduleFolder,
+                subModuleFile,
             };
 
             var handler = new LauncherManagerHandlerExposer();
@@ -166,10 +168,16 @@ namespace Bannerlord.LauncherManager.Tests
         [Test]
         public void Handler_InstallModule_Test()
         {
+            var moduleFolder = "Test\\";
+            var subModuleFile = "Test\\SubModule.xml";
+            var win64Dll = $"Test\\bin\\{Constants.Win64Configuration}\\Test.dll";
+            var xboxDll = $"Test\\bin\\{Constants.XboxConfiguration}\\Test.dll";
             var files = new[]
             {
-                "Test\\",
-                "Test\\SubModule.xml",
+                moduleFolder,
+                subModuleFile,
+                win64Dll,
+                xboxDll,
             };
 
             var handler = new LauncherManagerHandlerExposer();
@@ -179,11 +187,25 @@ namespace Bannerlord.LauncherManager.Tests
                 sendNotification: null!,
                 sendDialog: null!,
                 setGameParameters: null!,
-                getInstallPath: null!,
+                getInstallPath: () => Path.GetFullPath(GamePath)!,
                 readFileContent: Read,
                 writeFileContent: null!,
-                readDirectoryFileList: null!,
-                readDirectoryList: null!,
+                readDirectoryFileList: x =>
+                {
+                    if (x.EndsWith("Data\\game\\Modules", StringComparison.OrdinalIgnoreCase))
+                        return new[] { "Native" };
+                    if (x.EndsWith("Data\\game\\Modules\\Native", StringComparison.OrdinalIgnoreCase))
+                        return new[] { "steam.target" };
+                    
+                    return Directory.GetFiles(x);
+                },
+                readDirectoryList: x =>
+                {
+                    if (x.EndsWith("Data\\game\\bin", StringComparison.OrdinalIgnoreCase))
+                        return new[] { "Win64_Shipping_Client" };
+                    
+                    return Directory.GetDirectories(x);
+                },
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
                 setModuleViewModels: null!,
@@ -192,9 +214,12 @@ namespace Bannerlord.LauncherManager.Tests
             var installResult = handler.InstallModuleContent(files, Path.GetFullPath(VortexTestMod));
             Assert.NotNull(installResult);
             Assert.NotNull(installResult.Instructions);
-            Assert.AreEqual(2, installResult.Instructions.Count);
-            Assert.AreEqual(InstallInstructionType.Copy, installResult.Instructions[0].Type);
-            Assert.AreEqual(InstallInstructionType.ModuleInfo, installResult.Instructions[1].Type);
+            Assert.AreEqual(3, installResult.Instructions.Count);
+            Assert.IsInstanceOf<CopyInstallInstruction>(installResult.Instructions[0]);
+            Assert.IsInstanceOf<CopyInstallInstruction>(installResult.Instructions[1]);
+            Assert.IsInstanceOf<ModuleInfoInstallInstruction>(installResult.Instructions[2]);
+            Assert.AreEqual(subModuleFile, ((CopyInstallInstruction) installResult.Instructions[0]).Source);
+            Assert.AreEqual(win64Dll, ((CopyInstallInstruction) installResult.Instructions[1]).Source);
         }
     }
 }
