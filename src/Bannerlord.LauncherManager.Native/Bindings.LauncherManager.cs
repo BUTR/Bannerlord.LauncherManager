@@ -123,18 +123,18 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = new[] { typeof(CallConvCdecl) })]
-    public static return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_string* p_destination_path)
+    public static return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos)
     {
-        Logger.LogInput(p_files, p_destination_path);
+        Logger.LogInput(p_files, p_module_infos);
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray) ?? Array.Empty<string>();
-            var destinationPath = new string(param_string.ToSpan(p_destination_path));
+            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithPathArray) ?? Array.Empty<ModuleInfoExtendedWithPath>();
 
-            var result = handler.InstallModuleContent(files, destinationPath);
+            var result = handler.InstallModuleContent(files, moduleInfos);
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.InstallResult, false);
         }

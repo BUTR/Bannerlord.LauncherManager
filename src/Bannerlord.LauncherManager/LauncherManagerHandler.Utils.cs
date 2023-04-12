@@ -15,10 +15,10 @@ public partial class LauncherManagerHandler
         var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
         var hasWin64 = binDirectories.Any(x => x.Contains(Constants.Win64Configuration));
         var hasXbox = binDirectories.Any(x => x.Contains(Constants.XboxConfiguration));
-        
+
         var modulesDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder)) ?? Array.Empty<string>();
         var hasNativeModule = modulesDirectories.Any(x => x.EndsWith("Native", StringComparison.OrdinalIgnoreCase));
-        
+
         var nativeFiles = hasNativeModule ? ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, "Native")) ?? Array.Empty<string>() : Array.Empty<string>();
         var hasGdk = nativeFiles.Any(x => x.EndsWith("gdk.target"));
         var hasEpic = nativeFiles.Any(x => x.EndsWith("epic.target"));
@@ -37,7 +37,7 @@ public partial class LauncherManagerHandler
             (false, false) => (GamePlatform.Unknown, GameStore.Unknown),
         };
     }
-    
+
     private string _currentExecutable = Constants.BannerlordExecutable;
     private string? _currentGameMode = "/singleplayer"; // We only support singleplayer
     private string? _currentLoadOrder;

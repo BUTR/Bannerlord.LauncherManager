@@ -585,7 +585,7 @@ namespace Bannerlord::LauncherManager
     {
         const auto env = info.Env();
         const auto files = JSONStringify(env, info[0].As<Object>());
-        const auto destinationPath = info[1].As<String>();
+        const auto destinationPath = JSONStringify(env, info[1].As<Object>());
 
         const auto filesCopy = CopyWithFree(files.Utf16Value());
         const auto destinationPathCopy = CopyWithFree(destinationPath.Utf16Value());

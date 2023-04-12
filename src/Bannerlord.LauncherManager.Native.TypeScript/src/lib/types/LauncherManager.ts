@@ -78,7 +78,7 @@ export type LauncherManager = {
   getSaveFilePath(saveFile: string): string;
   getSaveFiles(): SaveMetadata[];
   getSaveMetadata(saveFile: string, data: ArrayBuffer): SaveMetadata;
-  installModule(files: string[], destinationPath: string): InstallResult;
+  installModule(files: string[], moduleInfos: ModuleInfoExtendedWithPath[]): InstallResult;
   isSorting(): boolean;
   loadLocalization(xml: string): void;
   localizeString(template: string, values: { [value: string]: string }): string;

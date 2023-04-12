@@ -131,7 +131,7 @@ public class ModuleListHandler
             }
             onResult(GetResult());
         }
-        
+
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleIds = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).ToHashSet();
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
@@ -149,7 +149,7 @@ public class ModuleListHandler
             });
             return;
         }
-        
+
         ImportListInternal();
     }
     private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
@@ -211,7 +211,7 @@ public class ModuleListHandler
             }
             onResult(GetResult());
         }
-        
+
         var importedModuleNames = importedModules.Select(x => x.Id).ToHashSet();
         var currentModuleNames = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).ToHashSet();
         var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
@@ -229,7 +229,7 @@ public class ModuleListHandler
             });
             return;
         }
-        
+
         ImportSaveInternal();
     }
     private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
@@ -313,7 +313,7 @@ public class ModuleListHandler
             });
             return;
         }
-        
+
         ImportNovusInternal();
     }
     /// <summary>

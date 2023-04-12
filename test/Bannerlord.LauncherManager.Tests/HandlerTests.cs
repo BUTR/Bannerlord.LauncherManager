@@ -1,4 +1,5 @@
 ﻿using Bannerlord.LauncherManager.Models;
+using Bannerlord.ModuleManager;
 
 using NUnit.Framework;
 
@@ -12,7 +13,6 @@ namespace Bannerlord.LauncherManager.Tests
     public class LauncherManagerHandlerExposer : LauncherManagerHandler
     {
         public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
-
     }
 
     public class HandlerTests
@@ -27,7 +27,6 @@ namespace Bannerlord.LauncherManager.Tests
         }
 
         private const string GamePath = "./Data/game/";
-        private const string VortexTestMod = "./Data/vortex/mountandblade2bannerlord/mods/Test/";
 
         private static byte[]? Read(string filePath, int offset, int length)
         {
@@ -168,6 +167,11 @@ namespace Bannerlord.LauncherManager.Tests
         [Test]
         public void Handler_InstallModule_Test()
         {
+            var moduleInfo = new ModuleInfoExtended
+            {
+                Id = "Test"
+            };
+
             var moduleFolder = "Test\\";
             var subModuleFile = "Test\\SubModule.xml";
             var win64Dll = $"Test\\bin\\{Constants.Win64Configuration}\\Test.dll";
@@ -196,14 +200,14 @@ namespace Bannerlord.LauncherManager.Tests
                         return new[] { "Native" };
                     if (x.EndsWith("Data\\game\\Modules\\Native", StringComparison.OrdinalIgnoreCase))
                         return new[] { "steam.target" };
-                    
+
                     return Directory.GetFiles(x);
                 },
                 readDirectoryList: x =>
                 {
                     if (x.EndsWith("Data\\game\\bin", StringComparison.OrdinalIgnoreCase))
                         return new[] { "Win64_Shipping_Client" };
-                    
+
                     return Directory.GetDirectories(x);
                 },
                 getAllModuleViewModels: null!,
@@ -211,7 +215,7 @@ namespace Bannerlord.LauncherManager.Tests
                 setModuleViewModels: null!,
                 getOptions: null!,
                 getState: null!);
-            var installResult = handler.InstallModuleContent(files, Path.GetFullPath(VortexTestMod));
+            var installResult = handler.InstallModuleContent(files, new ModuleInfoExtendedWithPath[] { new(moduleInfo, subModuleFile) });
             Assert.NotNull(installResult);
             Assert.NotNull(installResult.Instructions);
             Assert.AreEqual(3, installResult.Instructions.Count);

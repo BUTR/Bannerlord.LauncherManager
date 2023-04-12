@@ -1,4 +1,5 @@
 import * as types from './types';
+import { ModuleInfoExtendedWithPath } from './types';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 type LauncherManagerWithoutConstructor = Omit<types.LauncherManager, "constructor">;
@@ -27,8 +28,8 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public getSaveMetadata = (saveFile: string, data: ArrayBuffer): types.SaveMetadata => {
     return this.manager.getSaveMetadata(saveFile, data);
   }
-  public installModule = (files: string[], destinationPath: string): types.InstallResult => {
-    return this.manager.installModule(files, destinationPath);
+  public installModule = (files: string[], moduleInfos: ModuleInfoExtendedWithPath[]): types.InstallResult => {
+    return this.manager.installModule(files, moduleInfos);
   }
   public isSorting = (): boolean => {
     return this.manager.isSorting();

@@ -24,9 +24,6 @@
     <None Update="Data\game\Modules\Test2\SubModule.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Data\vortex\mountandblade2bannerlord\mods\Test\Test\SubModule.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   
 </Project>

@@ -91,7 +91,7 @@ partial class LauncherManagerHandler
             orderedModules = existingOrderedViewModels;
             return false;
         }
-        
+
         // Toggle IsSelected
         foreach (var moduleVM in existingOrderedViewModels)
         {
@@ -160,7 +160,7 @@ partial class LauncherManagerHandler
             orderedModules = existingOrderedViewModels;
             return false;
         }
-        
+
         // Toggle IsSelected
         foreach (var moduleVM in existingOrderedViewModels)
         {
