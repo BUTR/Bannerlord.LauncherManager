@@ -149,14 +149,23 @@ public partial class LauncherManagerHandler
                 (false, false) => GamePlatform.Unknown,
             };
         }
-        
-        return store switch
-        {
-            GameStore.Steam => GamePlatform.Win64,
-            GameStore.GOG => GamePlatform.Win64,
-            GameStore.Epic => GamePlatform.Win64,
-            GameStore.Xbox => GamePlatform.Xbox,
-            _ => GetForUnknownStore(),
-        };
+
+        return FromStore(store) is var platform && platform == GamePlatform.Unknown ? GetForUnknownStore() : platform;
     }
+
+    public static GamePlatform FromStore(GameStore store) => store switch
+    {
+        GameStore.Steam => GamePlatform.Win64,
+        GameStore.GOG => GamePlatform.Win64,
+        GameStore.Epic => GamePlatform.Win64,
+        GameStore.Xbox => GamePlatform.Xbox,
+        _ => GamePlatform.Unknown,
+    };
+
+    public static string GetConfigurationByPlatform(GamePlatform platform) => platform switch
+    {
+        GamePlatform.Win64 => Constants.Win64Configuration,
+        GamePlatform.Xbox => Constants.XboxConfiguration,
+        _ => string.Empty
+    };
 }
