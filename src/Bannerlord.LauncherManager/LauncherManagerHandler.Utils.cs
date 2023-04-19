@@ -47,10 +47,10 @@ public partial class LauncherManagerHandler
         var win64Executable = System.IO.Path.Combine("bin", Constants.Win64Configuration, _currentExecutable);
         var xboxExecutable = System.IO.Path.Combine("bin", Constants.XboxConfiguration, _currentExecutable);
         var binDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
-        var hasWin64 = binDirectories.Any(x => x.EndsWith(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase));
-        var hasXbox = binDirectories.Any(x => x.EndsWith(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase));
-        var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin", Constants.Win64Configuration))?.Any(x => x.EndsWith(_currentExecutable)) == true;
-        var hasXboxExecutable = hasXbox && ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin", Constants.XboxConfiguration))?.Any(x => x.EndsWith(_currentExecutable)) == true;
+        var hasWin64 = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase));
+        var hasXbox = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase));
+        var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin", Constants.Win64Configuration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
+        var hasXboxExecutable = hasXbox && ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin", Constants.XboxConfiguration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
         var fullExecutablePath = platform switch
         {
             GamePlatform.Win64 when hasWin64Executable => win64Executable,
@@ -97,10 +97,14 @@ public partial class LauncherManagerHandler
     /// </summary>
     public GameStore GetStore(string installPath)
     {
-        var modulesDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder)) ?? Array.Empty<string>();
-        var hasNativeModule = modulesDirectories.Any(x => x.EndsWith("Native", StringComparison.OrdinalIgnoreCase));
+        var rootDorectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath)) ?? Array.Empty<string>();
+        if (!rootDorectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.ModulesFolder, StringComparison.OrdinalIgnoreCase)))
+            return GameStore.Unknown;
 
-        var nativeFiles = hasNativeModule ? ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, "Native")) ?? Array.Empty<string>() : Array.Empty<string>();
+        var modulesDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder)) ?? Array.Empty<string>();
+        var hasNativeModule = modulesDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.NativeModule, StringComparison.OrdinalIgnoreCase));
+
+        var nativeFiles = hasNativeModule ? ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? Array.Empty<string>() : Array.Empty<string>();
         if (nativeFiles.Any(x => x.EndsWith("gdk.target")))
             return GameStore.Xbox;
         if (nativeFiles.Any(x => x.EndsWith("epic.target")))

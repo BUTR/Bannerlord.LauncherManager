@@ -76,7 +76,7 @@ public class ModuleListHandler
                     list.Add(new ModuleListEntry(split[0], version));
                 }
             }
-            var nativeChangeset = list.Find(x => x.Id == "Native")?.Version.ChangeSet is var y and not 0 ? y : _launcherManager.GetChangeset();
+            var nativeChangeset = list.Find(x => x.Id == Constants.NativeModule)?.Version.ChangeSet is var y and not 0 ? y : _launcherManager.GetChangeset();
             foreach (var entry in list)
             {
                 var version = entry.Version;
