@@ -97,14 +97,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     public GameStore GetStore(string installPath)
     {
-        var rootDorectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath)) ?? Array.Empty<string>();
-        if (!rootDorectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.ModulesFolder, StringComparison.OrdinalIgnoreCase)))
-            return GameStore.Unknown;
-
-        var modulesDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder)) ?? Array.Empty<string>();
-        var hasNativeModule = modulesDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.NativeModule, StringComparison.OrdinalIgnoreCase));
-
-        var nativeFiles = hasNativeModule ? ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? Array.Empty<string>() : Array.Empty<string>();
+        var nativeFiles = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? Array.Empty<string>();
         if (nativeFiles.Any(x => x.EndsWith("gdk.target")))
             return GameStore.Xbox;
         if (nativeFiles.Any(x => x.EndsWith("epic.target")))
