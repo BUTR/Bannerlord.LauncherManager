@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Vortex ships with .NET 6 -->
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
