@@ -112,6 +112,8 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::TestModule>("testModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::DialogTestFileOpen>("dialogTestFileOpen", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::DialogTestWarning>("dialogTestWarning", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SetGameStore>("setGameStore", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetGamePlatform>("getGamePlatform", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
         auto *const constructor = new FunctionReference();
@@ -204,10 +206,10 @@ namespace Bannerlord::LauncherManager
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
-            const auto executable = String::New(env, p_executable);
-            const auto gameParameters = JSONParse(env, String::New(env, Copy(p_game_parameters)));
+            const auto executable = p_executable == nullptr ? String::New(env, "") : String::New(env, p_executable);
+            const auto gameParameters = JSONParse(env, p_game_parameters == nullptr ? String::New(env, "") : String::New(env, p_game_parameters));
 
-            manager->FSetGameParameters({executable, gameParameters}).As<Object>();
+            manager->FSetGameParameters({executable, gameParameters});
             return Create(return_value_void{nullptr});
         }
         catch (const std::exception &e)
@@ -239,7 +241,7 @@ namespace Bannerlord::LauncherManager
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
-            const auto loadOrder = JSONParse(env, String::New(env, p_load_order));
+            const auto loadOrder = JSONParse(env, p_load_order == nullptr ? String::New(env, "") : String::New(env, p_load_order));
             manager->FSetLoadOrder({loadOrder});
             return Create(return_value_void{nullptr});
         }
@@ -256,11 +258,11 @@ namespace Bannerlord::LauncherManager
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
-            const auto id = String::New(env, p_id);
-            const auto type = String::New(env, p_type);
-            const auto message = String::New(env, p_message);
+            const auto id = p_id == nullptr ? String::New(env, "") : String::New(env, p_id);
+            const auto type = p_type == nullptr ? String::New(env, "") : String::New(env, p_type);
+            const auto message = p_message == nullptr ? String::New(env, "") : String::New(env, p_message);
             const auto displayMs_ = Number::New(env, displayMs);
-            manager->FSendNotification({id, type, message, displayMs_}).As<Object>();
+            manager->FSendNotification({id, type, message, displayMs_});
             return Create(return_value_void{nullptr});
         }
         catch (const std::exception &e)
@@ -276,10 +278,10 @@ namespace Bannerlord::LauncherManager
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
 
-            const auto type = String::New(env, p_type);
-            const auto title = String::New(env, p_title);
-            const auto message = String::New(env, p_message);
-            const auto filters = JSONParse(env, String::New(env, p_filters));
+            const auto type = p_type == nullptr ? String::New(env, "") : String::New(env, p_type);
+            const auto title = p_title == nullptr ? String::New(env, "") : String::New(env, p_title);
+            const auto message = p_message == nullptr ? String::New(env, "") : String::New(env, p_message);
+            const auto filters = JSONParse(env, p_filters == nullptr ? String::New(env, "") : String::New(env, p_filters));
 
             const auto result = manager->FSendDialog({type, title, message, filters});
             const auto promise = result.As<Promise>();
@@ -327,7 +329,7 @@ namespace Bannerlord::LauncherManager
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
-            const auto filePath = String::New(env, p_file_path);
+            const auto filePath = p_file_path == nullptr ? String::New(env, "") : String::New(env, p_file_path);
             const auto offset = Number::New(env, p_offset);
             const auto length = Number::New(env, p_length);
 
@@ -359,7 +361,7 @@ namespace Bannerlord::LauncherManager
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
-            const auto filePath = String::New(env, p_file_path);
+            const auto filePath = p_file_path == nullptr ? String::New(env, "") : String::New(env, p_file_path);
             const auto data = Buffer<uint8_t>::New(env, p_data, static_cast<size_t>(length));
 
             const auto result = manager->FWriteFileContent({filePath, data});
@@ -382,7 +384,7 @@ namespace Bannerlord::LauncherManager
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
-            const auto directoryPath = String::New(env, p_directory_path);
+            const auto directoryPath = p_directory_path == nullptr ? String::New(env, "") : String::New(env, p_directory_path);
 
             const auto result = manager->FReadDirectoryFileList({directoryPath});
             if (result.IsNull())
@@ -404,7 +406,7 @@ namespace Bannerlord::LauncherManager
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
-            const auto directoryPath = String::New(env, p_directory_path);
+            const auto directoryPath = p_directory_path == nullptr ? String::New(env, "") : String::New(env, p_directory_path);
 
             const auto result = manager->FReadDirectoryList({directoryPath});
             if (result.IsNull())
@@ -468,7 +470,7 @@ namespace Bannerlord::LauncherManager
         {
             const auto manager = static_cast<const LauncherManager *const>(p_owner);
             const auto env = manager->Env();
-            const auto moduleViewModels = JSONParse(env, String::New(env, Copy(p_module_view_models)));
+            const auto moduleViewModels = JSONParse(env, p_module_view_models == nullptr ? String::New(env, "") : String::New(env, p_module_view_models));
 
             const auto result = manager->FSetModuleViewModels({moduleViewModels});
             if (result.IsNull())
@@ -848,7 +850,7 @@ namespace Bannerlord::LauncherManager
         const auto env = info.Env();
 
         const auto result = ve_get_game_platform(this->_pInstance);
-        ThrowOrReturnString(env, result);
+        return ThrowOrReturnString(env, result);
     }
 }
 #endif
