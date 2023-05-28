@@ -648,6 +648,27 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
+
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_continue_last_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_void* SetGameParameterContinueLastSaveFile(param_ptr* p_handle, param_bool p_value)
+    {
+        Logger.LogInput(p_value);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            handler.SetGameParameterContinueLastSaveFile(p_value);
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
     
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = new[] { typeof(CallConvCdecl) })]

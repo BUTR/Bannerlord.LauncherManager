@@ -61,6 +61,7 @@ namespace Bannerlord::LauncherManager
         void RegisterCallbacks(const CallbackInfo &info);
         void SetGameParameterExecutable(const CallbackInfo &info);
         void SetGameParameterSaveFile(const CallbackInfo &info);
+        void SetGameParameterContinueLastSaveFile(const CallbackInfo &info);
         void SetGameStore(const CallbackInfo &info);
         void Sort(const CallbackInfo &info);
         Napi::Value SortHelperChangeModulePosition(const CallbackInfo &info);
@@ -114,6 +115,7 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::DialogTestWarning>("dialogTestWarning", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SetGameStore>("setGameStore", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetGamePlatform>("getGamePlatform", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SetGameParameterContinueLastSaveFile>("setGameParameterContinueLastSaveFile", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
         auto *const constructor = new FunctionReference();
@@ -851,6 +853,15 @@ namespace Bannerlord::LauncherManager
 
         const auto result = ve_get_game_platform(this->_pInstance);
         return ThrowOrReturnString(env, result);
+    }
+
+    void LauncherManager::SetGameParameterContinueLastSaveFile(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto value = info[0].As<Boolean>();
+
+        const auto result = ve_set_game_parameter_continue_last_save_file(this->_pInstance, value == true ? 1 : 0);
+        ThrowOrReturn(env, result);
     }
 }
 #endif

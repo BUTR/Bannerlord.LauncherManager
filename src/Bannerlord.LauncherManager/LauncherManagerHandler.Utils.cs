@@ -11,6 +11,7 @@ public partial class LauncherManagerHandler
     private string? _currentGameMode = "/singleplayer"; // We only support singleplayer
     private string? _currentLoadOrder;
     private string? _currentSaveFile;
+    private bool _continueLastSaveFile;
 
     private GameStore? _store;
 
@@ -40,6 +41,7 @@ public partial class LauncherManagerHandler
             _currentGameMode ?? string.Empty,
             _currentLoadOrder ?? string.Empty,
             string.IsNullOrEmpty(_currentSaveFile) ? string.Empty : $"/continuesave \"{_currentSaveFile}\"",
+            _continueLastSaveFile ? "/continuegame" : string.Empty
         };
 
         var installPath = GetInstallPath();
@@ -83,6 +85,15 @@ public partial class LauncherManagerHandler
         RefreshGameParameters();
     }
 
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public void SetGameParameterContinueLastSaveFile(bool value)
+    {
+        _continueLastSaveFile = value;
+        RefreshGameParameters();
+    }
+    
     /// <summary>
     /// External<br/>
     /// </summary>

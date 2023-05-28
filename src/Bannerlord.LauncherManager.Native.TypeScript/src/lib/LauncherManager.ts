@@ -89,6 +89,9 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public setGameParameterSaveFile(saveName: string): void {
     return this.manager.setGameParameterSaveFile(saveName);
   }
+  public setGameParameterContinueLastSaveFile(value: boolean): void {
+    return this.manager.setGameParameterContinueLastSaveFile(value);
+  }
   public setGameStore(gameStore: GameStore): void {
     return this.manager.setGameStore(gameStore);
   }

@@ -112,6 +112,7 @@ export type LauncherManager = {
   ): void;
   setGameParameterExecutable(executable: string): void;
   setGameParameterSaveFile(saveName: string): void;
+  setGameParameterContinueLastSaveFile(value: boolean): void;
   setGameStore(gameStore: GameStore): void;
   sort(): void;
   sortHelperChangeModulePosition(moduleViewModel: ModuleViewModel, insertIndex: number): boolean;
