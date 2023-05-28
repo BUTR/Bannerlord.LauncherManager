@@ -39,7 +39,7 @@ public partial class LauncherManagerHandler
         {
             _currentGameMode ?? string.Empty,
             _currentLoadOrder ?? string.Empty,
-            string.IsNullOrEmpty(_currentSaveFile) ? string.Empty : $"/continuesave {_currentSaveFile}",
+            string.IsNullOrEmpty(_currentSaveFile) ? string.Empty : $"/continuesave '{_currentSaveFile}'",
         };
 
         var installPath = GetInstallPath();
