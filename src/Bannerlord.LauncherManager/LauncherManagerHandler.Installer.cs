@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -14,7 +13,7 @@ public partial class LauncherManagerHandler
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsDirectorySeparator(char c) => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar;
 
-    private static bool EndsInDirectorySeparator([NotNullWhen(true)] string? path) =>
+    private static bool EndsInDirectorySeparator(string? path) =>
         !string.IsNullOrEmpty(path) && IsDirectorySeparator(path![path.Length - 1]);
 
 
