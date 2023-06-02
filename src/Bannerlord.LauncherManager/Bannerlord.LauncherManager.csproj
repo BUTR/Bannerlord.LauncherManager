@@ -9,7 +9,7 @@
     <VersionOverride>0</VersionOverride>
     <Version>1.0.$(VersionOverride)</Version>
     
-    <DefineConstants>$(DefineConstants);BANNERLORDBUTRMODULEMANAGER_PUBLIC</DefineConstants>
+    <DefineConstants>$(DefineConstants);BANNERLORDBUTRMODULEMANAGER_PUBLIC;BANNERLORDBUTRMODULEMANAGER_NULLABLE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,8 +23,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Bannerlord.ModuleManager.Source" Version="5.0.198" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-    <PackageReference Include="PolySharp" Version="1.12.1" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="Bannerlord.ModuleManager.Source" Version="5.0.209" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="PolySharp" Version="1.13.2" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <!--GitHub Actions-->
