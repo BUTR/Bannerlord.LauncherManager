@@ -51,11 +51,11 @@ internal static class ModuleIssueRenderer
             .SetTextVariable("TARGETID", issue.Target.Id)
             .SetTextVariable("SOURCEID", issue.SourceId),
 
-        ModuleIssueType.DependencyNotLoadedBeforeThis => new BUTRTextObject("{=s3xbuejE}'{TARGETID}' should be loaded before '{SOURCEID}'")
+        ModuleIssueType.DependencyNotLoadedBeforeThis => new BUTRTextObject("{=s3xbuejE}'{SOURCEID}' should be loaded before '{TARGETID}'")
             .SetTextVariable("TARGETID", issue.Target.Id)
             .SetTextVariable("SOURCEID", issue.SourceId),
 
-        ModuleIssueType.DependencyNotLoadedAfterThis => new BUTRTextObject("{=2ALJB7z2}'{TARGETID}' should be loaded after '{SOURCEID}'")
+        ModuleIssueType.DependencyNotLoadedAfterThis => new BUTRTextObject("{=2ALJB7z2}'{SOURCEID}' should be loaded after '{TARGETID}'")
             .SetTextVariable("ID", issue.SourceId),
 
         _ => throw new ArgumentOutOfRangeException()
