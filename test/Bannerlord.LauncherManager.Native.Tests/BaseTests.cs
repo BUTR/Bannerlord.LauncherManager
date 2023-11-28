@@ -1,12 +1,11 @@
 ﻿using static Bannerlord.LauncherManager.Native.Tests.Utils2;
 
-namespace Bannerlord.LauncherManager.Native.Tests
+namespace Bannerlord.LauncherManager.Native.Tests;
+
+public class BaseTests
 {
-    public class BaseTests
+    protected BaseTests()
     {
-        public BaseTests()
-        {
-            LibrarySetAllocator();
-        }
+        LibrarySetAllocator();
     }
 }

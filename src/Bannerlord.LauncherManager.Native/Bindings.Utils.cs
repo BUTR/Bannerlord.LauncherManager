@@ -1,5 +1,4 @@
-﻿using Bannerlord.LauncherManager.Localization;
-using Bannerlord.LauncherManager.Utils;
+﻿using Bannerlord.LauncherManager.Utils;
 
 using BUTR.NativeAOT.Shared;
 

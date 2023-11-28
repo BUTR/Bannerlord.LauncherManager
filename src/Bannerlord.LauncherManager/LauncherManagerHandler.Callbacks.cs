@@ -5,71 +5,14 @@ using System.Collections.Generic;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
-    private bool _callbacksRegistered;
-    private SetGameParametersDelegate D_SetGameParameters = (_, _) => throw new CallbacksNotRegisteredException();
-    private GetLoadOrderDelegate D_LoadLoadOrder = () => throw new CallbacksNotRegisteredException();
-    private SetLoadOrderDelegate D_SaveLoadOrder = (_) => throw new CallbacksNotRegisteredException();
-    private SendNotificationDelegate D_SendNotification = (_, _, _, _) => throw new CallbacksNotRegisteredException();
-    private SendDialogDelegate D_SendDialog = (_, _, _, _, _) => throw new CallbacksNotRegisteredException();
-    private GetInstallPathDelegate D_GetInstallPath = () => throw new CallbacksNotRegisteredException();
-    private ReadFileContentDelegate D_ReadFileContent = (_, _, _) => throw new CallbacksNotRegisteredException();
-    private WriteFileContentDelegate D_WriteFileContent = (_, _) => throw new CallbacksNotRegisteredException();
-    private ReadDirectoryFileListDelegate D_ReadDirectoryFileList = (_) => throw new CallbacksNotRegisteredException();
-    private ReadDirectoryListDelegate D_ReadDirectoryList = (_) => throw new CallbacksNotRegisteredException();
-    private GetAllModuleViewModelsDelegate D_GetAllModuleViewModels = () => throw new CallbacksNotRegisteredException();
-    private GetModuleViewModelsDelegate D_GetModuleViewModels = () => throw new CallbacksNotRegisteredException();
-    private SetModuleViewModelsDelegate D_SetModuleViewModels = (_) => throw new CallbacksNotRegisteredException();
-    private GetOptionsDelegate D_GetOptions = () => throw new CallbacksNotRegisteredException();
-    private GetStateDelegate D_GetState = () => throw new CallbacksNotRegisteredException();
-
-    /// <summary>
-    /// External<br/>
-    /// </summary>
-    public void RegisterCallbacks(SetGameParametersDelegate setGameParameters
-        , GetLoadOrderDelegate loadLoadOrder
-        , SetLoadOrderDelegate saveLoadOrder
-        , SendNotificationDelegate sendNotification
-        , SendDialogDelegate sendDialog
-        , GetInstallPathDelegate getInstallPath
-        , ReadFileContentDelegate readFileContent
-        , WriteFileContentDelegate writeFileContent
-        , ReadDirectoryFileListDelegate readDirectoryFileList
-        , ReadDirectoryListDelegate readDirectoryList
-        , GetAllModuleViewModelsDelegate getAllModuleViewModels
-        , GetModuleViewModelsDelegate getModuleViewModels
-        , SetModuleViewModelsDelegate setModuleViewModels
-        , GetOptionsDelegate getOptions
-        , GetStateDelegate getState
-    )
-    {
-        D_SetGameParameters = setGameParameters;
-        D_LoadLoadOrder = loadLoadOrder;
-        D_SaveLoadOrder = saveLoadOrder;
-        D_SendNotification = sendNotification;
-        D_SendDialog = sendDialog;
-        D_GetInstallPath = getInstallPath;
-        D_ReadFileContent = readFileContent;
-        D_WriteFileContent = writeFileContent;
-        D_ReadDirectoryFileList = readDirectoryFileList;
-        D_ReadDirectoryList = readDirectoryList;
-        D_GetAllModuleViewModels = getAllModuleViewModels;
-        D_GetModuleViewModels = getModuleViewModels;
-        D_SetModuleViewModels = setModuleViewModels;
-        D_GetOptions = getOptions;
-        D_GetState = getState;
-        _callbacksRegistered = true;
-    }
-
     /// <summary>
     /// Callback<br/>
     /// </summary>
     protected internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        D_SetGameParameters(executable, gameParameters);
+        _launcherUProvider.SetGameParameters(executable, gameParameters);
     }
 
     /// <summary>
@@ -77,9 +20,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal LoadOrder LoadLoadOrder()
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_LoadLoadOrder();
+        return _loadOrderProvider.LoadLoadOrder();
     }
 
     /// <summary>
@@ -87,9 +28,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal void SaveLoadOrder(LoadOrder loadOrder)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        D_SaveLoadOrder(loadOrder);
+        _loadOrderProvider.SaveLoadOrder(loadOrder);
 
         SetGameParameterLoadOrder(loadOrder);
     }
@@ -99,9 +38,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        D_SendNotification(id, type, message, displayMs);
+        _notificationUIProvider.SendNotification(id, type, message, displayMs);
     }
 
     /// <summary>
@@ -109,9 +46,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        D_SendDialog(type, title, message, filters, onResult);
+        _dialogUIProvider.SendDialog(type, title, message, filters, onResult);
     }
 
     /// <summary>
@@ -119,9 +54,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal string GetInstallPath()
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_GetInstallPath();
+        return _gameInfoProvider.GetInstallPath();
     }
 
     /// <summary>
@@ -129,9 +62,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal byte[]? ReadFileContent(string filePath, int offset, int length)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_ReadFileContent(filePath, offset, length);
+        return _fileSystemProvider.ReadFileContent(filePath, offset, length);
     }
 
     /// <summary>
@@ -139,9 +70,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal void WriteFileContent(string filePath, byte[]? data)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        D_WriteFileContent(filePath, data);
+        _fileSystemProvider.WriteFileContent(filePath, data);
     }
 
     /// <summary>
@@ -149,9 +78,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal string[]? ReadDirectoryFileList(string directoryPath)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_ReadDirectoryFileList(directoryPath);
+        return _fileSystemProvider.ReadDirectoryFileList(directoryPath);
     }
 
     /// <summary>
@@ -159,9 +86,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal string[]? ReadDirectoryList(string directoryPath)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_ReadDirectoryList(directoryPath);
+        return _fileSystemProvider.ReadDirectoryList(directoryPath);
     }
 
     /// <summary>
@@ -170,9 +95,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal IModuleViewModel[]? GetAllModuleViewModels()
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_GetAllModuleViewModels();
+        return _launcherUProvider.GetAllModuleViewModels();
     }
 
     /// <summary>
@@ -181,9 +104,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal IModuleViewModel[]? GetModuleViewModels()
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_GetModuleViewModels();
+        return _launcherUProvider.GetModuleViewModels();
     }
 
     /// <summary>
@@ -192,9 +113,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {
-        ThrowIfNoCallbacksRegistered();
-
-        D_SetModuleViewModels(orderedModules);
+        _launcherUProvider.SetModuleViewModels(orderedModules);
     }
 
     /// <summary>
@@ -202,9 +121,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal LauncherOptions GetOptions()
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_GetOptions();
+        return _launcherUProvider.GetOptions();
     }
 
     /// <summary>
@@ -212,14 +129,6 @@ public partial class LauncherManagerHandler
     /// </summary>
     protected internal LauncherState GetState()
     {
-        ThrowIfNoCallbacksRegistered();
-
-        return D_GetState();
-    }
-
-    private void ThrowIfNoCallbacksRegistered()
-    {
-        if (!_callbacksRegistered)
-            throw new CallbacksNotRegisteredException();
+        return _launcherUProvider.GetState();
     }
 }

@@ -36,6 +36,7 @@ public static class EnumerableExtensions
         }
     }
 
+#if !NETSTANDARD2_1_OR_GREATER
     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> enumerable) => new(enumerable);
-
+#endif
 }

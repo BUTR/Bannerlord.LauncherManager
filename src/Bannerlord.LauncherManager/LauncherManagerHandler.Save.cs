@@ -4,7 +4,7 @@ using System;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
     /// <summary>
     /// External<br/>
@@ -14,7 +14,7 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual SaveMetadata? GetSaveMetadata(string fileName, byte[] data) => null;
+    public virtual SaveMetadata? GetSaveMetadata(string fileName, ReadOnlySpan<byte> data) => null;
 
     /// <summary>
     /// External<br/>

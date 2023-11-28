@@ -32,7 +32,7 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_source);
         try
         {
-            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray) ?? Array.Empty<ModuleInfoExtended>();
+            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray);
 
             var result = ModuleSorter.Sort(source).ToArray();
 
@@ -364,12 +364,6 @@ public static unsafe partial class Bindings
             doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var result = ModuleInfoExtended.FromXml(doc);
-            if (result is null)
-            {
-                var e = new InvalidOperationException("Invalid xml content!");
-                Logger.LogException(e);
-                return return_value_json.AsException(e, false);
-            }
 
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
@@ -391,12 +385,6 @@ public static unsafe partial class Bindings
             doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var module = ModuleInfoExtended.FromXml(doc);
-            if (module is null)
-            {
-                var e = new InvalidOperationException("Invalid xml content!");
-                Logger.LogException(e);
-                return return_value_json.AsException(e, false);
-            }
             var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
 
             Logger.LogOutput(result);

@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-using AlphanumComparatorFast = Bannerlord.ModuleManager.AlphanumComparatorFast;
-
 namespace Bannerlord.LauncherManager;
 
 partial class LauncherManagerHandler

@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsDirectorySeparator(char c) => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar;
@@ -61,7 +61,7 @@ public partial class LauncherManagerHandler
             return files.Where(y => y.StartsWith(moduleBasePath)).Where(y =>
             {
                 var modulePath = y.Substring(moduleBasePath.Length);
-                if (!modulePath.StartsWith("bin", StringComparison.OrdinalIgnoreCase)) return true;
+                if (!modulePath.StartsWith(Constants.BinFolder, StringComparison.OrdinalIgnoreCase)) return true;
                 var binPath = modulePath.Substring(4);
                 // Avoid unnecessary bin folder copy
                 return platform switch

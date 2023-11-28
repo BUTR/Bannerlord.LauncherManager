@@ -6,9 +6,41 @@ type LauncherManagerWithoutConstructor = Omit<types.LauncherManager, "constructo
 export class NativeLauncherManager implements LauncherManagerWithoutConstructor {
   private manager: types.LauncherManager;
 
-  public constructor() {
+  public constructor(
+    setGameParameters: (executable: string, gameParameters: string[]) => void,
+    getLoadOrder: () => types.LoadOrder,
+    setLoadOrder: (loadOrder: types.LoadOrder) => void,
+    sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void,
+    sendDialog: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>,
+    getInstallPath: () => string,
+    readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null,
+    writeFileContent: (filePath: string, data: Uint8Array) => void,
+    readDirectoryFileList: (directoryPath: string) => string[] | null,
+    readDirectoryList: (directoryPath: string) => string[] | null,
+    getAllModuleViewModels: () => types.ModuleViewModel[] | null,
+    getModuleViewModels: () => types.ModuleViewModel[] | null,
+    setModuleViewModels: (moduleViewModels: types.ModuleViewModel[]) => void,
+    getOptions: () => types.LauncherOptions,
+    getState: () => types.LauncherState) {
+
     const addon: types.INativeExtension = require('./../../launchermanager.node');
-    this.manager = new addon.LauncherManager();
+    this.manager = new addon.LauncherManager(
+      setGameParameters,
+      getLoadOrder,
+      setLoadOrder,
+      sendNotification,
+      sendDialog,
+      getInstallPath,
+      readFileContent,
+      writeFileContent,
+      readDirectoryFileList,
+      readDirectoryList,
+      getAllModuleViewModels,
+      getModuleViewModels,
+      setModuleViewModels,
+      getOptions,
+      getState,
+    );
   }
   public checkForRootHarmony = (): void => {
     return this.manager.checkForRootHarmony();
@@ -63,25 +95,6 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   }
   public refreshGameParameters = (): void => {
     return this.manager.refreshGameParameters();
-  }
-  public registerCallbacks = (setGameParameters: (executable: string, gameParameters: string[]) => void, getLoadOrder: () => types.LoadOrder, setLoadOrder: (loadOrder: types.LoadOrder) => void, sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void, sendDialog: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>, getInstallPath: () => string, readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null, writeFileContent: (filePath: string, data: Uint8Array) => void, readDirectoryFileList: (directoryPath: string) => string[] | null, readDirectoryList: (directoryPath: string) => string[] | null, getAllModuleViewModels: () => types.ModuleViewModel[] | null, getModuleViewModels: () => types.ModuleViewModel[] | null, setModuleViewModels: (moduleViewModels: types.ModuleViewModel[]) => void, getOptions: () => types.LauncherOptions, getState: () => types.LauncherState): void => {
-    return this.manager.registerCallbacks(
-      setGameParameters,
-      getLoadOrder,
-      setLoadOrder,
-      sendNotification,
-      sendDialog,
-      getInstallPath,
-      readFileContent,
-      writeFileContent,
-      readDirectoryFileList,
-      readDirectoryList,
-      getAllModuleViewModels,
-      getModuleViewModels,
-      setModuleViewModels,
-      getOptions,
-      getState
-    );
   }
   public setGameParameterExecutable(executable: string): void {
     return this.manager.setGameParameterExecutable(executable);

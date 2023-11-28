@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
     private string _currentExecutable = Constants.BannerlordExecutable;
     private string? _currentGameMode = "/singleplayer"; // We only support singleplayer
@@ -46,13 +46,13 @@ public partial class LauncherManagerHandler
 
         var installPath = GetInstallPath();
         var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
-        var win64Executable = System.IO.Path.Combine("bin", Constants.Win64Configuration, _currentExecutable);
-        var xboxExecutable = System.IO.Path.Combine("bin", Constants.XboxConfiguration, _currentExecutable);
-        var binDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
+        var win64Executable = System.IO.Path.Combine(Constants.BinFolder, Constants.Win64Configuration, _currentExecutable);
+        var xboxExecutable = System.IO.Path.Combine(Constants.BinFolder, Constants.XboxConfiguration, _currentExecutable);
+        var binDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? Array.Empty<string>();
         var hasWin64 = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase));
         var hasXbox = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase));
-        var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin", Constants.Win64Configuration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
-        var hasXboxExecutable = hasXbox && ReadDirectoryFileList(System.IO.Path.Combine(installPath, "bin", Constants.XboxConfiguration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
+        var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.Win64Configuration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
+        var hasXboxExecutable = hasXbox && ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.XboxConfiguration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
         var fullExecutablePath = platform switch
         {
             GamePlatform.Win64 when hasWin64Executable => win64Executable,
@@ -140,7 +140,7 @@ public partial class LauncherManagerHandler
         {
             var internalStore = GetStore(installPath);
             
-            var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, "bin")) ?? Array.Empty<string>();
+            var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? Array.Empty<string>();
             var hasWin64 = binDirectories.Any(x => x.Contains(Constants.Win64Configuration));
             var hasXbox = binDirectories.Any(x => x.Contains(Constants.XboxConfiguration));
             

@@ -21,11 +21,6 @@ public static class Logger
         Log($"{caller} - Starting");
     }
     [Conditional("LOGGING")]
-    public static void LogInput(string param, [CallerMemberName] string? caller = null)
-    {
-        Log($"{caller} - Starting: {param}");
-    }
-    [Conditional("LOGGING")]
     public static void LogInput<T1>(T1 param1, [CallerMemberName] string? caller = null)
         where T1 : IFormattable
     {

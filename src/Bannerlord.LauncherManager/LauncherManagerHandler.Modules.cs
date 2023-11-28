@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
     // Not real modules, we declare this way our launcher capabilities
     protected static IEnumerable<ModuleInfoExtended> GetLauncherFeatures() =>
@@ -49,8 +49,7 @@ public partial class LauncherManagerHandler
                 {
                     throw new Exception($"modulePath: {modulePath}, content: {Convert.ToBase64String(data)}", e);
                 }
-                if (moduleInfoExtended is not null)
-                    yield return new ModuleInfoExtendedWithPath(moduleInfoExtended, subModulePath);
+                yield return new ModuleInfoExtendedWithPath(moduleInfoExtended, subModulePath);
             }
         }
     }

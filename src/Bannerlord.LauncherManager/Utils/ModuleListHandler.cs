@@ -1,4 +1,6 @@
-﻿using Bannerlord.LauncherManager.Extensions;
+﻿#if !NETSTANDARD2_1_OR_GREATER
+using Bannerlord.LauncherManager.Extensions;
+#endif
 using Bannerlord.LauncherManager.Localization;
 using Bannerlord.LauncherManager.Models;
 

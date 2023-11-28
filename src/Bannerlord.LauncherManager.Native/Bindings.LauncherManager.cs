@@ -1,5 +1,6 @@
 ﻿using Bannerlord.LauncherManager.Localization;
 using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Native.Adapters;
 using Bannerlord.LauncherManager.Native.Models;
 using Bannerlord.LauncherManager.Utils;
 
@@ -17,13 +18,58 @@ namespace Bannerlord.LauncherManager.Native;
 public static unsafe partial class Bindings
 {
     [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
-    public static return_value_ptr* CreateHandler(param_ptr* p_owner)
+    public static return_value_ptr* CreateHandler(param_ptr* p_owner,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, return_value_void*> p_set_game_parameters,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_load_load_order,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, return_value_void*> p_save_load_order,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, return_value_void*> p_send_notification,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void>, return_value_void*> p_send_dialog,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_get_install_path,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_int, return_value_void*> p_write_file_content,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_file_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_all_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, return_value_void*> p_set_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_options,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_state)
     {
         Logger.LogInput();
         try
         {
+            var launcherManager = new LauncherManagerHandlerNative(p_owner,
+                dialogUIProvider: new DialogUIProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_SendDialogDelegate>(new IntPtr(p_send_dialog))
+                ),
+                fileSystemProvider: new FileSystemProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_ReadFileContentDelegate>(new IntPtr(p_read_file_content)),
+                    Marshal.GetDelegateForFunctionPointer<N_WriteFileContentDelegate>(new IntPtr(p_write_file_content)),
+                    Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryFileList>(new IntPtr(p_read_directory_file_list)),
+                    Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryList>(new IntPtr(p_read_directory_list))
+                ),
+                gameInfoProvider: new GameInfoProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_GetInstallPathDelegate>(new IntPtr(p_get_install_path))
+                ),
+                launcherUProvider:new LauncherProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_SetGameParametersDelegate>(new IntPtr(p_set_game_parameters)),
+                    Marshal.GetDelegateForFunctionPointer<N_GetAllModuleViewModels>(new IntPtr(p_get_all_module_view_models)),
+                    Marshal.GetDelegateForFunctionPointer<N_GetModuleViewModels>(new IntPtr(p_get_module_view_models)),
+                    Marshal.GetDelegateForFunctionPointer<N_SetModuleViewModels>(new IntPtr(p_set_module_view_models)),
+                    Marshal.GetDelegateForFunctionPointer<N_GetOptions>(new IntPtr(p_get_options)),
+                    Marshal.GetDelegateForFunctionPointer<N_GetState>(new IntPtr(p_get_state))
+                ),
+                loadOrderProvider: new LoadOrderProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_GetLoadOrderDelegate>(new IntPtr(p_load_load_order)),
+                    Marshal.GetDelegateForFunctionPointer<N_SetLoadOrderDelegate>(new IntPtr(p_save_load_order))
+                ),
+                notificationUIProvider: new NotificationUIProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_SendNotificationDelegate>(new IntPtr(p_send_notification))
+                )
+            );
+            
             Logger.LogOutput();
-            return return_value_ptr.AsValue(new LauncherManagerHandlerNative(p_owner).HandlePtr, false);
+            return return_value_ptr.AsValue(launcherManager.HandlePtr, false);
         }
         catch (Exception e)
         {
@@ -109,7 +155,7 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray) ?? Array.Empty<string>();
+            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
 
             var result = handler.TestModuleContent(files);
             Logger.LogOutput(result);
@@ -131,8 +177,8 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray) ?? Array.Empty<string>();
-            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithPathArray) ?? Array.Empty<ModuleInfoExtendedWithPath>();
+            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
+            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithPathArray);
 
             var result = handler.InstallModuleContent(files, moduleInfos);
             Logger.LogOutput(result);
@@ -436,7 +482,7 @@ public static unsafe partial class Bindings
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = GetModuleViewModels(handler) ?? Array.Empty<ModuleViewModel>();
+            var modules = handler.GetModuleViewModels() ?? Array.Empty<ModuleViewModel>();
             var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
             var result = SortHelper.ValidateModule(modules, lookup, moduleViewModel).ToArray();
 
@@ -461,7 +507,7 @@ public static unsafe partial class Bindings
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = GetModuleViewModels(handler) ?? Array.Empty<IModuleViewModel>();
+            var modules = handler.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
             var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
             SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
 
@@ -486,7 +532,7 @@ public static unsafe partial class Bindings
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = GetModuleViewModels(handler) ?? Array.Empty<ModuleViewModel>();
+            var modules = handler.GetModuleViewModels() ?? Array.Empty<ModuleViewModel>();
             var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
             var result = SortHelper.ChangeModulePosition(modules, lookup, moduleViewModel, insertIndex, (issues =>
             {
@@ -535,7 +581,7 @@ public static unsafe partial class Bindings
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var saveFile = new string(param_string.ToSpan(p_save_file));
-            var data = param_data.ToSpan(p_data, data_len).ToArray();
+            var data = param_data.ToSpan(p_data, data_len);
 
             var result = handler.GetSaveMetadata(saveFile, data);
             if (result is null) return return_value_json.AsValue(null, false);
@@ -562,7 +608,6 @@ public static unsafe partial class Bindings
             var saveFile = new string(param_string.ToSpan(p_save_file));
 
             var result = handler.GetSaveFilePath(saveFile);
-            if (result is null) return return_value_string.AsValue((char*) null, false);
 
             Logger.LogOutput(result);
             return return_value_string.AsValue(result, false);
@@ -586,11 +631,11 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder) ?? new();
+            var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
 
             var loadOrderDict = loadOrder.ToDictionary(x => x.Key, x => x.Value.IsSelected);
             var res = handler.TryOrderByLoadOrder(loadOrder.Keys, x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected, out var issues, out var orderedModuleViewModels);
-            var result = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels?.Cast<ModuleViewModel>().ToArray() ?? Array.Empty<ModuleViewModel>());
+            var result = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels.Cast<ModuleViewModel>().ToArray());
 
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.OrderByLoadOrderResult, false);
@@ -705,7 +750,7 @@ public static unsafe partial class Bindings
                 return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             Logger.LogOutput();
-            return return_value_string.AsValue(handler.GetPlatform().ToString(), false);
+            return return_value_string.AsValue(handler.GetPlatform().ToStringFast(), false);
         }
         catch (Exception e)
         {
@@ -725,7 +770,7 @@ public static unsafe partial class Bindings
                 return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var template = new string(param_string.ToSpan(p_template));
-            var values = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_values, CustomSourceGenerationContext.DictionaryStringString) ?? new();
+            var values = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_values, CustomSourceGenerationContext.DictionaryStringString);
 
             var result = new BUTRTextObject(template, values).ToString();
 
@@ -749,14 +794,14 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            SendDialog(handler, "warning".AsSpan(), "Test Title".AsSpan(), "Test Message".AsSpan(), Array.Empty<DialogFileFilter>(), result =>
+            handler.SendDialog(DialogType.Warning, "Test Title", "Test Message", Array.Empty<DialogFileFilter>(), result =>
             {
-                Logger.LogInput($"{nameof(DialogTestWarning)}_{nameof(SendDialog)}");
+                Logger.LogInput($"{nameof(DialogTestWarning)}_{nameof(handler.SendDialog)}");
                 fixed (char* pResult = result)
                 {
                     p_callback(p_callback_handler, (param_string*) pResult);
                 }
-                Logger.LogOutput(result, $"{nameof(DialogTestWarning)}_{nameof(SendDialog)}");
+                Logger.LogOutput(result, $"{nameof(DialogTestWarning)}_{nameof(handler.SendDialog)}");
             });
 
             Logger.LogOutput();
@@ -778,14 +823,14 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            SendDialog(handler, "fileOpen".AsSpan(), "Test Title".AsSpan(), "Test Message".AsSpan(), new[] { new DialogFileFilter("Test Filter", new[] { "*.test" }) }, result =>
+            handler.SendDialog(DialogType.FileOpen, "Test Title", "Test Message", new[] { new DialogFileFilter("Test Filter", new[] { "*.test" }) }, result =>
             {
-                Logger.LogInput($"{nameof(DialogTestFileOpen)}_{nameof(SendDialog)}");
+                Logger.LogInput($"{nameof(DialogTestFileOpen)}_{nameof(handler.SendDialog)}");
                 fixed (char* pResult = result)
                 {
                     p_callback(p_callback_handler, (param_string*) pResult);
                 }
-                Logger.LogOutput(result, $"{nameof(DialogTestFileOpen)}_{nameof(SendDialog)}");
+                Logger.LogOutput(result, $"{nameof(DialogTestFileOpen)}_{nameof(handler.SendDialog)}");
             });
 
             Logger.LogOutput();

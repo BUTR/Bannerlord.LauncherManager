@@ -92,7 +92,7 @@ public static class SortHelper
         {
             var orderedModules = source
                 .OrderByDescending(x => x.IsOfficial)
-                .ThenBy(x => x.Id, new ModuleManager.AlphanumComparatorFast())
+                .ThenBy(x => x.Id, new AlphanumComparatorFast())
                 .ToArray();
 
             return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));

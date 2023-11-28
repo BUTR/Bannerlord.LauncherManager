@@ -36,6 +36,7 @@ public record NoneInstallInstruction : IInstallInstruction
     public NoneInstallInstruction(InstallInstructionType type) => (Type) = (type);
 }
 
+[NetEscapades.EnumGenerators.EnumExtensions]
 public enum InstallInstructionType
 {
     None,

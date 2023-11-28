@@ -3,17 +3,13 @@
 namespace Newtonsoft.Json
 {
     [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false)]
-    public sealed class JsonConstructorAttribute : Attribute
-    {
-    }
+    internal sealed class JsonConstructorAttribute : Attribute;
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-    public sealed class JsonIgnoreAttribute : Attribute
-    {
-    }
+    internal sealed class JsonIgnoreAttribute : Attribute;
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public sealed class JsonPropertyAttribute : Attribute
+    internal sealed class JsonPropertyAttribute : Attribute
     {
         public string? PropertyName { get; set; }
 
@@ -26,7 +22,7 @@ namespace Newtonsoft.Json
 
 namespace System.Text.Json.Serialization
 {
-    internal abstract class JsonAttribute : Attribute { }
+    internal abstract class JsonAttribute : Attribute;
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     internal sealed class JsonPropertyNameAttribute : JsonAttribute
@@ -40,14 +36,8 @@ namespace System.Text.Json.Serialization
     }
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    internal sealed class JsonIgnoreAttribute : JsonAttribute
-    {
-        public JsonIgnoreAttribute() { }
-    }
+    internal sealed class JsonIgnoreAttribute : JsonAttribute;
 
     [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false)]
-    internal sealed class JsonConstructorAttribute : JsonAttribute
-    {
-        public JsonConstructorAttribute() { }
-    }
+    internal sealed class JsonConstructorAttribute : JsonAttribute;
 }

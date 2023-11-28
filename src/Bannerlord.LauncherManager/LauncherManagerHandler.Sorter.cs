@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
-    private const int SORTING = 1;
-    private const int NOTSORTING = 0;
-    public bool IsSorting;
+    //private const int SORTING = 1;
+    // private const int NOTSORTING = 0;
     // if (Interlocked.CompareExchange(ref IsSorting, SORTING, NOTSORTING) == NOTSORTING)
+    public bool IsSorting;
 
     /// <summary>
     /// External<br/>

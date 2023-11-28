@@ -1,7 +1,23 @@
 import { ModuleInfoExtended, ModuleInfoExtendedWithPath } from "./BannerlordModuleManager";
 
 export interface INativeExtension {
-  LauncherManager: new () => LauncherManager
+  LauncherManager: new (
+    setGameParameters: (executable: string, gameParameters: string[]) => void,
+    getLoadOrder: () => LoadOrder,
+    setLoadOrder: (loadOrder: LoadOrder) => void,
+    sendNotification: (id: string, type: NotificationType, message: string, delayMS: number) => void,
+    sendDialog: (type: DialogType, title: string, message: string, filters: FileFilter[]) => Promise<string>,
+    getInstallPath: () => string,
+    readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null,
+    writeFileContent: (filePath: string, data: Uint8Array) => void,
+    readDirectoryFileList: (directoryPath: string) => string[] | null,
+    readDirectoryList: (directoryPath: string) => string[] | null,
+    getAllModuleViewModels: () => ModuleViewModel[] | null,
+    getModuleViewModels: () => ModuleViewModel[] | null,
+    setModuleViewModels: (moduleViewModels: ModuleViewModel[]) => void,
+    getOptions: () => LauncherOptions,
+    getState: () => LauncherState,
+  ) => LauncherManager
 }
 
 export interface LoadOrderEntry {
@@ -93,23 +109,6 @@ export type LauncherManager = {
   orderByLoadOrder(loadOrder: LoadOrder): OrderByLoadOrderResult;
   refreshModules(): void;
   refreshGameParameters(): void;
-  registerCallbacks(
-    setGameParameters: (executable: string, gameParameters: string[]) => void,
-    getLoadOrder: () => LoadOrder,
-    setLoadOrder: (loadOrder: LoadOrder) => void,
-    sendNotification: (id: string, type: NotificationType, message: string, delayMS: number) => void,
-    sendDialog: (type: DialogType, title: string, message: string, filters: FileFilter[]) => Promise<string>,
-    getInstallPath: () => string,
-    readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null,
-    writeFileContent: (filePath: string, data: Uint8Array) => void,
-    readDirectoryFileList: (directoryPath: string) => string[] | null,
-    readDirectoryList: (directoryPath: string) => string[] | null,
-    getAllModuleViewModels: () => ModuleViewModel[] | null,
-    getModuleViewModels: () => ModuleViewModel[] | null,
-    setModuleViewModels: (moduleViewModels: ModuleViewModel[]) => void,
-    getOptions: () => LauncherOptions,
-    getState: () => LauncherState,
-  ): void;
   setGameParameterExecutable(executable: string): void;
   setGameParameterSaveFile(saveName: string): void;
   setGameParameterContinueLastSaveFile(value: boolean): void;

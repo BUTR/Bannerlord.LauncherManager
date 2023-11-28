@@ -1,4 +1,4 @@
-﻿using Bannerlord.LauncherManager.Extensions;
+﻿using Bannerlord.LauncherManager.Localization.Extensions;
 
 using System;
 using System.Collections.Generic;

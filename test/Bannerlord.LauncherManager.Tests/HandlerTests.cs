@@ -1,4 +1,5 @@
-﻿using Bannerlord.LauncherManager.Models;
+﻿using Bannerlord.LauncherManager.External;
+using Bannerlord.LauncherManager.Models;
 using Bannerlord.ModuleManager;
 
 using NUnit.Framework;
@@ -8,209 +9,270 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Bannerlord.LauncherManager.Tests
+namespace Bannerlord.LauncherManager.Tests;
+
+public class LauncherManagerHandlerExposer : LauncherManagerHandler
 {
-    public class LauncherManagerHandlerExposer : LauncherManagerHandler
+    public LauncherManagerHandlerExposer(
+        ILauncherProvider launcherUProvider,
+        IGameInfoProvider gameInfoProvider,
+        ILoadOrderProvider loadOrderProvider,
+        IFileSystemProvider fileSystemProviderProvider,
+        IDialogUIProvider dialogUIProviderProvider,
+        INotificationUIProvider notificationUIProviderProvider) :
+        base(launcherUProvider, gameInfoProvider, loadOrderProvider, fileSystemProviderProvider, dialogUIProviderProvider, notificationUIProviderProvider) { }
+    
+    public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
+}
+
+public class HandlerTests
+{
+    private record ModuleViewModel : IModuleViewModel
     {
-        public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
+        public required ModuleInfoExtendedWithPath ModuleInfoExtended { get; init; }
+        public required bool IsValid { get; init; }
+        public required bool IsSelected { get; set; }
+        public required bool IsDisabled { get; set; }
+        public required int Index { get; set; }
     }
 
-    public class HandlerTests
+    private const string GamePath = "./Data/game/";
+
+    private static byte[]? Read(string filePath, int offset, int length)
     {
-        private record ModuleViewModel : IModuleViewModel
+        if (!File.Exists(filePath)) return null;
+
+        if (offset == 0 && length == -1)
         {
-            public required ModuleInfoExtendedWithPath ModuleInfoExtended { get; init; }
-            public required bool IsValid { get; init; }
-            public required bool IsSelected { get; set; }
-            public required bool IsDisabled { get; set; }
-            public required int Index { get; set; }
+            return File.ReadAllBytes(filePath);
         }
-
-        private const string GamePath = "./Data/game/";
-
-        private static byte[]? Read(string filePath, int offset, int length)
+        else if (offset >= 0 && length > 0)
         {
-            if (!File.Exists(filePath)) return null;
-
-            if (offset == 0 && length == -1)
-            {
-                return File.ReadAllBytes(filePath);
-            }
-            else if (offset >= 0 && length > 0)
-            {
-                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var data = new byte[length];
-                fs.Seek(offset, SeekOrigin.Begin);
-                fs.Read(data, 0, length);
-                return data;
-            }
-            else
-            {
-                return null;
-            }
+            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var data = new byte[length];
+            fs.Seek(offset, SeekOrigin.Begin);
+            var readLength = fs.Read(data, 0, length);
+            if (readLength != length)
+                throw new Exception();
+            return data;
         }
-
-        [Test]
-        public void Sorter_Sort_Test()
+        else
         {
-            var loadOrder = new LoadOrder
-            {
-                {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 0 }},
-                {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 1 }},
-            };
-            var expectedLoadOrderIds = new[] { "Test", "Test2" };
+            return null;
+        }
+    }
 
-            var moduleViewModels = Array.Empty<IModuleViewModel>();
+    [Test]
+    public void Sorter_Sort_Test()
+    {
+        var loadOrder = new LoadOrder
+        {
+            {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 0 }},
+            {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 1 }},
+        };
+        var expectedLoadOrderIds = new[] { "Test", "Test2" };
 
-            var handler = new LauncherManagerHandlerExposer();
-            handler.RegisterCallbacks(
-                loadLoadOrder: null!,
-                saveLoadOrder: lo => loadOrder = lo,
-                sendNotification: (id, type, message, ms) => { },
-                sendDialog: null!,
-                setGameParameters: (executable, parameters) => { },
-                getInstallPath: () => Path.GetFullPath(GamePath)!,
+        var moduleViewModels = Array.Empty<IModuleViewModel>();
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogUIProviderProvider: new CallbackDialogUIProvider(
+                sendDialog: null!
+            ),
+            fileSystemProviderProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
-                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null,
+                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: () => Path.GetFullPath(GamePath)!
+            ),
+            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+                sendNotification: (id, type, message, ms) => { }
+            ),
+            launcherUProvider: new CallbackLauncherProvider(
+                setGameParameters: (executable, parameters) => { },
                 getAllModuleViewModels: () => moduleViewModels,
                 getModuleViewModels: () => moduleViewModels,
                 setModuleViewModels: null!,
                 getOptions: null!,
-                getState: null!);
-
-            var modules = handler.GetModules();
-            moduleViewModels = new IModuleViewModel[]
-            {
-                new ModuleViewModel
-                {
-                    ModuleInfoExtended = modules.First(x => x.Id == "Test"),
-                    IsValid = true,
-                    IsSelected = true,
-                    IsDisabled = false,
-                    Index = 0,
-                },
-                new ModuleViewModel
-                {
-                    ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
-                    IsValid = true,
-                    IsSelected = true,
-                    IsDisabled = false,
-                    Index = 1,
-                },
-            };
-
-            handler.Sort();
-
-            Assert.AreEqual(expectedLoadOrderIds, loadOrder.Select(x => x.Key).ToArray());
-        }
-
-        [Test]
-        public void ModuleProvider_GetModules_Test()
-        {
-            var handler = new LauncherManagerHandlerExposer();
-            handler.RegisterCallbacks(
+                getState: null!
+            ),
+            loadOrderProvider: new CallbackLoadOrderProvider(
                 loadLoadOrder: null!,
-                saveLoadOrder: null!,
-                sendNotification: null!,
-                sendDialog: null!,
-                setGameParameters: null!,
-                getInstallPath: () => Path.GetFullPath(GamePath),
+                saveLoadOrder: lo => loadOrder = lo
+            )
+        );
+        
+        var modules = handler.GetModules();
+        moduleViewModels = new IModuleViewModel[]
+        {
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 0,
+            },
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 1,
+            },
+        };
+
+        handler.Sort();
+
+        Assert.That(loadOrder.Select(x => x.Key).ToArray(), Is.EqualTo(expectedLoadOrderIds));
+    }
+
+    [Test]
+    public void ModuleProvider_GetModules_Test()
+    {
+        var handler = new LauncherManagerHandlerExposer(
+            dialogUIProviderProvider: new CallbackDialogUIProvider(
+                sendDialog: null!
+            ),
+            fileSystemProviderProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
-                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null,
+                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: () => Path.GetFullPath(GamePath)!
+            ),
+            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+                sendNotification: null!
+            ),
+            launcherUProvider: new CallbackLauncherProvider(
+                setGameParameters: null!,
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
                 setModuleViewModels: null!,
                 getOptions: null!,
-                getState: null!);
-            var modules = handler.GetModules().ToList();
-
-            Assert.GreaterOrEqual(modules.Count, 1);
-        }
-
-        [Test]
-        public void Handler_TestModule_tTest()
-        {
-            var moduleFolder = "Test\\";
-            var subModuleFile = "Test\\SubModule.xml";
-            var files = new[]
-            {
-                moduleFolder,
-                subModuleFile,
-            };
-
-            var handler = new LauncherManagerHandlerExposer();
-            handler.RegisterCallbacks(
+                getState: null!
+            ),
+            loadOrderProvider: new CallbackLoadOrderProvider(
                 loadLoadOrder: null!,
-                saveLoadOrder: null!,
-                sendNotification: null!,
-                sendDialog: null!,
-                setGameParameters: null!,
-                getInstallPath: null!,
+                saveLoadOrder: null!
+            )
+        );
+
+        var modules = handler.GetModules().ToList();
+
+        Assert.That(modules.Count, Is.GreaterThanOrEqualTo(1));
+    }
+
+    [Test]
+    public void Handler_TestModule_tTest()
+    {
+        var moduleFolder = "Test\\";
+        var subModuleFile = "Test\\SubModule.xml";
+        var files = new[]
+        {
+            moduleFolder,
+            subModuleFile,
+        };
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogUIProviderProvider: new CallbackDialogUIProvider(
+                sendDialog: null!
+            ),
+            fileSystemProviderProvider: new CallbackFileSystemProvider(
                 readFileContent: null!,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
-                readDirectoryList: null!,
+                readDirectoryList: null!
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: null!
+            ),
+            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+                sendNotification: null!
+            ),
+            launcherUProvider: new CallbackLauncherProvider(
+                setGameParameters: null!,
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
                 setModuleViewModels: null!,
                 getOptions: null!,
-                getState: null!);
-            var installResult = handler.TestModuleContent(files);
-            Assert.NotNull(installResult);
-            Assert.IsTrue(installResult.Supported);
-        }
-
-        [Test]
-        public void Handler_InstallModule_Test()
-        {
-            var moduleInfo = new ModuleInfoExtended
-            {
-                Id = "Test"
-            };
-
-            var moduleFolder = "Test\\";
-            var subModuleFile = "Test\\SubModule.xml";
-            var win64Dll = $"Test\\bin\\{Constants.Win64Configuration}\\Test.dll";
-            var xboxDll = $"Test\\bin\\{Constants.XboxConfiguration}\\Test.dll";
-            var files = new[]
-            {
-                moduleFolder,
-                subModuleFile,
-                win64Dll,
-                xboxDll,
-            };
-
-            var handler = new LauncherManagerHandlerExposer();
-            handler.RegisterCallbacks(
+                getState: null!
+            ),
+            loadOrderProvider: new CallbackLoadOrderProvider(
                 loadLoadOrder: null!,
-                saveLoadOrder: null!,
-                sendNotification: null!,
-                sendDialog: null!,
-                setGameParameters: null!,
-                getInstallPath: () => Path.GetFullPath(GamePath)!,
+                saveLoadOrder: null!
+            )
+        );
+        
+        var installResult = handler.TestModuleContent(files);
+        Assert.That(installResult, Is.Not.Null);
+        Assert.That(installResult.Supported, Is.True);
+    }
+
+    [Test]
+    public void Handler_InstallModule_Test()
+    {
+        var moduleInfo = new ModuleInfoExtended
+        {
+            Id = "Test"
+        };
+
+        var moduleFolder = "Test\\";
+        var subModuleFile = "Test\\SubModule.xml";
+        var win64Dll = $"Test\\bin\\{Constants.Win64Configuration}\\Test.dll";
+        var xboxDll = $"Test\\bin\\{Constants.XboxConfiguration}\\Test.dll";
+        var files = new[]
+        {
+            moduleFolder,
+            subModuleFile,
+            win64Dll,
+            xboxDll,
+        };
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogUIProviderProvider: new CallbackDialogUIProvider(
+                sendDialog: null!
+            ),
+            fileSystemProviderProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
-                readDirectoryList: null!,
+                readDirectoryList: null!
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: () => Path.GetFullPath(GamePath)!
+            ),
+            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+                sendNotification: null!
+            ),
+            launcherUProvider: new CallbackLauncherProvider(
+                setGameParameters: null!,
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
                 setModuleViewModels: null!,
                 getOptions: null!,
-                getState: null!);
-            handler.SetGameStore(GameStore.Steam);
-            var installResult = handler.InstallModuleContent(files, new ModuleInfoExtendedWithPath[] { new(moduleInfo, subModuleFile) });
-            Assert.NotNull(installResult);
-            Assert.NotNull(installResult.Instructions);
-            Assert.AreEqual(3, installResult.Instructions.Count);
-            Assert.IsInstanceOf<CopyInstallInstruction>(installResult.Instructions[0]);
-            Assert.IsInstanceOf<CopyInstallInstruction>(installResult.Instructions[1]);
-            Assert.IsInstanceOf<ModuleInfoInstallInstruction>(installResult.Instructions[2]);
-            Assert.AreEqual(subModuleFile, ((CopyInstallInstruction) installResult.Instructions[0]).Source);
-            Assert.AreEqual(win64Dll, ((CopyInstallInstruction) installResult.Instructions[1]).Source);
-        }
+                getState: null!
+            ),
+            loadOrderProvider: new CallbackLoadOrderProvider(
+                loadLoadOrder: null!,
+                saveLoadOrder: null!
+            )
+        );
+        
+        handler.SetGameStore(GameStore.Steam);
+        var installResult = handler.InstallModuleContent(files, new ModuleInfoExtendedWithPath[] { new(moduleInfo, subModuleFile) });
+        Assert.That(installResult, Is.Not.Null);
+        Assert.That(installResult.Instructions, Is.Not.Null);
+        Assert.That(installResult.Instructions.Count, Is.EqualTo(3));
+        Assert.That(installResult.Instructions[0], Is.InstanceOf<CopyInstallInstruction>());
+        Assert.That(installResult.Instructions[1], Is.InstanceOf<CopyInstallInstruction>());
+        Assert.That(installResult.Instructions[2], Is.InstanceOf<ModuleInfoInstallInstruction>());
+        Assert.That(((CopyInstallInstruction) installResult.Instructions[0]).Source, Is.EqualTo(subModuleFile));
+        Assert.That(((CopyInstallInstruction) installResult.Instructions[1]).Source, Is.EqualTo(win64Dll));
     }
 }

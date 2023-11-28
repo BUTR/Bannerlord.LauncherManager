@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Bannerlord.LauncherManager;
 
-public partial class LauncherManagerHandler
+partial class LauncherManagerHandler
 {
     /// <summary>
     /// Internal<br/>

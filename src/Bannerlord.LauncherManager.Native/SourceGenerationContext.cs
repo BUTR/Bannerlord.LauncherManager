@@ -50,4 +50,4 @@ namespace Bannerlord.LauncherManager.Native;
 [JsonSerializable(typeof(ModuleSorterOptions))]
 [JsonSerializable(typeof(ModuleIssue[]))]
 [JsonSerializable(typeof(DependentModuleMetadata[]))]
-internal partial class SourceGenerationContext : JsonSerializerContext { }
+internal partial class SourceGenerationContext : JsonSerializerContext;
