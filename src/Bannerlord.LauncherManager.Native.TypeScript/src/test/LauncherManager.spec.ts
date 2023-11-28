@@ -1,7 +1,7 @@
 import test from 'ava';
 import fs from 'fs';
 import path from 'path';
-import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType, GameStore } from '../lib/types';
+import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../lib/types';
 import { NativeLauncherManager, allocAliveCount, types } from '../lib';
 
 const isDebug = process.argv[2] == "Debug";
@@ -23,12 +23,12 @@ test('Main', async (t) => {
     },
   };
 
-  var manager = new NativeLauncherManager();
-  const setGameParameters = (executable: string, gameParameters: any): void => {
+  const setGameParameters = (_executable: string, gameParameters: any): void => {
     //t.deepEqual(executable, 'bin\\Win64_Shipping_Client\\Bannerlord.exe');
     t.deepEqual(gameParameters, [
       '/singleplayer',
       '_MODULES_*Bannerlord.Harmony*Bannerlord.UIExtenderEx*_MODULES_',
+      '',
       ''
     ]);
   };
@@ -100,7 +100,8 @@ test('Main', async (t) => {
   const getState = (): LauncherState => {
     return { isSingleplayer: true };
   };
-  manager.registerCallbacks(
+
+  var manager = new NativeLauncherManager(
     setGameParameters,
     loadLoadOrder,
     saveLoadOrder,
@@ -115,11 +116,10 @@ test('Main', async (t) => {
     getModuleViewModels,
     setModuleViewModels,
     getOptions,
-    getState
-  );
+    getState);
 
-  const _warn = await manager.dialogTestWarning();
-  const _warn2 = await manager.dialogTestFileOpen();
+  await manager.dialogTestWarning();
+  await manager.dialogTestFileOpen();
 
 
   const modules = manager.getModules();

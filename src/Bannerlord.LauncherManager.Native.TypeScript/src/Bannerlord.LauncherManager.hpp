@@ -137,63 +137,6 @@ namespace Bannerlord::LauncherManager
         return exports;
     }
 
-    LauncherManager::LauncherManager(const CallbackInfo &info) : ObjectWrap<LauncherManager>(info)
-    {
-        const auto env = info.Env();
-        this->FSetGameParameters = Persistent(info[0].As<Function>());
-        this->FGetLoadOrder = Persistent(info[1].As<Function>());
-        this->FSetLoadOrder = Persistent(info[2].As<Function>());
-        this->FSendNotification = Persistent(info[3].As<Function>());
-        this->FSendDialog = Persistent(info[4].As<Function>());
-        this->FGetInstallPath = Persistent(info[5].As<Function>());
-        this->FReadFileContent = Persistent(info[6].As<Function>());
-        this->FWriteFileContent = Persistent(info[7].As<Function>());
-        this->FReadDirectoryFileList = Persistent(info[8].As<Function>());
-        this->FReadDirectoryList = Persistent(info[9].As<Function>());
-        this->FGetAllModuleViewModels = Persistent(info[10].As<Function>());
-        this->FGetModuleViewModels = Persistent(info[11].As<Function>());
-        this->FSetModuleViewModels = Persistent(info[12].As<Function>());
-        this->FGetOptions = Persistent(info[13].As<Function>());
-        this->FGetState = Persistent(info[14].As<Function>());
-
-        const auto result = ve_create_handler(this,
-                                              setGameParameters,
-                                              getLoadOrder,
-                                              setLoadOrder,
-                                              sendNotification,
-                                              sendDialog,
-                                              getInstallPath,
-                                              readFileContent,
-                                              writeFileContent,
-                                              readDirectoryFileList,
-                                              readDirectoryList,
-                                              getAllModuleViewModels,
-                                              getModuleViewModels,
-                                              setModuleViewModels,
-                                              getOptions,
-                                              getState);
-        this->_pInstance = ThrowOrReturnPtr(env, result);
-    }
-
-    LauncherManager::~LauncherManager()
-    {
-        this->FSetGameParameters.Unref();
-        this->FGetLoadOrder.Unref();
-        this->FSetLoadOrder.Unref();
-        this->FSendNotification.Unref();
-        this->FSendDialog.Unref();
-        this->FGetInstallPath.Unref();
-        this->FReadFileContent.Unref();
-        this->FWriteFileContent.Unref();
-        this->FReadDirectoryFileList.Unref();
-        this->FReadDirectoryList.Unref();
-        this->FGetModuleViewModels.Unref();
-        this->FSetModuleViewModels.Unref();
-        this->FGetOptions.Unref();
-        this->FGetState.Unref();
-        ve_dispose_handler(this->_pInstance);
-    }
-
     static Napi::Value CallbackString(const Napi::CallbackInfo &info)
     {
         const auto data = static_cast<param_callback *>(info.Data());
@@ -557,6 +500,63 @@ namespace Bannerlord::LauncherManager
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
+    }
+
+    LauncherManager::LauncherManager(const CallbackInfo &info) : ObjectWrap<LauncherManager>(info)
+    {
+        const auto env = info.Env();
+        this->FSetGameParameters = Persistent(info[0].As<Function>());
+        this->FGetLoadOrder = Persistent(info[1].As<Function>());
+        this->FSetLoadOrder = Persistent(info[2].As<Function>());
+        this->FSendNotification = Persistent(info[3].As<Function>());
+        this->FSendDialog = Persistent(info[4].As<Function>());
+        this->FGetInstallPath = Persistent(info[5].As<Function>());
+        this->FReadFileContent = Persistent(info[6].As<Function>());
+        this->FWriteFileContent = Persistent(info[7].As<Function>());
+        this->FReadDirectoryFileList = Persistent(info[8].As<Function>());
+        this->FReadDirectoryList = Persistent(info[9].As<Function>());
+        this->FGetAllModuleViewModels = Persistent(info[10].As<Function>());
+        this->FGetModuleViewModels = Persistent(info[11].As<Function>());
+        this->FSetModuleViewModels = Persistent(info[12].As<Function>());
+        this->FGetOptions = Persistent(info[13].As<Function>());
+        this->FGetState = Persistent(info[14].As<Function>());
+
+        const auto result = ve_create_handler(this,
+                                              setGameParameters,
+                                              getLoadOrder,
+                                              setLoadOrder,
+                                              sendNotification,
+                                              sendDialog,
+                                              getInstallPath,
+                                              readFileContent,
+                                              writeFileContent,
+                                              readDirectoryFileList,
+                                              readDirectoryList,
+                                              getAllModuleViewModels,
+                                              getModuleViewModels,
+                                              setModuleViewModels,
+                                              getOptions,
+                                              getState);
+        this->_pInstance = ThrowOrReturnPtr(env, result);
+    }
+
+    LauncherManager::~LauncherManager()
+    {
+        this->FSetGameParameters.Unref();
+        this->FGetLoadOrder.Unref();
+        this->FSetLoadOrder.Unref();
+        this->FSendNotification.Unref();
+        this->FSendDialog.Unref();
+        this->FGetInstallPath.Unref();
+        this->FReadFileContent.Unref();
+        this->FWriteFileContent.Unref();
+        this->FReadDirectoryFileList.Unref();
+        this->FReadDirectoryList.Unref();
+        this->FGetModuleViewModels.Unref();
+        this->FSetModuleViewModels.Unref();
+        this->FGetOptions.Unref();
+        this->FGetState.Unref();
+        ve_dispose_handler(this->_pInstance);
     }
 
     Value LauncherManager::GetGameVersion(const CallbackInfo &info)
