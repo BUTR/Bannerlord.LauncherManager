@@ -12,7 +12,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
     {
-        _launcherUProvider.SetGameParameters(executable, gameParameters);
+        LauncherProvider.SetGameParameters(executable, gameParameters);
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal LoadOrder LoadLoadOrder()
     {
-        return _loadOrderProvider.LoadLoadOrder();
+        return LoadOrderProvider.LoadLoadOrder();
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SaveLoadOrder(LoadOrder loadOrder)
     {
-        _loadOrderProvider.SaveLoadOrder(loadOrder);
+        LoadOrderProvider.SaveLoadOrder(loadOrder);
 
         SetGameParameterLoadOrder(loadOrder);
     }
@@ -38,7 +38,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
     {
-        _notificationUIProvider.SendNotification(id, type, message, displayMs);
+        NotificationUIProvider.SendNotification(id, type, message, displayMs);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
     {
-        _dialogUIProvider.SendDialog(type, title, message, filters, onResult);
+        DialogUIProvider.SendDialog(type, title, message, filters, onResult);
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal string GetInstallPath()
     {
-        return _gameInfoProvider.GetInstallPath();
+        return GameInfoProvider.GetInstallPath();
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal byte[]? ReadFileContent(string filePath, int offset, int length)
     {
-        return _fileSystemProvider.ReadFileContent(filePath, offset, length);
+        return FileSystemProvider.ReadFileContent(filePath, offset, length);
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void WriteFileContent(string filePath, byte[]? data)
     {
-        _fileSystemProvider.WriteFileContent(filePath, data);
+        FileSystemProvider.WriteFileContent(filePath, data);
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal string[]? ReadDirectoryFileList(string directoryPath)
     {
-        return _fileSystemProvider.ReadDirectoryFileList(directoryPath);
+        return FileSystemProvider.ReadDirectoryFileList(directoryPath);
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal string[]? ReadDirectoryList(string directoryPath)
     {
-        return _fileSystemProvider.ReadDirectoryList(directoryPath);
+        return FileSystemProvider.ReadDirectoryList(directoryPath);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal IModuleViewModel[]? GetAllModuleViewModels()
     {
-        return _launcherUProvider.GetAllModuleViewModels();
+        return LauncherProvider.GetAllModuleViewModels();
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal IModuleViewModel[]? GetModuleViewModels()
     {
-        return _launcherUProvider.GetModuleViewModels();
+        return LauncherProvider.GetModuleViewModels();
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {
-        _launcherUProvider.SetModuleViewModels(orderedModules);
+        LauncherProvider.SetModuleViewModels(orderedModules);
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal LauncherOptions GetOptions()
     {
-        return _launcherUProvider.GetOptions();
+        return LauncherProvider.GetOptions();
     }
 
     /// <summary>
@@ -129,6 +129,6 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal LauncherState GetState()
     {
-        return _launcherUProvider.GetState();
+        return LauncherProvider.GetState();
     }
 }

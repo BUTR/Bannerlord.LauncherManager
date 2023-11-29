@@ -13,27 +13,27 @@ namespace Bannerlord.LauncherManager;
 
 public partial class LauncherManagerHandler
 {
-    private readonly ILauncherProvider _launcherUProvider;
-    private readonly IGameInfoProvider _gameInfoProvider;
-    private readonly ILoadOrderProvider _loadOrderProvider;
-    private readonly IFileSystemProvider _fileSystemProvider;
-    private readonly IDialogUIProvider _dialogUIProvider;
-    private readonly INotificationUIProvider _notificationUIProvider;
+    protected ILauncherProvider LauncherProvider { get; }
+    protected IGameInfoProvider GameInfoProvider { get; }
+    protected ILoadOrderProvider LoadOrderProvider { get; }
+    protected IFileSystemProvider FileSystemProvider { get; }
+    protected IDialogUIProvider DialogUIProvider { get; }
+    protected INotificationUIProvider NotificationUIProvider { get; }
 
     public LauncherManagerHandler(
-        ILauncherProvider launcherUProvider,
+        ILauncherProvider launcherProvider,
         IGameInfoProvider gameInfoProvider,
         ILoadOrderProvider loadOrderProvider,
         IFileSystemProvider fileSystemProvider,
         IDialogUIProvider dialogUIProvider,
         INotificationUIProvider notificationUIProvider)
     {
-        _launcherUProvider = launcherUProvider;
-        _gameInfoProvider = gameInfoProvider;
-        _loadOrderProvider = loadOrderProvider;
-        _fileSystemProvider = fileSystemProvider;
-        _dialogUIProvider = dialogUIProvider;
-        _notificationUIProvider = notificationUIProvider;
+        LauncherProvider = launcherProvider;
+        GameInfoProvider = gameInfoProvider;
+        LoadOrderProvider = loadOrderProvider;
+        FileSystemProvider = fileSystemProvider;
+        DialogUIProvider = dialogUIProvider;
+        NotificationUIProvider = notificationUIProvider;
         _providers = new IModulePathProvider[]
         {
             new MainModuleProvider(this),
