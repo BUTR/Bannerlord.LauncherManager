@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.External;
+using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
 
 using BUTR.NativeAOT.Shared;
@@ -7,12 +7,12 @@ using System;
 
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
-internal sealed unsafe class NotificationUIProvider : INotificationUIProvider
+internal sealed unsafe class NotificationProvider : INotificationProvider
 {
     private readonly param_ptr* _pOwner;
     private readonly N_SendNotificationDelegate _sendNotification;
 
-    public NotificationUIProvider(param_ptr* pOwner, N_SendNotificationDelegate sendNotification)
+    public NotificationProvider(param_ptr* pOwner, N_SendNotificationDelegate sendNotification)
     {
         _pOwner = pOwner;
         _sendNotification = sendNotification;

@@ -39,7 +39,7 @@ public static unsafe partial class Bindings
         try
         {
             var launcherManager = new LauncherManagerHandlerNative(p_owner,
-                dialogUIProvider: new DialogUIProvider(p_owner,
+                dialogProvider: new DialogProvider(p_owner,
                     Marshal.GetDelegateForFunctionPointer<N_SendDialogDelegate>(new IntPtr(p_send_dialog))
                 ),
                 fileSystemProvider: new FileSystemProvider(p_owner,
@@ -51,20 +51,22 @@ public static unsafe partial class Bindings
                 gameInfoProvider: new GameInfoProvider(p_owner,
                     Marshal.GetDelegateForFunctionPointer<N_GetInstallPathDelegate>(new IntPtr(p_get_install_path))
                 ),
-                launcherUProvider:new LauncherProvider(p_owner,
+                launcherStateUProvider: new LauncherStateProvider(p_owner,
                     Marshal.GetDelegateForFunctionPointer<N_SetGameParametersDelegate>(new IntPtr(p_set_game_parameters)),
-                    Marshal.GetDelegateForFunctionPointer<N_GetAllModuleViewModels>(new IntPtr(p_get_all_module_view_models)),
-                    Marshal.GetDelegateForFunctionPointer<N_GetModuleViewModels>(new IntPtr(p_get_module_view_models)),
-                    Marshal.GetDelegateForFunctionPointer<N_SetModuleViewModels>(new IntPtr(p_set_module_view_models)),
                     Marshal.GetDelegateForFunctionPointer<N_GetOptions>(new IntPtr(p_get_options)),
                     Marshal.GetDelegateForFunctionPointer<N_GetState>(new IntPtr(p_get_state))
                 ),
-                loadOrderProvider: new LoadOrderProvider(p_owner,
+                loadOrderPersistenceProvider: new LoadOrderPersistenceProvider(p_owner,
                     Marshal.GetDelegateForFunctionPointer<N_GetLoadOrderDelegate>(new IntPtr(p_load_load_order)),
                     Marshal.GetDelegateForFunctionPointer<N_SetLoadOrderDelegate>(new IntPtr(p_save_load_order))
                 ),
-                notificationUIProvider: new NotificationUIProvider(p_owner,
+                notificationProvider: new NotificationProvider(p_owner,
                     Marshal.GetDelegateForFunctionPointer<N_SendNotificationDelegate>(new IntPtr(p_send_notification))
+                ),
+                loadOrderStateProvider: new LoadOrderStateProvider(p_owner,
+                    Marshal.GetDelegateForFunctionPointer<N_GetAllModuleViewModels>(new IntPtr(p_get_all_module_view_models)),
+                    Marshal.GetDelegateForFunctionPointer<N_GetModuleViewModels>(new IntPtr(p_get_module_view_models)),
+                    Marshal.GetDelegateForFunctionPointer<N_SetModuleViewModels>(new IntPtr(p_set_module_view_models))
                 )
             );
             

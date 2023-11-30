@@ -2,14 +2,14 @@ using Bannerlord.LauncherManager.Models;
 
 using System;
 
-namespace Bannerlord.LauncherManager.External;
+namespace Bannerlord.LauncherManager.External.UI;
 
-public sealed class CallbackLoadOrderProvider : ILoadOrderProvider
+public sealed class CallbackLoadOrderPersistenceProvider : ILoadOrderPersistenceProvider
 {
     private readonly Func<LoadOrder> _loadLoadOrder;
     private readonly Action<LoadOrder> _saveLoadOrder;
 
-    public CallbackLoadOrderProvider(Func<LoadOrder> loadLoadOrder, Action<LoadOrder> saveLoadOrder)
+    public CallbackLoadOrderPersistenceProvider(Func<LoadOrder> loadLoadOrder, Action<LoadOrder> saveLoadOrder)
     {
         _loadLoadOrder = loadLoadOrder;
         _saveLoadOrder = saveLoadOrder;

@@ -4,13 +4,9 @@ using System.Collections.Generic;
 
 namespace Bannerlord.LauncherManager.External;
 
-public interface ILauncherProvider
+public interface ILauncherStateProvider
 {
     void SetGameParameters(string executable, IReadOnlyList<string> gameParameters);
-
-    IModuleViewModel[]? GetAllModuleViewModels();
-    IModuleViewModel[]? GetModuleViewModels();
-    void SetModuleViewModels(IReadOnlyList<IModuleViewModel> moduleViewModels);
     
     LauncherOptions GetOptions();
     LauncherState GetState();

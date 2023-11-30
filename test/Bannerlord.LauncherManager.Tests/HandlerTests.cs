@@ -1,4 +1,5 @@
 ﻿using Bannerlord.LauncherManager.External;
+using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
 using Bannerlord.ModuleManager;
 
@@ -14,13 +15,14 @@ namespace Bannerlord.LauncherManager.Tests;
 public class LauncherManagerHandlerExposer : LauncherManagerHandler
 {
     public LauncherManagerHandlerExposer(
-        ILauncherProvider launcherUProvider,
+        ILauncherStateProvider launcherStateUProvider,
         IGameInfoProvider gameInfoProvider,
-        ILoadOrderProvider loadOrderProvider,
-        IFileSystemProvider fileSystemProviderProvider,
-        IDialogUIProvider dialogUIProviderProvider,
-        INotificationUIProvider notificationUIProviderProvider) :
-        base(launcherUProvider, gameInfoProvider, loadOrderProvider, fileSystemProviderProvider, dialogUIProviderProvider, notificationUIProviderProvider) { }
+        ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
+        IFileSystemProvider fileSystemProvider,
+        IDialogProvider dialogProviderProvider,
+        INotificationProvider notificationProviderProvider,
+        ILoadOrderStateProvider loadOrderStateProvider) :
+        base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider) { }
     
     public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
 }
@@ -75,10 +77,10 @@ public class HandlerTests
         var moduleViewModels = Array.Empty<IModuleViewModel>();
 
         var handler = new LauncherManagerHandlerExposer(
-            dialogUIProviderProvider: new CallbackDialogUIProvider(
+            dialogProviderProvider: new CallbackDialogProvider(
                 sendDialog: null!
             ),
-            fileSystemProviderProvider: new CallbackFileSystemProvider(
+            fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
@@ -87,21 +89,22 @@ public class HandlerTests
             gameInfoProvider: new CallbackGameInfoProvider(
                 getInstallPath: () => Path.GetFullPath(GamePath)!
             ),
-            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+            notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: (id, type, message, ms) => { }
             ),
-            launcherUProvider: new CallbackLauncherProvider(
+            launcherStateUProvider: new CallbackLauncherStateProvider(
                 setGameParameters: (executable, parameters) => { },
-                getAllModuleViewModels: () => moduleViewModels,
-                getModuleViewModels: () => moduleViewModels,
-                setModuleViewModels: null!,
                 getOptions: null!,
                 getState: null!
             ),
-            loadOrderProvider: new CallbackLoadOrderProvider(
+            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
                 loadLoadOrder: null!,
                 saveLoadOrder: lo => loadOrder = lo
-            )
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: () => moduleViewModels,
+                getModuleViewModels: () => moduleViewModels,
+                setModuleViewModels: null!)
         );
         
         var modules = handler.GetModules();
@@ -134,10 +137,10 @@ public class HandlerTests
     public void ModuleProvider_GetModules_Test()
     {
         var handler = new LauncherManagerHandlerExposer(
-            dialogUIProviderProvider: new CallbackDialogUIProvider(
+            dialogProviderProvider: new CallbackDialogProvider(
                 sendDialog: null!
             ),
-            fileSystemProviderProvider: new CallbackFileSystemProvider(
+            fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
@@ -146,21 +149,22 @@ public class HandlerTests
             gameInfoProvider: new CallbackGameInfoProvider(
                 getInstallPath: () => Path.GetFullPath(GamePath)!
             ),
-            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+            notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!
             ),
-            launcherUProvider: new CallbackLauncherProvider(
+            launcherStateUProvider: new CallbackLauncherStateProvider(
                 setGameParameters: null!,
-                getAllModuleViewModels: null!,
-                getModuleViewModels: null!,
-                setModuleViewModels: null!,
                 getOptions: null!,
                 getState: null!
             ),
-            loadOrderProvider: new CallbackLoadOrderProvider(
+            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
                 loadLoadOrder: null!,
                 saveLoadOrder: null!
-            )
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: null!,
+                getModuleViewModels: null!,
+                setModuleViewModels: null!)
         );
 
         var modules = handler.GetModules().ToList();
@@ -180,10 +184,10 @@ public class HandlerTests
         };
 
         var handler = new LauncherManagerHandlerExposer(
-            dialogUIProviderProvider: new CallbackDialogUIProvider(
+            dialogProviderProvider: new CallbackDialogProvider(
                 sendDialog: null!
             ),
-            fileSystemProviderProvider: new CallbackFileSystemProvider(
+            fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: null!,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
@@ -192,21 +196,22 @@ public class HandlerTests
             gameInfoProvider: new CallbackGameInfoProvider(
                 getInstallPath: null!
             ),
-            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+            notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!
             ),
-            launcherUProvider: new CallbackLauncherProvider(
+            launcherStateUProvider: new CallbackLauncherStateProvider(
                 setGameParameters: null!,
-                getAllModuleViewModels: null!,
-                getModuleViewModels: null!,
-                setModuleViewModels: null!,
                 getOptions: null!,
                 getState: null!
             ),
-            loadOrderProvider: new CallbackLoadOrderProvider(
+            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
                 loadLoadOrder: null!,
                 saveLoadOrder: null!
-            )
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: null!,
+                getModuleViewModels: null!,
+                setModuleViewModels: null!)
         );
         
         var installResult = handler.TestModuleContent(files);
@@ -235,10 +240,10 @@ public class HandlerTests
         };
 
         var handler = new LauncherManagerHandlerExposer(
-            dialogUIProviderProvider: new CallbackDialogUIProvider(
+            dialogProviderProvider: new CallbackDialogProvider(
                 sendDialog: null!
             ),
-            fileSystemProviderProvider: new CallbackFileSystemProvider(
+            fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
                 readDirectoryFileList: null!,
@@ -247,21 +252,22 @@ public class HandlerTests
             gameInfoProvider: new CallbackGameInfoProvider(
                 getInstallPath: () => Path.GetFullPath(GamePath)!
             ),
-            notificationUIProviderProvider: new CallbackNotificationUIProvider(
+            notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!
             ),
-            launcherUProvider: new CallbackLauncherProvider(
+            launcherStateUProvider: new CallbackLauncherStateProvider(
                 setGameParameters: null!,
-                getAllModuleViewModels: null!,
-                getModuleViewModels: null!,
-                setModuleViewModels: null!,
                 getOptions: null!,
                 getState: null!
             ),
-            loadOrderProvider: new CallbackLoadOrderProvider(
+            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
                 loadLoadOrder: null!,
                 saveLoadOrder: null!
-            )
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: null!,
+                getModuleViewModels: null!,
+                setModuleViewModels: null!)
         );
         
         handler.SetGameStore(GameStore.Steam);

@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.External;
+using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
 
 using BUTR.NativeAOT.Shared;
@@ -10,12 +10,12 @@ using System.Runtime.InteropServices;
 
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
-internal sealed unsafe class DialogUIProvider : IDialogUIProvider
+internal sealed unsafe class DialogProvider : IDialogProvider
 {
     private readonly param_ptr* _pOwner;
     private readonly N_SendDialogDelegate _sendDialog;
 
-    public DialogUIProvider(param_ptr* pOwner, N_SendDialogDelegate sendDialog)
+    public DialogProvider(param_ptr* pOwner, N_SendDialogDelegate sendDialog)
     {
         _pOwner = pOwner;
         _sendDialog = sendDialog;
@@ -31,9 +31,9 @@ internal sealed unsafe class DialogUIProvider : IDialogUIProvider
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
         static void Callback(param_ptr* p_ptr, param_string* p_result)
         {
-            Logger.LogInput($"{nameof(SendDialog)}_{nameof(Callback)}");
+            Logger.LogInput($"{nameof(SendDialogNative)}_{nameof(Callback)}");
             var result = new string(param_string.ToSpan(p_result));
-            Logger.LogOutput(result, $"{nameof(SendDialog)}_{nameof(Callback)}");
+            Logger.LogOutput(result, $"{nameof(SendDialogNative)}_{nameof(Callback)}");
 
             var handle = GCHandle.FromIntPtr(new IntPtr(p_ptr));
             try
@@ -43,7 +43,7 @@ internal sealed unsafe class DialogUIProvider : IDialogUIProvider
             }
             catch (Exception e)
             {
-                Logger.LogException(e, $"{nameof(SendDialog)}_{nameof(Callback)}");
+                Logger.LogException(e, $"{nameof(SendDialogNative)}_{nameof(Callback)}");
             }
             finally
             {

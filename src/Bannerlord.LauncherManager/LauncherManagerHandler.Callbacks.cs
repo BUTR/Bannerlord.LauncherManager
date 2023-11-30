@@ -12,7 +12,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
     {
-        LauncherProvider.SetGameParameters(executable, gameParameters);
+        LauncherStateProvider.SetGameParameters(executable, gameParameters);
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal LoadOrder LoadLoadOrder()
     {
-        return LoadOrderProvider.LoadLoadOrder();
+        return LoadOrderPersistenceProvider.LoadLoadOrder();
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SaveLoadOrder(LoadOrder loadOrder)
     {
-        LoadOrderProvider.SaveLoadOrder(loadOrder);
+        LoadOrderPersistenceProvider.SaveLoadOrder(loadOrder);
 
         SetGameParameterLoadOrder(loadOrder);
     }
@@ -38,7 +38,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
     {
-        NotificationUIProvider.SendNotification(id, type, message, displayMs);
+        NotificationProvider.SendNotification(id, type, message, displayMs);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
     {
-        DialogUIProvider.SendDialog(type, title, message, filters, onResult);
+        DialogProvider.SendDialog(type, title, message, filters, onResult);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal IModuleViewModel[]? GetAllModuleViewModels()
     {
-        return LauncherProvider.GetAllModuleViewModels();
+        return LoadOrderStateProvider.GetAllModuleViewModels();
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal IModuleViewModel[]? GetModuleViewModels()
     {
-        return LauncherProvider.GetModuleViewModels();
+        return LoadOrderStateProvider.GetModuleViewModels();
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {
-        LauncherProvider.SetModuleViewModels(orderedModules);
+        LoadOrderStateProvider.SetModuleViewModels(orderedModules);
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal LauncherOptions GetOptions()
     {
-        return LauncherProvider.GetOptions();
+        return LauncherStateProvider.GetOptions();
     }
 
     /// <summary>
@@ -129,6 +129,6 @@ partial class LauncherManagerHandler
     /// </summary>
     protected internal LauncherState GetState()
     {
-        return LauncherProvider.GetState();
+        return LauncherStateProvider.GetState();
     }
 }

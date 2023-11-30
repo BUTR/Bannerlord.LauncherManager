@@ -2,6 +2,7 @@
 using Bannerlord.LauncherManager.Extensions;
 #endif
 using Bannerlord.LauncherManager.External;
+using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
 using Bannerlord.LauncherManager.Utils;
 using Bannerlord.ModuleManager;
@@ -13,27 +14,30 @@ namespace Bannerlord.LauncherManager;
 
 public partial class LauncherManagerHandler
 {
-    protected ILauncherProvider LauncherProvider { get; }
+    protected ILauncherStateProvider LauncherStateProvider { get; }
     protected IGameInfoProvider GameInfoProvider { get; }
-    protected ILoadOrderProvider LoadOrderProvider { get; }
+    protected ILoadOrderPersistenceProvider LoadOrderPersistenceProvider { get; }
     protected IFileSystemProvider FileSystemProvider { get; }
-    protected IDialogUIProvider DialogUIProvider { get; }
-    protected INotificationUIProvider NotificationUIProvider { get; }
+    protected IDialogProvider DialogProvider { get; }
+    protected INotificationProvider NotificationProvider { get; }
+    protected ILoadOrderStateProvider LoadOrderStateProvider { get; }
 
     public LauncherManagerHandler(
-        ILauncherProvider launcherProvider,
+        ILauncherStateProvider launcherStateProvider,
         IGameInfoProvider gameInfoProvider,
-        ILoadOrderProvider loadOrderProvider,
+        ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
         IFileSystemProvider fileSystemProvider,
-        IDialogUIProvider dialogUIProvider,
-        INotificationUIProvider notificationUIProvider)
+        IDialogProvider dialogProvider,
+        INotificationProvider notificationProvider,
+        ILoadOrderStateProvider loadOrderStateProvider)
     {
-        LauncherProvider = launcherProvider;
+        LauncherStateProvider = launcherStateProvider;
         GameInfoProvider = gameInfoProvider;
-        LoadOrderProvider = loadOrderProvider;
+        LoadOrderPersistenceProvider = loadOrderPersistenceProvider;
         FileSystemProvider = fileSystemProvider;
-        DialogUIProvider = dialogUIProvider;
-        NotificationUIProvider = notificationUIProvider;
+        DialogProvider = dialogProvider;
+        NotificationProvider = notificationProvider;
+        LoadOrderStateProvider = loadOrderStateProvider;
         _providers = new IModulePathProvider[]
         {
             new MainModuleProvider(this),

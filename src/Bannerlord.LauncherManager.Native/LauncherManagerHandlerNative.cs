@@ -1,4 +1,5 @@
 ﻿using Bannerlord.LauncherManager.External;
+using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Localization;
 using Bannerlord.LauncherManager.Models;
 
@@ -26,8 +27,15 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public param_ptr* OwnerPtr { get; }
     public VoidPtr* HandlePtr { get; }
 
-    public LauncherManagerHandlerNative(param_ptr* pOwner, ILauncherProvider launcherUProvider, IGameInfoProvider gameInfoProvider, ILoadOrderProvider loadOrderProvider, IFileSystemProvider fileSystemProvider, IDialogUIProvider dialogUIProvider, INotificationUIProvider notificationUIProvider) :
-        base(launcherUProvider, gameInfoProvider, loadOrderProvider, fileSystemProvider, dialogUIProvider, notificationUIProvider)
+    public LauncherManagerHandlerNative(param_ptr* pOwner,
+        ILauncherStateProvider launcherStateUProvider,
+        IGameInfoProvider gameInfoProvider,
+        ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
+        IFileSystemProvider fileSystemProvider,
+        IDialogProvider dialogProvider,
+        INotificationProvider notificationProvider,
+        ILoadOrderStateProvider loadOrderStateProvider) :
+        base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProvider, notificationProvider, loadOrderStateProvider)
     {
         OwnerPtr = pOwner;
         HandlePtr = (VoidPtr*) GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Normal)).ToPointer();

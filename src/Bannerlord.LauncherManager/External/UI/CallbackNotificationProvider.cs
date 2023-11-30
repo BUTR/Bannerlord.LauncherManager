@@ -2,13 +2,13 @@ using Bannerlord.LauncherManager.Models;
 
 using System;
 
-namespace Bannerlord.LauncherManager.External;
+namespace Bannerlord.LauncherManager.External.UI;
 
-public sealed class CallbackNotificationUIProvider : INotificationUIProvider
+public sealed class CallbackNotificationProvider : INotificationProvider
 {
     private readonly Action<string, NotificationType, string, uint> _sendNotification;
 
-    public CallbackNotificationUIProvider(Action<string, NotificationType, string, uint> sendNotification)
+    public CallbackNotificationProvider(Action<string, NotificationType, string, uint> sendNotification)
     {
         _sendNotification = sendNotification;
     }

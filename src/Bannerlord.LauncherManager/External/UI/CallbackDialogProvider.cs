@@ -3,13 +3,13 @@ using Bannerlord.LauncherManager.Models;
 using System;
 using System.Collections.Generic;
 
-namespace Bannerlord.LauncherManager.External;
+namespace Bannerlord.LauncherManager.External.UI;
 
-public sealed class CallbackDialogUIProvider : IDialogUIProvider
+public sealed class CallbackDialogProvider : IDialogProvider
 {
     private readonly Action<DialogType, string, string, IReadOnlyList<DialogFileFilter>, Action<string>> _sendDialog;
 
-    public CallbackDialogUIProvider(Action<DialogType, string, string, IReadOnlyList<DialogFileFilter>, Action<string>> sendDialog)
+    public CallbackDialogProvider(Action<DialogType, string, string, IReadOnlyList<DialogFileFilter>, Action<string>> sendDialog)
     {
         _sendDialog = sendDialog;
     }

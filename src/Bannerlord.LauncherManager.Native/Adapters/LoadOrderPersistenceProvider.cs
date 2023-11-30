@@ -5,13 +5,13 @@ using BUTR.NativeAOT.Shared;
 
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
-internal sealed unsafe class LoadOrderProvider : ILoadOrderProvider
+internal sealed unsafe class LoadOrderPersistenceProvider : ILoadOrderPersistenceProvider
 {
     private readonly param_ptr* _pOwner;
     private readonly N_GetLoadOrderDelegate _getLoadOrder;
     private readonly N_SetLoadOrderDelegate _setLoadOrder;
 
-    public LoadOrderProvider(param_ptr* pOwner, N_GetLoadOrderDelegate getLoadOrder, N_SetLoadOrderDelegate setLoadOrder)
+    public LoadOrderPersistenceProvider(param_ptr* pOwner, N_GetLoadOrderDelegate getLoadOrder, N_SetLoadOrderDelegate setLoadOrder)
     {
         _pOwner = pOwner;
         _getLoadOrder = getLoadOrder;
