@@ -5,7 +5,7 @@ using System;
 
 namespace Bannerlord.LauncherManager.Utils;
 
-internal static class ModuleIssueRenderer
+public static class ModuleIssueRenderer
 {
     public static string Render(ModuleIssue issue) => RenderTextObject(issue).ToString();
 
