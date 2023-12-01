@@ -24,7 +24,7 @@ public sealed partial class FetchVersionTests : BaseTests
         Assert.DoesNotThrow(() =>
         {
             using var path = BUTR.NativeAOT.Shared.Utils.Copy(Path.GetFullPath("./Data"), true);
-            using var dllName = BUTR.NativeAOT.Shared.Utils.Copy("TaleWorlds.Library.dll", true);
+            using var dllName = BUTR.NativeAOT.Shared.Utils.Copy(Constants.TaleWorldsLibrary, true);
 
             var changeSet = GetResult(bfv_get_change_set(path, dllName));
             Assert.That(changeSet, Is.EqualTo(321460));

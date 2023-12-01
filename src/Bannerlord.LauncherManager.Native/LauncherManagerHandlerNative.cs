@@ -117,12 +117,12 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public override string GetGameVersion()
     {
         var gamePath = GetInstallPath();
-        return Fetcher.GetVersion(gamePath, "TaleWorlds.Library.dll");
+        return Fetcher.GetVersion(gamePath, Constants.TaleWorldsLibrary);
     }
 
     public override int GetChangeset()
     {
         var gamePath = GetInstallPath();
-        return Fetcher.GetChangeSet(gamePath, "TaleWorlds.Library.dll");
+        return Fetcher.GetChangeSet(gamePath, Constants.TaleWorldsLibrary);
     }
 }
