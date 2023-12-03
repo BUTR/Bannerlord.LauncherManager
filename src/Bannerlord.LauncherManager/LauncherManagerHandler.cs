@@ -14,23 +14,31 @@ namespace Bannerlord.LauncherManager;
 
 public partial class LauncherManagerHandler
 {
-    protected ILauncherStateProvider LauncherStateProvider { get; }
-    protected IGameInfoProvider GameInfoProvider { get; }
-    protected ILoadOrderPersistenceProvider LoadOrderPersistenceProvider { get; }
-    protected IFileSystemProvider FileSystemProvider { get; }
-    protected IDialogProvider DialogProvider { get; }
-    protected INotificationProvider NotificationProvider { get; }
-    protected ILoadOrderStateProvider LoadOrderStateProvider { get; }
+    private bool _isInitialized;
+    protected ILauncherStateProvider LauncherStateProvider { get; private set; } = default!;
+    protected IGameInfoProvider GameInfoProvider { get; private set; } = default!;
+    protected ILoadOrderPersistenceProvider LoadOrderPersistenceProvider { get; private set; } = default!;
+    protected IFileSystemProvider FileSystemProvider { get; private set; } = default!;
+    protected IDialogProvider DialogProvider { get; private set; } = default!;
+    protected INotificationProvider NotificationProvider { get; private set; } = default!;
+    protected ILoadOrderStateProvider LoadOrderStateProvider { get; private set; } = default!;
 
-    public LauncherManagerHandler(
-        ILauncherStateProvider launcherStateProvider,
-        IGameInfoProvider gameInfoProvider,
-        ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
-        IFileSystemProvider fileSystemProvider,
-        IDialogProvider dialogProvider,
-        INotificationProvider notificationProvider,
-        ILoadOrderStateProvider loadOrderStateProvider)
+    public LauncherManagerHandler()
     {
+        _providers = new IModulePathProvider[]
+        {
+            new MainModuleProvider(this),
+            new SteamModuleProvider(this)
+        };
+    }
+
+    protected void Initialize(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
+        IFileSystemProvider fileSystemProvider, IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider)
+    {
+        if (_isInitialized)
+            throw new LauncherManagerInitializedTwiceException();
+        
+        _isInitialized = true;
         LauncherStateProvider = launcherStateProvider;
         GameInfoProvider = gameInfoProvider;
         LoadOrderPersistenceProvider = loadOrderPersistenceProvider;
@@ -38,11 +46,12 @@ public partial class LauncherManagerHandler
         DialogProvider = dialogProvider;
         NotificationProvider = notificationProvider;
         LoadOrderStateProvider = loadOrderStateProvider;
-        _providers = new IModulePathProvider[]
-        {
-            new MainModuleProvider(this),
-            new SteamModuleProvider(this)
-        };
+    }
+    
+    public LauncherManagerHandler(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
+        IFileSystemProvider fileSystemProvider, IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider) : this()
+    {
+        Initialize(launcherStateProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProvider, notificationProvider, loadOrderStateProvider);
     }
 
     /// <summary>
