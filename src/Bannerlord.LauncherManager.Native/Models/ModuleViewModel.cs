@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Bannerlord.LauncherManager.Native.Models;
 
-public record ModuleViewModel : IModuleViewModel
+public sealed record ModuleViewModel : IModuleViewModel
 {
     public required ModuleInfoExtendedWithPath ModuleInfoExtended { get; init; }
     public required bool IsValid { get; init; }

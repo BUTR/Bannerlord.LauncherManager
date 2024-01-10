@@ -7,6 +7,7 @@ using Bannerlord.LauncherManager.Models;
 using Bannerlord.LauncherManager.Utils;
 using Bannerlord.ModuleManager;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -81,4 +82,15 @@ public partial class LauncherManagerHandler
     /// Internal<br/>
     /// </summary>
     public LoadOrder GetFromModules(IEnumerable<ModuleInfoExtended> modules) => new(modules);
+
+    /// <summary>
+    /// Internal<br/>
+    /// </summary>
+    public IReadOnlyList<IModuleViewModel> GetViewModelsFromModules(IEnumerable<ModuleInfoExtended> modules)
+    {
+        if (GetAllModuleViewModels() is not { } viewModels)
+            return Array.Empty<IModuleViewModel>();
+
+        return modules.Select(moduleInfoExtended => viewModels.First(x => x.ModuleInfoExtended == moduleInfoExtended)).ToList();
+    }
 }

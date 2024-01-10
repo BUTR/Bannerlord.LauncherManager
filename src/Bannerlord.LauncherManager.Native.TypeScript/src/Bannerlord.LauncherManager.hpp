@@ -260,6 +260,7 @@ namespace Bannerlord::LauncherManager
             const auto promise = result.As<Promise>();
             const auto then = promise.Get("then").As<Function>();
             auto data = new param_callback{p_callback_ptr, reinterpret_cast<void(__cdecl *)(void *, void *)>(p_callback)};
+            /*
             std::stringstream ss;
             ss << &data;
             ConsoleLog(env, String::New(env, ss.str()));
@@ -269,6 +270,7 @@ namespace Bannerlord::LauncherManager
             ss = std::stringstream();
             ss << data->p_callback;
             ConsoleLog(env, String::New(env, ss.str()));
+            */
             const auto callback = Function::New(env, CallbackString, "cpp_callback", static_cast<void *>(data));
             then.Call(promise, {callback});
 
