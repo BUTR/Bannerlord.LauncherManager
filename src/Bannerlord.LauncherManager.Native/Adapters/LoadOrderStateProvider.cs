@@ -41,7 +41,7 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
         using var result = SafeStructMallocHandle.Create(_getAllModuleViewModels(_pOwner), true);
         if (result.IsNull) return null;
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).ToArray<IModuleViewModel>();
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).Cast<IModuleViewModel>().ToArray();
         Logger.LogOutput(returnResult);
         return returnResult;
     }
@@ -53,7 +53,7 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
         using var result = SafeStructMallocHandle.Create(_getModuleViewModels(_pOwner), true);
         if (result.IsNull) return null;
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).ToArray<IModuleViewModel>();
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).Cast<IModuleViewModel>().ToArray();
         Logger.LogOutput(returnResult);
         return returnResult;
     }
@@ -62,7 +62,8 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
     {
         Logger.LogInput();
 
-        fixed (char* pModuleViewModels = BUTR.NativeAOT.Shared.Utils.SerializeJson((IReadOnlyList<ModuleViewModel>) moduleViewModels, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel))
+        var moduleViewModelsCasted = moduleViewModels.OfType<ModuleViewModel>().ToList();
+        fixed (char* pModuleViewModels = BUTR.NativeAOT.Shared.Utils.SerializeJson(moduleViewModelsCasted, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel))
         {
             Logger.LogPinned(pModuleViewModels);
 

@@ -34,7 +34,8 @@ partial class LauncherManagerHandler
         IsSorting = true;
         var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended).ToArray() ?? Array.Empty<ModuleInfoExtendedWithPath>();
         var sorted = Sort(modules);
-        SetModuleViewModels(GetViewModelsFromModules(sorted));
+        var sortedViewModels = GetViewModelsFromModules(sorted);
+        SetModuleViewModels(sortedViewModels);
 
         SendNotification("sort-finished", NotificationType.Info, new BUTRTextObject("{=J7dh36Dy}Finished sorting!").ToString(), 3000);
         IsSorting = false;
