@@ -71,7 +71,7 @@ namespace Bannerlord::LauncherManager
         Napi::Value DialogTestWarning(const CallbackInfo &info);
         void SaveLoadOrder(const CallbackInfo &info);
         Napi::Value LoadLoadOrder(const CallbackInfo &info);
-        Napi::Value SetGameParameterLoadOrder(const CallbackInfo &info);
+        void SetGameParameterLoadOrder(const CallbackInfo &info);
 
     private:
         void *_pInstance;
