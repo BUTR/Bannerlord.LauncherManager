@@ -127,9 +127,6 @@ partial class LauncherManagerHandler
     {
         ThrowIfNotInitialized();
         
-        var loadOrder = GetFromViewModel(orderedModules);
-        SetGameParameterLoadOrder(loadOrder);
-        
         LoadOrderStateProvider.SetModuleViewModels(orderedModules);
     }
 

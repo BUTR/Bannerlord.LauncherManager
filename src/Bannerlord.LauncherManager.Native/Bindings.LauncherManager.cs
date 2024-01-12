@@ -237,8 +237,7 @@ public static unsafe partial class Bindings
     }
 
 
-    /*
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_save_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_json* GetLoadOrder(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -247,7 +246,7 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var result = handler.GetLoadOrder();
+            var result = handler.LoadLoadOrder();
 
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.LoadOrder, false);
@@ -259,7 +258,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_set_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_load_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* SetLoadOrder(param_ptr* p_handle, param_json* p_load_order)
     {
         Logger.LogInput(p_load_order);
@@ -269,7 +268,7 @@ public static unsafe partial class Bindings
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
-            handler.SetLoadOrder(loadOrder);
+            handler.SaveLoadOrder(loadOrder);
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -280,7 +279,6 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    */
 
     [UnmanagedCallersOnly(EntryPoint = "ve_refresh_modules", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* RefreshModules(param_ptr* p_handle)

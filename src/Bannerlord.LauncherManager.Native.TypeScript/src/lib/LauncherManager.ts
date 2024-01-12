@@ -129,4 +129,10 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public dialogTestFileOpen = (): Promise<string> => {
     return this.manager.dialogTestFileOpen();
   }
+  public saveLoadOrder = (loadOrder: types.LoadOrder): void => {
+    return this.manager.saveLoadOrder(loadOrder);
+  }
+  public loadLoadOrder = (): types.LoadOrder => {
+    return this.manager.loadLoadOrder();
+  }
 }

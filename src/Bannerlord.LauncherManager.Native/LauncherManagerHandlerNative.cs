@@ -58,6 +58,10 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
         ReleaseUnmanagedResources();
     }
 
+    public new void SaveLoadOrder(LoadOrder loadOrder) => base.SaveLoadOrder(loadOrder);
+    public new LoadOrder LoadLoadOrder() => base.LoadLoadOrder();
+
+
     public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
 
     public new IModuleViewModel[]? GetModuleViewModels() => base.GetModuleViewModels();

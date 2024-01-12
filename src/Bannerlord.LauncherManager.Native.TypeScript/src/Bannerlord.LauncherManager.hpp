@@ -69,6 +69,8 @@ namespace Bannerlord::LauncherManager
         Napi::Value TestModule(const CallbackInfo &info);
         Napi::Value DialogTestFileOpen(const CallbackInfo &info);
         Napi::Value DialogTestWarning(const CallbackInfo &info);
+        void SaveLoadOrder(const CallbackInfo &info);
+        Napi::Value LoadLoadOrder(const CallbackInfo &info);
 
     private:
         void *_pInstance;
@@ -114,6 +116,8 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::SetGameStore>("setGameStore", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetGamePlatform>("getGamePlatform", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SetGameParameterContinueLastSaveFile>("setGameParameterContinueLastSaveFile", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SaveLoadOrder>("saveLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::LoadLoadOrder>("loadLoadOrder", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
         auto *const constructor = new FunctionReference();
@@ -855,6 +859,24 @@ namespace Bannerlord::LauncherManager
 
         const auto result = ve_set_game_parameter_continue_last_save_file(this->_pInstance, value == true ? 1 : 0);
         ThrowOrReturn(env, result);
+    }
+
+    void LauncherManager::SaveLoadOrder(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto loadOrder = JSONStringify(env, info[0].As<Object>());
+
+        const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
+
+        const auto result = ve_save_load_order(this->_pInstance, loadOrderCopy.get());
+        return ThrowOrReturn(env, result);
+    }
+    Napi::Value LauncherManager::LoadLoadOrder(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_load_load_order(this->_pInstance);
+        return ThrowOrReturnJson(env, result);
     }
 }
 #endif
