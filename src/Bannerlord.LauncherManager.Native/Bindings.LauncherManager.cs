@@ -237,8 +237,8 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_save_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
-    public static return_value_json* GetLoadOrder(param_ptr* p_handle)
+    [UnmanagedCallersOnly(EntryPoint = "ve_load_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_json* LoadLoadOrder(param_ptr* p_handle)
     {
         Logger.LogInput();
         try
@@ -258,8 +258,8 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_load_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
-    public static return_value_void* SetLoadOrder(param_ptr* p_handle, param_json* p_load_order)
+    [UnmanagedCallersOnly(EntryPoint = "ve_save_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_void* SaveLoadOrder(param_ptr* p_handle, param_json* p_load_order)
     {
         Logger.LogInput(p_load_order);
         try
