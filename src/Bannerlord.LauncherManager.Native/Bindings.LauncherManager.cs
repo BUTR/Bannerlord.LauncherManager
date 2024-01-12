@@ -671,6 +671,29 @@ public static unsafe partial class Bindings
         }
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static return_value_void* SetGameParameterLoadOrder(param_ptr* p_handle, param_json* p_load_order)
+    {
+        Logger.LogInput(p_load_order);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
+
+            handler.SetGameParameterLoadOrder(loadOrder);
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
+
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
     public static return_value_void* SetGameParameterSaveFile(param_ptr* p_handle, param_string* p_save_file)
     {

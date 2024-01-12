@@ -135,4 +135,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public loadLoadOrder = (): types.LoadOrder => {
     return this.manager.loadLoadOrder();
   }
+  public setGameParameterLoadOrder = (loadOrder: types.LoadOrder): void => {
+    return this.manager.setGameParameterLoadOrder(loadOrder);
+  }
 }

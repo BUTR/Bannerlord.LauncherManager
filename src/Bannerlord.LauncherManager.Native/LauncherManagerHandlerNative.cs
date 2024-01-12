@@ -61,6 +61,8 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public new void SaveLoadOrder(LoadOrder loadOrder) => base.SaveLoadOrder(loadOrder);
     public new LoadOrder LoadLoadOrder() => base.LoadLoadOrder();
 
+    public new void SetGameParameterLoadOrder(LoadOrder loadOrder) => base.SetGameParameterLoadOrder(loadOrder);
+
 
     public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
 
