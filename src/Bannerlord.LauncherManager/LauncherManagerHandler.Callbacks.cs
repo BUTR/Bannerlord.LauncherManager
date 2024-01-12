@@ -126,6 +126,10 @@ partial class LauncherManagerHandler
     protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {
         ThrowIfNotInitialized();
+        
+        var loadOrder = GetFromViewModel(orderedModules);
+        SetGameParameterLoadOrder(loadOrder);
+        
         LoadOrderStateProvider.SetModuleViewModels(orderedModules);
     }
 
