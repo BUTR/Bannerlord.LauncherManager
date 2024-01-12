@@ -48,7 +48,7 @@ partial class LauncherManagerHandler
         var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
         var win64Executable = System.IO.Path.Combine(Constants.BinFolder, Constants.Win64Configuration, _currentExecutable);
         var xboxExecutable = System.IO.Path.Combine(Constants.BinFolder, Constants.XboxConfiguration, _currentExecutable);
-        var binDirectories = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? Array.Empty<string>();
+        var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? Array.Empty<string>();
         var hasWin64 = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase));
         var hasXbox = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase));
         var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.Win64Configuration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
