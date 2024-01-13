@@ -13,12 +13,14 @@ test('Main', async (t) => {
       id: "Bannerlord.UIExtenderEx",
       name: "UIExtenderEx",
       isSelected: false,
+      isDisabled: false,
       index: 0,
     },
     'Bannerlord.Harmony': {
       id: "Bannerlord.Harmony",
       name: "Harmony",
       isSelected: false,
+      isDisabled: false,
       index: 1,
     },
   };
@@ -154,12 +156,14 @@ test('Main', async (t) => {
       id: "Bannerlord.Harmony",
       name: "Harmony",
       isSelected: true,
+      isDisabled: false,
       index: 0,
     },
     'Bannerlord.UIExtenderEx': {
       id: "Bannerlord.UIExtenderEx",
       name: "UIExtenderEx",
       isSelected: true,
+      isDisabled: false,
       index: 1,
     },
   };

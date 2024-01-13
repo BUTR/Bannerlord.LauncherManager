@@ -69,8 +69,8 @@ public class HandlerTests
     {
         var loadOrder = new LoadOrder
         {
-            {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 0 }},
-            {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, Index = 1 }},
+            {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 0 }},
+            {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 1 }},
         };
         var expectedLoadOrderIds = new[] { "Test", "Test2" };
 

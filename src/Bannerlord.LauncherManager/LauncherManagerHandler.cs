@@ -81,11 +81,6 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    public LoadOrder GetFromModules(IEnumerable<ModuleInfoExtended> modules) => new(modules);
-
-    /// <summary>
-    /// Internal<br/>
-    /// </summary>
     public IReadOnlyList<IModuleViewModel> GetViewModelsFromModules(IEnumerable<ModuleInfoExtended> modules)
     {
         if (GetAllModuleViewModels() is not { } viewModels)

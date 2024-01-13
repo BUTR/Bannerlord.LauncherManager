@@ -24,6 +24,7 @@ export interface LoadOrderEntry {
   id: string;
   name: string;
   isSelected: boolean;
+  isDisabled: boolean;
   index: number;
 }
 
