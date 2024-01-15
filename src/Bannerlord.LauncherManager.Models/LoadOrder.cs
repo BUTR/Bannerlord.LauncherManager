@@ -33,7 +33,6 @@ public record LoadOrder : IDictionary<string, LoadOrderEntry>
 
     public LoadOrder() { }
     public LoadOrder(IEnumerable<LoadOrderEntry> enumerable) => _implementation = enumerable.ToDictionary(x => x.Id, x => x);
-    //public LoadOrder(IEnumerable<ModuleInfoExtended> enumerable) => _implementation = enumerable.Select((x, i) => (x, i)).ToDictionary(x => x.x.Id, x => new LoadOrderEntry(x.x, true, false, x.i));
     public LoadOrder(IEnumerable<IModuleViewModel> enumerable) => _implementation = enumerable.ToDictionary(x => x.ModuleInfoExtended.Id, x => new LoadOrderEntry(x));
 
     public IEnumerator<KeyValuePair<string, LoadOrderEntry>> GetEnumerator() => _implementation.GetEnumerator();

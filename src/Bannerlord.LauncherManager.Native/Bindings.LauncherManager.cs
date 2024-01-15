@@ -634,7 +634,7 @@ public static unsafe partial class Bindings
             var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
 
             var loadOrderDict = loadOrder.ToDictionary(x => x.Key, x => x.Value.IsSelected);
-            var res = handler.TryOrderByLoadOrder(loadOrder.Keys, x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected, out var issues, out var orderedModuleViewModels);
+            var res = handler.TryOrderByLoadOrder(loadOrder.OrderBy(x => x.Value.Index).Select(x => x.Key), x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected, out var issues, out var orderedModuleViewModels);
             var result = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels.Cast<ModuleViewModel>().ToArray());
 
             Logger.LogOutput(result);
