@@ -21,5 +21,4 @@ public sealed record ModuleViewModel : IModuleViewModel
         ModuleInfoExtended = moduleInfoExtended;
         IsValid = isValid;
     }
-
 }

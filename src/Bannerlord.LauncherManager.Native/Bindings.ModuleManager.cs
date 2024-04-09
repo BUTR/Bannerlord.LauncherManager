@@ -26,7 +26,7 @@ public static unsafe partial class Bindings
 
     private static readonly ApplicationVersionComparer _applicationVersionComparer = new();
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_sort", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_sort", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* Sort([IsConst<IsPtrConst>] param_json* p_source)
     {
         Logger.LogInput(p_source);
@@ -46,7 +46,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_sort_with_options", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_sort_with_options", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* SortWithOptions([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_options)
     {
         Logger.LogInput(p_source, p_options);
@@ -68,7 +68,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_are_all_dependencies_of_module_present", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_are_all_dependencies_of_module_present", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_bool* AreAllDependenciesOfModulePresent([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_source, p_module);
@@ -90,7 +90,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependent_modules_of", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependent_modules_of", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependentModulesOf([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_source, p_module);
@@ -111,7 +111,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependent_modules_of_with_options", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependent_modules_of_with_options", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependentModulesOfWithOptions([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_module, [IsConst<IsPtrConst>] param_json* p_options)
     {
         Logger.LogInput(p_source, p_module, p_options);
@@ -134,7 +134,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_validate_module", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_validate_module", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* ValidateModule([IsConst<IsPtrConst>] param_ptr* p_owner, [IsConst<IsPtrConst>] param_json* p_modules, [IsConst<IsPtrConst>] param_json* p_target_module,
         [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_bool*> p_is_selected)
@@ -171,7 +171,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_validate_load_order", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_validate_load_order", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* ValidateLoadOrder([IsConst<IsPtrConst>] param_json* p_modules, [IsConst<IsPtrConst>] param_json* p_target_module)
     {
         Logger.LogInput(p_modules, p_target_module);
@@ -193,7 +193,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_enable_module", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_enable_module", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_void* EnableModule([IsConst<IsPtrConst>] param_ptr* p_owner, [IsConst<IsPtrConst>] param_json* p_module, [IsConst<IsPtrConst>] param_json* p_target_module,
         [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_bool*> p_get_selected,
@@ -273,7 +273,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_disable_module", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_disable_module", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_void* DisableModule([IsConst<IsPtrConst>] param_ptr* p_owner, [IsConst<IsPtrConst>] param_json* p_module, [IsConst<IsPtrConst>] param_json* p_target_module,
         [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_bool*> p_get_selected,
@@ -354,7 +354,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetModuleInfo([IsConst<IsPtrConst>] param_string* p_xml_content)
     {
         Logger.LogInput(p_xml_content);
@@ -375,7 +375,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info_with_path", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info_with_path", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetModuleInfoWithPath([IsConst<IsPtrConst>] param_string* p_xml_content, [IsConst<IsPtrConst>] param_string* p_path)
     {
         Logger.LogInput(p_xml_content, p_path);
@@ -397,7 +397,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_sub_module_info", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_sub_module_info", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetSubModuleInfo([IsConst<IsPtrConst>] param_string* p_xml_content)
     {
         Logger.LogInput(p_xml_content);
@@ -423,7 +423,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_parse_application_version", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_parse_application_version", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* ParseApplicationVersion([IsConst<IsPtrConst>] param_string* p_application_version)
     {
         Logger.LogInput(p_application_version);
@@ -440,7 +440,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_compare_versions", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_compare_versions", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_int32* CompareVersions([IsConst<IsPtrConst>] param_json* p_x, [IsConst<IsPtrConst>] param_json* p_y)
     {
         Logger.LogInput(p_x, p_y);
@@ -462,7 +462,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_all", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_all", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesAll([IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_module);
@@ -481,7 +481,7 @@ public static unsafe partial class Bindings
             return return_value_json.AsException(e, false);
         }
     }
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_before_this", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_before_this", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesLoadBeforeThis([IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_module);
@@ -500,7 +500,7 @@ public static unsafe partial class Bindings
             return return_value_json.AsException(e, false);
         }
     }
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_after_this", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_after_this", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesLoadAfterThis([IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_module);
@@ -519,7 +519,7 @@ public static unsafe partial class Bindings
             return return_value_json.AsException(e, false);
         }
     }
-    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_incompatibles", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_incompatibles", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesIncompatibles([IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_module);

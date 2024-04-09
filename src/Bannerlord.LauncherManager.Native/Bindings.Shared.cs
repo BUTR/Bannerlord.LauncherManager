@@ -8,7 +8,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 public static unsafe partial class Bindings
 {
-    [UnmanagedCallersOnly(EntryPoint = "common_alloc", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "common_alloc", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static void* CommonAlloc(nuint size)
     {
         Logger.LogInput(size);
@@ -26,7 +26,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "common_dealloc", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "common_dealloc", CallConvs = [typeof(CallConvCdecl)])]
     public static void Common_Dealloc([IsConst<IsPtrConst>] param_ptr* ptr)
     {
         Logger.LogInput(ptr);
@@ -42,7 +42,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "common_alloc_alive_count", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "common_alloc_alive_count", CallConvs = [typeof(CallConvCdecl)])]
     public static int CommonAllocAliveCount()
     {
         Logger.LogInput();

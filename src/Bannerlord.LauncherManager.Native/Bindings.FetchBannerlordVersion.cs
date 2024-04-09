@@ -11,7 +11,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 public static unsafe partial class Bindings
 {
-    [UnmanagedCallersOnly(EntryPoint = "bfv_get_change_set", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bfv_get_change_set", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_uint32* GetChangeSet([IsConst<IsPtrConst>] param_string* p_game_folder_path, [IsConst<IsPtrConst>] param_string* p_lib_assembly)
     {
         Logger.LogInput(p_game_folder_path, p_lib_assembly);
@@ -32,7 +32,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bfv_get_version", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bfv_get_version", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_string* GetVersion([IsConst<IsPtrConst>] param_string* p_game_folder_path, [IsConst<IsPtrConst>] param_string* p_lib_assembly)
     {
         Logger.LogInput(p_game_folder_path, p_lib_assembly);
@@ -53,7 +53,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "bfv_get_version_type", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "bfv_get_version_type", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_uint32* GetVersionType([IsConst<IsPtrConst>] param_string* p_game_folder_path, [IsConst<IsPtrConst>] param_string* p_lib_assembly)
     {
         Logger.LogInput(p_game_folder_path, p_lib_assembly);

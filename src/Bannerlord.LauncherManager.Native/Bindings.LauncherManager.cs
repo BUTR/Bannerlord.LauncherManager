@@ -17,7 +17,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 public static unsafe partial class Bindings
 {
-    [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_ptr* CreateHandler(param_ptr* p_owner,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, return_value_void*> p_set_game_parameters,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_load_load_order,
@@ -80,7 +80,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* DisposeHandler(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -102,13 +102,13 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_load_localization", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_load_localization", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* LoadLocalization(param_ptr* p_handle, param_string* p_xml)
     {
         Logger.LogInput();
         try
         {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { })
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var doc = new XmlDocument();
@@ -126,7 +126,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_string* GetGameVersion(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -148,7 +148,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* TestModule(param_ptr* p_handle, param_json* p_files)
     {
         Logger.LogInput(p_files);
@@ -170,7 +170,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos)
     {
         Logger.LogInput(p_files, p_module_infos);
@@ -194,7 +194,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_bool* IsSorting(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -215,7 +215,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_sort", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_sort", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* Sort(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -237,7 +237,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_load_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_load_load_order", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* LoadLoadOrder(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -258,7 +258,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_save_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_save_load_order", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SaveLoadOrder(param_ptr* p_handle, param_json* p_load_order)
     {
         Logger.LogInput(p_load_order);
@@ -280,7 +280,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_refresh_modules", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_refresh_modules", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* RefreshModules(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -302,7 +302,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* RefreshGameParameters(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -324,7 +324,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_modules", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_modules", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* GetModules(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -346,7 +346,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_check_for_root_harmony", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_check_for_root_harmony", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* CheckForRootHarmony(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -368,7 +368,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* ModuleListHandlerExport(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -390,7 +390,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export_save_file", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* ModuleListHandlerExportSaveFile(param_ptr* p_handle, param_string* p_save_file)
     {
         Logger.LogInput(p_save_file);
@@ -414,7 +414,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* ModuleListHandlerImport(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
     {
         Logger.LogInput();
@@ -441,7 +441,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import_save_file", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* ModuleListHandlerImportSaveFile(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
     {
         Logger.LogInput(p_save_file);
@@ -471,7 +471,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_validate_module", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_validate_module", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* SortHelperValidateModule(param_ptr* p_handle, param_json* p_module_view_model)
     {
         Logger.LogInput(p_module_view_model);
@@ -496,7 +496,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_toggle_module_selection", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_toggle_module_selection", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* SortHelperToggleModuleSelection(param_ptr* p_handle, param_json* p_module_view_model)
     {
         Logger.LogInput(p_module_view_model);
@@ -521,7 +521,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_change_module_position", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_change_module_position", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_bool* SortHelperChangeModulePosition(param_ptr* p_handle, param_json* p_module_view_model, param_int insertIndex)
     {
         Logger.LogInput(p_module_view_model, &insertIndex);
@@ -549,8 +549,8 @@ public static unsafe partial class Bindings
         }
     }
 
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_save_files", CallConvs = new[] { typeof(CallConvCdecl) })]
+    
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_save_files", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* GetSaveFiles(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -571,7 +571,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_save_metadata", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_save_metadata", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* GetSaveMetadata(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len)
     {
         Logger.LogInput(p_save_file, p_data, &data_len);
@@ -596,7 +596,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_save_file_path", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_save_file_path", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_string* GetSaveFilePath(param_ptr* p_handle, param_string* p_save_file)
     {
         Logger.LogInput(p_save_file);
@@ -622,7 +622,7 @@ public static unsafe partial class Bindings
 
     public record OrderByLoadOrderResult(bool Result, IReadOnlyList<string>? Issues, IReadOnlyList<ModuleViewModel>? OrderedModuleViewModels);
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_order_by_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_order_by_load_order", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* OrderByLoadOrder(param_ptr* p_handle, param_json* p_load_order)
     {
         Logger.LogInput(p_load_order);
@@ -635,7 +635,12 @@ public static unsafe partial class Bindings
 
             var loadOrderDict = loadOrder.ToDictionary(x => x.Key, x => x.Value.IsSelected);
             var res = handler.TryOrderByLoadOrder(loadOrder.OrderBy(x => x.Value.Index).Select(x => x.Key), x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected, out var issues, out var orderedModuleViewModels);
-            var result = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels.Cast<ModuleViewModel>().ToArray());
+            var result = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels.Select(x => new ModuleViewModel(x.ModuleInfoExtended, x.IsValid)
+            {
+                IsSelected = x.IsSelected,
+                IsDisabled = x.IsDisabled,
+                Index = x.Index,
+            }).ToArray());
 
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.OrderByLoadOrderResult, false);
@@ -648,7 +653,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_executable", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_executable", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SetGameParameterExecutable(param_ptr* p_handle, param_string* p_executable)
     {
         Logger.LogInput(p_executable);
@@ -671,7 +676,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_load_order", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_load_order", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SetGameParameterLoadOrder(param_ptr* p_handle, param_json* p_load_order)
     {
         Logger.LogInput(p_load_order);
@@ -694,7 +699,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SetGameParameterSaveFile(param_ptr* p_handle, param_string* p_save_file)
     {
         Logger.LogInput(p_save_file);
@@ -717,7 +722,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_continue_last_save_file", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_continue_last_save_file", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SetGameParameterContinueLastSaveFile(param_ptr* p_handle, param_bool p_value)
     {
         Logger.LogInput(p_value);
@@ -739,7 +744,7 @@ public static unsafe partial class Bindings
     }
     
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SetGameStore(param_ptr* p_handle, param_string* p_game_store)
     {
         Logger.LogInput(p_game_store);
@@ -763,7 +768,7 @@ public static unsafe partial class Bindings
         }
     }
     
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_game_platform", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_game_platform", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_string* GetGamePlatform(param_ptr* p_handle)
     {
         Logger.LogInput();
@@ -783,7 +788,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_localize_string", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_localize_string", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_string* LocalizeString(param_ptr* p_handle, param_string* p_template, param_json* p_values)
     {
         Logger.LogInput(p_template, p_values);
@@ -808,7 +813,7 @@ public static unsafe partial class Bindings
     }
 
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* DialogTestWarning(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput();
@@ -837,7 +842,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_file_open", CallConvs = new[] { typeof(CallConvCdecl) })]
+    [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_file_open", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* DialogTestFileOpen(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput();

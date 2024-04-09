@@ -11,7 +11,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 public static unsafe partial class Bindings
 {
-    [UnmanagedCallersOnly(EntryPoint = "utils_is_load_order_correct", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "utils_is_load_order_correct", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* IsLoadOrderCorrect([IsConst<IsPtrConst>] param_json* p_modules)
     {
         Logger.LogInput(p_modules);
@@ -31,7 +31,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "utils_get_dependency_hint", CallConvs = new[] { typeof(CallConvCdecl) }), IsNotConst<IsPtrConst>]
+    [UnmanagedCallersOnly(EntryPoint = "utils_get_dependency_hint", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_string* GetDependencyHint([IsConst<IsPtrConst>] param_json* p_module)
     {
         Logger.LogInput(p_module);

@@ -28,7 +28,7 @@ internal sealed unsafe class DialogProvider : IDialogProvider
         
     private void SendDialogNative(ReadOnlySpan<char> type, ReadOnlySpan<char> title, ReadOnlySpan<char> message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
     {
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
         static void Callback(param_ptr* p_ptr, param_string* p_result)
         {
             Logger.LogInput($"{nameof(SendDialogNative)}_{nameof(Callback)}");
