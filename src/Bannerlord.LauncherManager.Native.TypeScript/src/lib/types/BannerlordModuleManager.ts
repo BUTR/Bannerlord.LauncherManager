@@ -59,9 +59,9 @@ export interface DependentModuleMetadata {
     versionRange: ApplicationVersionRange;
 }
 export enum LoadType {
-    None,
-    LoadAfterThis,
-    LoadBeforeThis
+    None = 'None',
+    LoadAfterThis = 'LoadAfterThis',
+    LoadBeforeThis = 'LoadBeforeThis',
 }
 export interface ApplicationVersionRange {
     min: ApplicationVersion;
@@ -79,12 +79,12 @@ export interface ModuleIssue {
     sourceVersion: ApplicationVersionRange;
 }
 export enum ModuleIssueType {
-    MissingDependencies,
-    DependencyMissingDependencies,
-    DependencyValidationError,
-    VersionMismatch,
-    Incompatible,
-    DependencyConflict
+    MissingDependencies = 'MissingDependencies',
+    DependencyMissingDependencies = 'DependencyMissingDependencies',
+    DependencyValidationError = 'DependencyValidationError',
+    VersionMismatch = 'VersionMismatch',
+    Incompatible = 'Incompatible',
+    DependencyConflict = 'DependencyConflict',
 }
 
 export interface IValidationManager {
