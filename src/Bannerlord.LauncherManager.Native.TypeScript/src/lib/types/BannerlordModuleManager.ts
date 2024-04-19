@@ -15,8 +15,9 @@ export interface ModuleInfoExtended {
 export interface ModuleInfoExtendedWithPath extends ModuleInfoExtended {
     path: string;
 }
-export interface ModuleInfoExtendedWithMetadata extends ModuleInfoExtendedWithPath {
+export interface ModuleInfoExtendedWithMetadata extends ModuleInfoExtended {
     moduleProviderType: ModuleProviderType;
+    path: string;
 }
 export enum ModuleProviderType {
     Default = 'Default',
@@ -114,6 +115,7 @@ export interface IBannerlordModuleManager {
 
     getModuleInfo(xml: string): ModuleInfoExtended | undefined;
     getModuleInfoWithPath(xml: string, path: string): ModuleInfoExtendedWithPath | undefined;
+    getModuleInfoWithMetadata(xml: string, path: string): ModuleInfoExtendedWithMetadata | undefined;
     getSubModuleInfo(xml: string): SubModuleInfoExtended | undefined;
 
     parseApplicationVersion(content: string): ApplicationVersion;

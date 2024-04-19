@@ -1,4 +1,4 @@
-import { ModuleInfoExtended, ModuleInfoExtendedWithPath } from "./BannerlordModuleManager";
+import { ModuleInfoExtended, ModuleInfoExtendedWithMetadata } from "./BannerlordModuleManager";
 
 export interface INativeExtension {
   LauncherManager: new (
@@ -33,7 +33,7 @@ export interface LoadOrder {
 }
 
 export interface ModuleViewModel {
-  moduleInfoExtended: ModuleInfoExtendedWithPath;
+  moduleInfoExtended: ModuleInfoExtendedWithMetadata;
   isValid: boolean;
   isSelected: boolean;
   isDisabled: boolean;
@@ -95,11 +95,11 @@ export type LauncherManager = {
   checkForRootHarmony(): void;
   getGamePlatform(): GamePlatform;
   getGameVersion(): string;
-  getModules(): ModuleInfoExtendedWithPath[];
+  getModules(): ModuleInfoExtendedWithMetadata[];
   getSaveFilePath(saveFile: string): string;
   getSaveFiles(): SaveMetadata[];
   getSaveMetadata(saveFile: string, data: ArrayBuffer): SaveMetadata;
-  installModule(files: string[], moduleInfos: ModuleInfoExtendedWithPath[]): InstallResult;
+  installModule(files: string[], moduleInfos: ModuleInfoExtendedWithMetadata[]): InstallResult;
   isSorting(): boolean;
   loadLocalization(xml: string): void;
   localizeString(template: string, values: { [value: string]: string }): string;

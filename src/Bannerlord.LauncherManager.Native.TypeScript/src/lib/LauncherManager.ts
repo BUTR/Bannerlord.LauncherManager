@@ -1,5 +1,4 @@
 import * as types from './types';
-import { GamePlatform, GameStore, ModuleInfoExtendedWithPath } from './types';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 type LauncherManagerWithoutConstructor = Omit<types.LauncherManager, "constructor">;
@@ -45,13 +44,13 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public checkForRootHarmony = (): void => {
     return this.manager.checkForRootHarmony();
   }
-  public getGamePlatform = (): GamePlatform => {
+  public getGamePlatform = (): types.GamePlatform => {
     return this.manager.getGamePlatform();
   }
   public getGameVersion = (): string => {
     return this.manager.getGameVersion();
   }
-  public getModules = (): types.ModuleInfoExtendedWithPath[] => {
+  public getModules = (): types.ModuleInfoExtendedWithMetadata[] => {
     return this.manager.getModules();
   }
   public getSaveFilePath = (saveFile: string): string => {
@@ -63,7 +62,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public getSaveMetadata = (saveFile: string, data: ArrayBuffer): types.SaveMetadata => {
     return this.manager.getSaveMetadata(saveFile, data);
   }
-  public installModule = (files: string[], moduleInfos: ModuleInfoExtendedWithPath[]): types.InstallResult => {
+  public installModule = (files: string[], moduleInfos: types.ModuleInfoExtendedWithMetadata[]): types.InstallResult => {
     return this.manager.installModule(files, moduleInfos);
   }
   public isSorting = (): boolean => {
@@ -105,7 +104,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public setGameParameterContinueLastSaveFile(value: boolean): void {
     return this.manager.setGameParameterContinueLastSaveFile(value);
   }
-  public setGameStore(gameStore: GameStore): void {
+  public setGameStore(gameStore: types.GameStore): void {
     return this.manager.setGameStore(gameStore);
   }
   public sort = (): void => {

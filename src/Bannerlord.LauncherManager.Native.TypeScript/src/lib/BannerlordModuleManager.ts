@@ -65,6 +65,10 @@ export class BannerlordModuleManager {
         BannerlordModuleManager.initialize();
         return BannerlordModuleManager.addon.getModuleInfoWithPath(xml, path);
     }
+    public static getModuleInfoWithMetadata(xml: string, path: string): types.ModuleInfoExtendedWithMetadata | undefined {
+        BannerlordModuleManager.initialize();
+        return BannerlordModuleManager.addon.getModuleInfoWithMetadata(xml, path);
+    }
 
     public static getSubModuleInfo(xml: string): types.SubModuleInfoExtended | undefined {
         BannerlordModuleManager.initialize();
