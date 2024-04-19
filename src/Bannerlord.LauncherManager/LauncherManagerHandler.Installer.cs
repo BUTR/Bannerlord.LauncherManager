@@ -40,7 +40,7 @@ partial class LauncherManagerHandler
     ///     copied by a fallback mechanism. Vortex or Vanilla will just copy the
     ///     content as is  to the game's root folder<br/>
     /// </summary>
-    public InstallResult InstallModuleContent(string[] files, ModuleInfoExtendedWithPath[] moduleInfos)
+    public InstallResult InstallModuleContent(string[] files, ModuleInfoExtendedWithMetadata[] moduleInfos)
     {
         var installPath = GetInstallPath();
         var platform = GetPlatform(installPath, _store ??= GetStore(installPath));

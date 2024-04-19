@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.Models;
+﻿using Bannerlord.LauncherManager.Models;
 
 namespace Bannerlord.LauncherManager.External;
 
@@ -9,7 +9,7 @@ public interface ILoadOrderPersistenceProvider
     /// </summary>
     /// <returns></returns>
     LoadOrder LoadLoadOrder();
-    
+
     /// <summary>
     /// Saves the LoadOrder to a persistent storage
     /// </summary>

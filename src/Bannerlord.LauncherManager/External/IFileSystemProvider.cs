@@ -1,4 +1,4 @@
-namespace Bannerlord.LauncherManager.External;
+﻿namespace Bannerlord.LauncherManager.External;
 
 public interface IFileSystemProvider
 {

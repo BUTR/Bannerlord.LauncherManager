@@ -58,7 +58,7 @@ public class ModuleListHandler
             onResult
         );
     }
-    private void ReadImportList(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
+    private void ReadImportList(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
     {
         static IEnumerable<string> ReadAllLines(TextReader reader)
         {
@@ -88,13 +88,13 @@ public class ModuleListHandler
             }
         }
 
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
 
         var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (idDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+            onResult([]);
             return;
         }
 
@@ -115,7 +115,7 @@ public class ModuleListHandler
             }
 
 
-            ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
@@ -123,7 +123,7 @@ public class ModuleListHandler
                 {
                     if (!result)
                     {
-                        onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                        onResult([]);
                         return;
                     }
 
@@ -143,7 +143,7 @@ public class ModuleListHandler
             {
                 if (!result)
                 {
-                    onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                    onResult([]);
                     return;
                 }
 
@@ -154,22 +154,22 @@ public class ModuleListHandler
 
         ImportListInternal();
     }
-    private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
+    private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
 
         var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (nameDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+            onResult([]);
             return;
         }
 
         if (_launcherManager.GetSaveMetadata(string.Empty, data) is not { } metadata)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to read the save file!")}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+            onResult([]);
             return;
         }
 
@@ -195,7 +195,7 @@ public class ModuleListHandler
             }
 
 
-            ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
@@ -203,7 +203,7 @@ public class ModuleListHandler
                 {
                     if (!result)
                     {
-                        onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                        onResult([]);
                         return;
                     }
 
@@ -223,7 +223,7 @@ public class ModuleListHandler
             {
                 if (!result)
                 {
-                    onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                    onResult([]);
                     return;
                 }
 
@@ -234,15 +234,15 @@ public class ModuleListHandler
 
         ImportSaveInternal();
     }
-    private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithPath[]> onResult)
+    private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
 
         var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (idDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
-            onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+            onResult([]);
             return;
         }
 
@@ -279,7 +279,7 @@ public class ModuleListHandler
                     mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
             }
 
-            ModuleInfoExtendedWithPath[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).OfType<IModuleViewModel>().Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).OfType<IModuleViewModel>().Select(x => x.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
@@ -287,7 +287,7 @@ public class ModuleListHandler
                 {
                     if (!result)
                     {
-                        onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                        onResult([]);
                         return;
                     }
 
@@ -307,7 +307,7 @@ public class ModuleListHandler
             {
                 if (!result)
                 {
-                    onResult(Array.Empty<ModuleInfoExtendedWithPath>());
+                    onResult([]);
                     return;
                 }
 
@@ -401,7 +401,7 @@ public class ModuleListHandler
             onResult(false);
         }
     }
-    private void ImportInternal(ModuleInfoExtendedWithPath[] modules)
+    private void ImportInternal(ModuleInfoExtendedWithMetadata[] modules)
     {
         if (modules.Length == 0)
             return;
@@ -424,19 +424,19 @@ public class ModuleListHandler
 
     private ModuleListEntry[] ReadSaveFileModuleList(byte[] data)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
 
         var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (nameDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
-            return Array.Empty<ModuleListEntry>();
+            return [];
         }
 
         if (_launcherManager.GetSaveMetadata(string.Empty, data) is not { } metadata)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to read the save file!")}");
-            return Array.Empty<ModuleListEntry>();
+            return [];
         }
 
         var changeset = metadata.GetChangeSet();
@@ -454,7 +454,7 @@ public class ModuleListHandler
         if (missingModuleNames.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", missingModuleNames))}");
-            return Array.Empty<ModuleListEntry>();
+            return [];
         }
 
         return importedModules
@@ -540,7 +540,7 @@ public class ModuleListHandler
 
                 try
                 {
-                    var moduleViewModels = _launcherManager.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+                    var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
 
                     var modules = moduleViewModels
                         .Where(x => x.IsSelected)

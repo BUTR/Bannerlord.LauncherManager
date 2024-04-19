@@ -173,11 +173,12 @@ public sealed partial class LauncherManagerTests : BaseTests
                 "Modules\\Bannerlord.Harmony\\bin\\Win64_Shipping_Client\\Bannerlord.Harmony.dll",
                 "Modules\\Bannerlord.Harmony\\bin\\Win64_Shipping_Client\\Bannerlord.Harmony.pdb",
             });
-            using var modules = ToJson(new ModuleInfoExtendedWithPath[]
+            using var modules = ToJson(new ModuleInfoExtendedWithMetadata[]
             {
                 new()
                 {
                     Id = "Bannerlord.Harmony",
+                    ModuleProviderType = ModuleProviderType.Default,
                     Path = "Modules\\Bannerlord.Harmony\\SubModule.xml"
                 }
             });
@@ -203,7 +204,7 @@ public sealed partial class LauncherManagerTests : BaseTests
             var result = GetResult<InstallResult>(ve_install_module((param_ptr*) launcherManagerPtr, (param_json*) files, (param_json*) modules));
 
             var res1 = GetResult<SaveMetadata[]>(ve_get_save_files((param_ptr*) launcherManagerPtr));
-                
+
             ;
         });
 

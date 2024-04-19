@@ -47,12 +47,12 @@ public static partial class Bindings
             new JsonStringEnumConverter<GameStore>(),
             new JsonStringEnumConverter<InstallInstructionType>(),
             new JsonStringEnumConverter<NotificationType>(),
-            
+
             new JsonStringEnumConverter<ApplicationVersionType>(),
             new JsonStringEnumConverter<ModuleIssueType>(),
             new JsonStringEnumConverter<LoadType>(),
         }
     };
-    
+
     internal static readonly SourceGenerationContext CustomSourceGenerationContext = new(_options);
 }

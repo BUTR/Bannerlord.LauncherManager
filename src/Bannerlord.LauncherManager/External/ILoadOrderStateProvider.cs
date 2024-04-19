@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.Models;
+﻿using Bannerlord.LauncherManager.Models;
 
 using System.Collections.Generic;
 
@@ -11,13 +11,13 @@ public interface ILoadOrderStateProvider
     /// </summary>
     /// <returns></returns>
     IModuleViewModel[]? GetAllModuleViewModels();
-    
+
     /// <summary>
     /// Returns the displayed ViewModels
     /// </summary>
     /// <returns></returns>
     IModuleViewModel[]? GetModuleViewModels();
-    
+
     /// <summary>
     /// Sets the displayed ViewModels
     /// </summary>

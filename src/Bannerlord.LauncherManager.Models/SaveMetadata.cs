@@ -31,7 +31,7 @@ public class SaveMetadata : Dictionary<string, string>
     }
 
     public string[] GetModules() =>
-        TryGetValue("Modules", out var text) ? text.Split(';') : Array.Empty<string>();
+        TryGetValue("Modules", out var text) ? text.Split(';') : [];
 
     public ApplicationVersion GetModuleVersion(string moduleName) =>
         TryGetValue($"Module_{moduleName}", out var versionRaw) ? ApplicationVersion.TryParse(versionRaw, out var versionVar) ? versionVar : ApplicationVersion.Empty : ApplicationVersion.Empty;

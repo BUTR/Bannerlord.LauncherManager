@@ -69,7 +69,7 @@ public static unsafe partial class Bindings
                     Marshal.GetDelegateForFunctionPointer<N_SetModuleViewModels>(new IntPtr(p_set_module_view_models))
                 )
             );
-            
+
             Logger.LogOutput();
             return return_value_ptr.AsValue(launcherManager.HandlePtr, false);
         }
@@ -180,7 +180,7 @@ public static unsafe partial class Bindings
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
-            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithPathArray);
+            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray);
 
             var result = handler.InstallModuleContent(files, moduleInfos);
             Logger.LogOutput(result);
@@ -336,7 +336,7 @@ public static unsafe partial class Bindings
             var result = handler.GetModules().ToArray();
 
             Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithPathArray, false);
+            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray, false);
         }
         catch (Exception e)
         {
@@ -507,7 +507,7 @@ public static unsafe partial class Bindings
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = handler.GetModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+            var modules = handler.GetModuleViewModels() ?? [];
             var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
             SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
 
@@ -549,7 +549,7 @@ public static unsafe partial class Bindings
         }
     }
 
-    
+
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_files", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_json* GetSaveFiles(param_ptr* p_handle)
     {
@@ -742,7 +742,7 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    
+
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* SetGameStore(param_ptr* p_handle, param_string* p_game_store)
@@ -767,7 +767,7 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    
+
     [UnmanagedCallersOnly(EntryPoint = "ve_get_game_platform", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_string* GetGamePlatform(param_ptr* p_handle)
     {

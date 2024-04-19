@@ -12,7 +12,7 @@ internal partial class BUTRLanguageData
 {
     public string StringId { get; }
     public string Title { get; private set; } = string.Empty;
-    public string[] SupportedIsoCodes { get; private set; } = Array.Empty<string>();
+    public string[] SupportedIsoCodes { get; private set; } = [];
     public bool IsUnderDevelopment { get; private set; } = true;
     public bool IsValid { get; private set; }
 

@@ -126,7 +126,7 @@ partial class LauncherManagerHandler
     protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
     {
         ThrowIfNotInitialized();
-        
+
         LoadOrderStateProvider.SetModuleViewModels(orderedModules);
     }
 

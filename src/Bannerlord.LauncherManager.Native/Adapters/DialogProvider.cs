@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.External.UI;
+﻿using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
 
 using BUTR.NativeAOT.Shared;
@@ -25,7 +25,7 @@ internal sealed unsafe class DialogProvider : IDialogProvider
     {
         SendDialogNative(type.ToStringFast().ToLowerInvariant(), title, message, filters, onResult);
     }
-        
+
     private void SendDialogNative(ReadOnlySpan<char> type, ReadOnlySpan<char> title, ReadOnlySpan<char> message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
     {
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

@@ -14,7 +14,7 @@ internal sealed unsafe class GameInfoProvider : IGameInfoProvider
         _pOwner = pOwner;
         _getInstallPath = getInstallPath;
     }
-        
+
     public string GetInstallPath() => GetInstallPathNative();
 
     private string GetInstallPathNative()

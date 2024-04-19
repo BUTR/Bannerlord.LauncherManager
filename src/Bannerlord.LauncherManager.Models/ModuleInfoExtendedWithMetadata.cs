@@ -4,15 +4,17 @@ using System.Collections.Generic;
 
 namespace Bannerlord.LauncherManager.Models;
 
-public record ModuleInfoExtendedWithPath : ModuleInfoExtended
+public record ModuleInfoExtendedWithMetadata : ModuleInfoExtended
 {
+    public ModuleProviderType ModuleProviderType { get; set; }
     public string Path { get; set; } = string.Empty;
 
-    public ModuleInfoExtendedWithPath() { }
-    public ModuleInfoExtendedWithPath(string path, string id, string name, bool isOfficial, ApplicationVersion version, bool isSingleplayerModule, bool isMultiplayerModule,
+    public ModuleInfoExtendedWithMetadata() { }
+    public ModuleInfoExtendedWithMetadata(ModuleProviderType moduleProviderType, string path, string id, string name, bool isOfficial, ApplicationVersion version, bool isSingleplayerModule, bool isMultiplayerModule,
         IReadOnlyList<SubModuleInfoExtended> subModules, IReadOnlyList<DependentModule> dependentModules, IReadOnlyList<DependentModule> modulesToLoadAfterThis,
         IReadOnlyList<DependentModule> incompatibleModules, IReadOnlyList<DependentModuleMetadata> dependentModuleMetadatas, string url)
     {
+        ModuleProviderType = moduleProviderType;
         Path = path;
         Id = id;
         Name = name;
@@ -27,8 +29,9 @@ public record ModuleInfoExtendedWithPath : ModuleInfoExtended
         DependentModuleMetadatas = dependentModuleMetadatas;
         Url = url;
     }
-    public ModuleInfoExtendedWithPath(ModuleInfoExtended module, string path) : base(module)
+    public ModuleInfoExtendedWithMetadata(ModuleInfoExtended module, ModuleProviderType moduleProviderType, string path) : base(module)
     {
+        ModuleProviderType = moduleProviderType;
         Path = path;
     }
 }

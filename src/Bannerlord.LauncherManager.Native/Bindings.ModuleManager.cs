@@ -385,7 +385,28 @@ public static unsafe partial class Bindings
             doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var module = ModuleInfoExtended.FromXml(doc);
-            var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
+            var result = new ModuleInfoExtendedWithMetadata(module, ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
+
+            Logger.LogOutput(result);
+            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_json.AsException(e, false);
+        }
+    }
+    [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info_with_metadata", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
+    public static return_value_json* GetModuleInfoWithMetadata([IsConst<IsPtrConst>] param_string* p_xml_content, [IsConst<IsPtrConst>] param_string* p_module_provider, [IsConst<IsPtrConst>] param_string* p_path)
+    {
+        Logger.LogInput(p_xml_content, p_path);
+        try
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
+
+            var module = ModuleInfoExtended.FromXml(doc);
+            var result = new ModuleInfoExtendedWithMetadata(module, Enum.TryParse<ModuleProviderType>(new string(param_string.ToSpan(p_path)), out var e) ? e : ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
 
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);

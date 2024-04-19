@@ -2,7 +2,7 @@
 
 public interface IModuleViewModel
 {
-    ModuleInfoExtendedWithPath ModuleInfoExtended { get; }
+    ModuleInfoExtendedWithMetadata ModuleInfoExtended { get; }
     bool IsValid { get; }
     bool IsSelected { get; set; }
     bool IsDisabled { get; set; }

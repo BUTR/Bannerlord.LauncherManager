@@ -15,6 +15,13 @@ export interface ModuleInfoExtended {
 export interface ModuleInfoExtendedWithPath extends ModuleInfoExtended {
     path: string;
 }
+export interface ModuleInfoExtendedWithMetadata extends ModuleInfoExtendedWithPath {
+    moduleProviderType: ModuleProviderType;
+}
+export enum ModuleProviderType {
+    Default = 'Default',
+    Steam = 'Steam',
+}
 export interface ApplicationVersion {
     applicationVersionType: ApplicationVersionType;
     major: number;
@@ -28,7 +35,7 @@ export enum ApplicationVersionType {
     EarlyAccess = 'EarlyAccess',
     Release = 'Release',
     Development = 'Development',
-    Invalid = 'Invalid'
+    Invalid = 'Invalid',
 }
 export interface SubModuleInfoExtended {
     name: string;

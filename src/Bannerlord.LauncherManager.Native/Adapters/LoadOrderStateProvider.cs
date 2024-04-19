@@ -28,12 +28,12 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
         _getModuleViewModels = getModuleViewModels;
         _setModuleViewModels = setModuleViewModels;
     }
-        
+
     public IModuleViewModel[]? GetAllModuleViewModels() => GetAllModuleViewModelsNative();
     public IModuleViewModel[]? GetModuleViewModels() => GetModuleViewModelsNative();
     public void SetModuleViewModels(IReadOnlyList<IModuleViewModel> moduleViewModels) => SetModuleViewModelsNative(moduleViewModels);
 
-        
+
     private IModuleViewModel[]? GetAllModuleViewModelsNative()
     {
         Logger.LogInput();

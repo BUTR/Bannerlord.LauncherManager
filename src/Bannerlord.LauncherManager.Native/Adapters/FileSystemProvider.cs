@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.External;
+﻿using Bannerlord.LauncherManager.External;
 
 using BUTR.NativeAOT.Shared;
 
@@ -13,7 +13,7 @@ internal sealed unsafe class FileSystemProvider : IFileSystemProvider
     private readonly N_WriteFileContentDelegate _writeFileContent;
     private readonly N_ReadDirectoryFileList _readDirectoryFileList;
     private readonly N_ReadDirectoryList _readDirectoryList;
-        
+
     public FileSystemProvider(
         param_ptr* pOwner,
         N_ReadFileContentDelegate readFileContent,

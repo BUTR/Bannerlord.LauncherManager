@@ -64,13 +64,13 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public new void SetGameParameterLoadOrder(LoadOrder loadOrder) => base.SetGameParameterLoadOrder(loadOrder);
 
 
-    public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
+    public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
 
     public new IModuleViewModel[]? GetModuleViewModels() => base.GetModuleViewModels();
 
     public new void ShowHint(BUTRTextObject message) => base.ShowHint(message);
     public new void ShowHint(string message) => base.ShowHint(message);
-    
+
     public new void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult) => base.SendDialog(type, title, message, filters, onResult);
 
     public override SaveMetadata? GetSaveMetadata(string fileName, ReadOnlySpan<byte> data)
@@ -95,7 +95,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     {
         IEnumerable<SaveMetadata> GetSaveFilesInternal()
         {
-            foreach (var filePath in ReadDirectoryFileList(SavePath) ?? Array.Empty<string>())
+            foreach (var filePath in ReadDirectoryFileList(SavePath) ?? [])
             {
                 if (ReadFileContent(filePath, 0, 4) is not { } lengthData) continue;
                 var length = BitConverter.ToInt32(lengthData, 0);

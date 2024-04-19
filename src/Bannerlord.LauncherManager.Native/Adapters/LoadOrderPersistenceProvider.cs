@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.External;
+﻿using Bannerlord.LauncherManager.External;
 using Bannerlord.LauncherManager.Models;
 
 using BUTR.NativeAOT.Shared;

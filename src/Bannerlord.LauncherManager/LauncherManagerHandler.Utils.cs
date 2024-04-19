@@ -48,7 +48,7 @@ partial class LauncherManagerHandler
         var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
         var win64Executable = System.IO.Path.Combine(Constants.BinFolder, Constants.Win64Configuration, _currentExecutable);
         var xboxExecutable = System.IO.Path.Combine(Constants.BinFolder, Constants.XboxConfiguration, _currentExecutable);
-        var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? Array.Empty<string>();
+        var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? [];
         var hasWin64 = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase));
         var hasXbox = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase));
         var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.Win64Configuration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
@@ -93,7 +93,7 @@ partial class LauncherManagerHandler
         _continueLastSaveFile = value;
         RefreshGameParameters();
     }
-    
+
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -108,7 +108,7 @@ partial class LauncherManagerHandler
     /// </summary>
     public GameStore GetStore(string installPath)
     {
-        var nativeFiles = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? Array.Empty<string>();
+        var nativeFiles = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? [];
         if (nativeFiles.Any(x => x.EndsWith("gdk.target")))
             return GameStore.Xbox;
         if (nativeFiles.Any(x => x.EndsWith("epic.target")))
@@ -139,11 +139,11 @@ partial class LauncherManagerHandler
         GamePlatform GetForUnknownStore()
         {
             var internalStore = GetStore(installPath);
-            
-            var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? Array.Empty<string>();
+
+            var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? [];
             var hasWin64 = binDirectories.Any(x => x.Contains(Constants.Win64Configuration));
             var hasXbox = binDirectories.Any(x => x.Contains(Constants.XboxConfiguration));
-            
+
             return (hasXbox, hasWin64) switch
             {
                 (true, false) when internalStore == GameStore.Xbox => GamePlatform.Xbox,

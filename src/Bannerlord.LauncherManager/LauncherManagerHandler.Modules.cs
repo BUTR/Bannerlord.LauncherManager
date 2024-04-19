@@ -15,7 +15,7 @@ partial class LauncherManagerHandler
     protected static IEnumerable<ModuleInfoExtended> GetLauncherFeatures() =>
         FeatureIds.LauncherFeatures.Select(x => new ModuleInfoExtended { Id = x, IsSingleplayerModule = true });
 
-    private List<ModuleInfoExtendedWithPath>? _modules;
+    private List<ModuleInfoExtendedWithMetadata>? _modules;
 
     /// <summary>
     /// Internal<br/>
@@ -28,30 +28,34 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => _modules ??= ReloadModules().ToList();
+    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => _modules ??= ReloadModules().ToList();
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected virtual IEnumerable<ModuleInfoExtendedWithPath> ReloadModules()
+    protected virtual IEnumerable<ModuleInfoExtendedWithMetadata> ReloadModules()
     {
-        foreach (var modulePath in GetModulePaths())
+        foreach (var modulePathProvider in _providers)
         {
-            var subModulePath = Path.Combine(modulePath, Constants.SubModuleName);
-            if (ReadFileContent(subModulePath, 0, -1) is { } data)
+            foreach (var modulePath in modulePathProvider.GetModulePaths())
             {
-                ModuleInfoExtended? moduleInfoExtended;
-                try
+                var subModulePath = Path.Combine(modulePath, Constants.SubModuleName);
+                if (ReadFileContent(subModulePath, 0, -1) is { } data)
                 {
-                    moduleInfoExtended = ModuleInfoExtended.FromXml(ReaderUtils.Read(data));
+                    ModuleInfoExtended? moduleInfoExtended;
+                    try
+                    {
+                        moduleInfoExtended = ModuleInfoExtended.FromXml(ReaderUtils.Read(data));
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception($"modulePath: {modulePath}, content: {Convert.ToBase64String(data)}", e);
+                    }
+                    yield return new ModuleInfoExtendedWithMetadata(moduleInfoExtended, modulePathProvider.ModuleProviderType, subModulePath);
                 }
-                catch (Exception e)
-                {
-                    throw new Exception($"modulePath: {modulePath}, content: {Convert.ToBase64String(data)}", e);
-                }
-                yield return new ModuleInfoExtendedWithPath(moduleInfoExtended, subModulePath);
             }
         }
+
     }
 
     /// <summary>

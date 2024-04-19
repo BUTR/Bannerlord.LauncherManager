@@ -273,6 +273,20 @@ namespace Bannerlord::ModuleManager
         const auto result = bmm_get_module_info_with_path(sourceCopy.get(), pathCopy.get());
         return ThrowOrReturnJson(env, result);
     }
+    Value GetModuleInfoWithMetadata(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto source = info[0].As<String>();
+        const auto moduleProvider = info[1].As<String>();
+        const auto path = info[2].As<String>();
+
+        const auto sourceCopy = CopyWithFree(source.Utf16Value());
+        const auto moduleProviderCopy = CopyWithFree(moduleProvider.Utf16Value());
+        const auto pathCopy = CopyWithFree(path.Utf16Value());
+
+        const auto result = bmm_get_module_info_with_metadata(sourceCopy.get(), moduleProviderCopy.get(), pathCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
     Value GetSubModuleInfo(const CallbackInfo &info)
     {
         const auto env = info.Env();
@@ -366,6 +380,7 @@ namespace Bannerlord::ModuleManager
 
         exports.Set("getModuleInfo", Function::New(env, GetModuleInfo));
         exports.Set("getModuleInfoWithPath", Function::New(env, GetModuleInfoWithPath));
+        exports.Set("getModuleInfoWithMetadata", Function::New(env, GetModuleInfoWithMetadata));
         exports.Set("getSubModuleInfo", Function::New(env, GetSubModuleInfo));
 
         exports.Set("parseApplicationVersion", Function::New(env, ParseApplicationVersion));

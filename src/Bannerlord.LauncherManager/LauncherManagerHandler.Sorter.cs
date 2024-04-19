@@ -30,9 +30,9 @@ partial class LauncherManagerHandler
 
             return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
         }
-        
+
         IsSorting = true;
-        var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended).ToArray() ?? Array.Empty<ModuleInfoExtendedWithPath>();
+        var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended).ToArray() ?? [];
         var sorted = Sort(modules);
         var sortedViewModels = GetViewModelsFromModules(sorted);
         SetModuleViewModels(sortedViewModels);

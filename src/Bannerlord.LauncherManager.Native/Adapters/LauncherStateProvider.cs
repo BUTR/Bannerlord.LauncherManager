@@ -26,7 +26,7 @@ internal sealed unsafe class LauncherStateProvider : ILauncherStateProvider
         _getOptions = getOptions;
         _getState = getState;
     }
-        
+
     public void SetGameParameters(string executable, IReadOnlyList<string> gameParameters) => SetGameParametersNative(executable, gameParameters);
     public LauncherOptions GetOptions() => GetOptionsNative();
     public LauncherState GetState() => GetStateNative();

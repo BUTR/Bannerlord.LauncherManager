@@ -24,14 +24,14 @@ public class LauncherManagerHandlerExposer : LauncherManagerHandler
         ILoadOrderStateProvider loadOrderStateProvider) :
         base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider) { }
     
-    public new IReadOnlyList<ModuleInfoExtendedWithPath> GetModules() => base.GetModules();
+    public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
 }
 
 public class HandlerTests
 {
     private record ModuleViewModel : IModuleViewModel
     {
-        public required ModuleInfoExtendedWithPath ModuleInfoExtended { get; init; }
+        public required ModuleInfoExtendedWithMetadata ModuleInfoExtended { get; init; }
         public required bool IsValid { get; init; }
         public required bool IsSelected { get; set; }
         public required bool IsDisabled { get; set; }
@@ -271,7 +271,7 @@ public class HandlerTests
         );
         
         handler.SetGameStore(GameStore.Steam);
-        var installResult = handler.InstallModuleContent(files, new ModuleInfoExtendedWithPath[] { new(moduleInfo, subModuleFile) });
+        var installResult = handler.InstallModuleContent(files, [new(moduleInfo, ModuleProviderType.Default, subModuleFile)]);
         Assert.That(installResult, Is.Not.Null);
         Assert.That(installResult.Instructions, Is.Not.Null);
         Assert.That(installResult.Instructions.Count, Is.EqualTo(3));

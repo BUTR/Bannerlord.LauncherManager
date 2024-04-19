@@ -36,9 +36,9 @@ partial class LauncherManagerHandler
     {
         var state = GetState();
 
-        var semiOrderedModules = new List<ModuleInfoExtendedWithPath>();
+        var originalOrderedModules = new List<ModuleInfoExtendedWithMetadata>();
 
-        var moduleViewModels = GetAllModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = GetAllModuleViewModels() ?? [];
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
         // Load the load order modules
@@ -46,24 +46,24 @@ partial class LauncherManagerHandler
         {
             if (!ExtendedModuleInfoCache.TryGetValue(id, out var moduleInfoExtended)) continue;
             if (!IsVisible(state.IsSingleplayer, moduleInfoExtended)) continue;
-            if (moduleInfoExtended is not ModuleInfoExtendedWithPath moduleInfoExtendedWithPath) continue;
+            if (moduleInfoExtended is not ModuleInfoExtendedWithMetadata moduleInfoExtendedWithPath) continue;
 
-            semiOrderedModules.Add(moduleInfoExtendedWithPath);
+            originalOrderedModules.Add(moduleInfoExtendedWithPath);
         }
 
         // Load the rest of modules
         foreach (var moduleInfoExtended in ExtendedModuleInfoCache.Values)
         {
-            if (semiOrderedModules.Contains(moduleInfoExtended)) continue;
+            if (originalOrderedModules.Contains(moduleInfoExtended)) continue;
             if (!IsVisible(state.IsSingleplayer, moduleInfoExtended)) continue;
-            if (moduleInfoExtended is not ModuleInfoExtendedWithPath moduleInfoExtendedWithPath) continue;
+            if (moduleInfoExtended is not ModuleInfoExtendedWithMetadata moduleInfoExtendedWithPath) continue;
 
-            semiOrderedModules.Add(moduleInfoExtendedWithPath);
+            originalOrderedModules.Add(moduleInfoExtendedWithPath);
         }
 
         // Topological sort them
-        var rawOrderedModules = ModuleSorter.TopologySort<ModuleInfoExtended>(semiOrderedModules, x => ModuleUtilities.GetDependencies(semiOrderedModules, x))
-            .OfType<ModuleInfoExtendedWithPath>()
+        var rawOrderedModules = ModuleSorter.TopologySort<ModuleInfoExtended>(originalOrderedModules, x => ModuleUtilities.GetDependencies(originalOrderedModules, x))
+            .OfType<ModuleInfoExtendedWithMetadata>()
             .ToList();
 
         var existingOrderedModules = rawOrderedModules
@@ -99,7 +99,8 @@ partial class LauncherManagerHandler
                 SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
         }
 
-        issues = null;
+        var providedLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(originalOrderedModules).ToList();
+        issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
         orderedModules = existingOrderedViewModels;
         var idx = 0;
         foreach (var viewModel in orderedModules)
@@ -115,24 +116,24 @@ partial class LauncherManagerHandler
     {
         var state = GetState();
 
-        var semiOrderedModules = new List<ModuleInfoExtendedWithPath>();
+        var originalOrderedModules = new List<ModuleInfoExtendedWithMetadata>();
 
-        var moduleViewModels = GetAllModuleViewModels() ?? Array.Empty<IModuleViewModel>();
+        var moduleViewModels = GetAllModuleViewModels() ?? [];
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
         // Load all modules
         foreach (var moduleInfoExtended in ExtendedModuleInfoCache.Values)
         {
             if (!IsVisible(state.IsSingleplayer, moduleInfoExtended)) continue;
-            if (moduleInfoExtended is not ModuleInfoExtendedWithPath moduleInfoExtendedWithPath) continue;
+            if (moduleInfoExtended is not ModuleInfoExtendedWithMetadata moduleInfoExtendedWithPath) continue;
 
-            semiOrderedModules.Add(moduleInfoExtendedWithPath);
+            originalOrderedModules.Add(moduleInfoExtendedWithPath);
         }
 
         // Get all present modules, ignore missing
-        var presentOrderedIds = loadOrder.Intersect(semiOrderedModules.Select(x => x.Id).ToHashSet()).ToList();
+        var presentOrderedIds = loadOrder.Intersect(originalOrderedModules.Select(x => x.Id).ToHashSet()).ToList();
 
-        var rawOrderedModules = semiOrderedModules;
+        var rawOrderedModules = originalOrderedModules;
 
         var existingOrderedModules = rawOrderedModules
             .Where(x => moduleViewModelLookup.ContainsKey(x.Id))
@@ -207,7 +208,8 @@ partial class LauncherManagerHandler
             return false;
         }
 
-        issues = null;
+        var providedLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(originalOrderedModules).ToList();
+        issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
         orderedModules = existingOrderedViewModels;
         var idx = 0;
         foreach (var viewModel in orderedModules)

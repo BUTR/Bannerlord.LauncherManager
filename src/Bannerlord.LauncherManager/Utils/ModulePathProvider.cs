@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Bannerlord.LauncherManager.Models;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -6,17 +8,21 @@ namespace Bannerlord.LauncherManager.Utils;
 
 internal interface IModulePathProvider
 {
+    ModuleProviderType ModuleProviderType { get; }
     IEnumerable<string> GetModulePaths();
 }
 
 internal class MainModuleProvider : IModulePathProvider
 {
+    public ModuleProviderType ModuleProviderType => ModuleProviderType.Default;
+
     private readonly LauncherManagerHandler _handler;
 
     public MainModuleProvider(LauncherManagerHandler handler)
     {
         _handler = handler;
     }
+
 
     public IEnumerable<string> GetModulePaths()
     {
@@ -33,6 +39,8 @@ internal class MainModuleProvider : IModulePathProvider
 
 internal class SteamModuleProvider : IModulePathProvider
 {
+    public ModuleProviderType ModuleProviderType => ModuleProviderType.Steam;
+
     private readonly LauncherManagerHandler _handler;
 
     public SteamModuleProvider(LauncherManagerHandler handler)

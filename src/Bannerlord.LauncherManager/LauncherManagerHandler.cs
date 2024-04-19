@@ -38,7 +38,7 @@ public partial class LauncherManagerHandler
     {
         if (_isInitialized)
             throw new LauncherManagerInitializedTwiceException();
-        
+
         _isInitialized = true;
         LauncherStateProvider = launcherStateProvider;
         GameInfoProvider = gameInfoProvider;
@@ -48,7 +48,7 @@ public partial class LauncherManagerHandler
         NotificationProvider = notificationProvider;
         LoadOrderStateProvider = loadOrderStateProvider;
     }
-    
+
     public LauncherManagerHandler(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
         IFileSystemProvider fileSystemProvider, IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider) : this()
     {

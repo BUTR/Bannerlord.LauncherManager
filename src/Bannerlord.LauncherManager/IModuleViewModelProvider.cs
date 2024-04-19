@@ -1,4 +1,4 @@
-/*
+﻿/*
 namespace Bannerlord.LauncherManager.External;
 
 public interface IModuleViewModelProvider

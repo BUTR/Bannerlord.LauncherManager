@@ -9,7 +9,7 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual SaveMetadata[] GetSaveFiles() => Array.Empty<SaveMetadata>();
+    public virtual SaveMetadata[] GetSaveFiles() => [];
 
     /// <summary>
     /// External<br/>
