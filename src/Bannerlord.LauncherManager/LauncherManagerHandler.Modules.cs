@@ -28,7 +28,7 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => _modules ??= ReloadModules().ToList();
+    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => _modules ??= ReloadModules().GroupBy(x => x.Id).Select(x => x.First()).ToList();
 
     /// <summary>
     /// Internal<br/>
@@ -62,5 +62,4 @@ partial class LauncherManagerHandler
     /// Internal<br/>
     /// </summary>
     protected internal IEnumerable<string> GetModulePaths() => _providers.SelectMany(provider => provider.GetModulePaths());
-
 }
