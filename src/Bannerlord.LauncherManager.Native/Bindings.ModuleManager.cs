@@ -385,7 +385,7 @@ public static unsafe partial class Bindings
             doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var module = ModuleInfoExtended.FromXml(doc);
-            var result = new ModuleInfoExtendedWithMetadata(module, ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
+            var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
 
             Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
