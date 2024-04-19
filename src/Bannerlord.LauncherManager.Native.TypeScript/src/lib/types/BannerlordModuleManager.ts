@@ -115,7 +115,7 @@ export interface IBannerlordModuleManager {
 
     getModuleInfo(xml: string): ModuleInfoExtended | undefined;
     getModuleInfoWithPath(xml: string, path: string): ModuleInfoExtendedWithPath | undefined;
-    getModuleInfoWithMetadata(xml: string, path: string): ModuleInfoExtendedWithMetadata | undefined;
+    getModuleInfoWithMetadata(xml: string, type: ModuleProviderType, path: string): ModuleInfoExtendedWithMetadata | undefined;
     getSubModuleInfo(xml: string): SubModuleInfoExtended | undefined;
 
     parseApplicationVersion(content: string): ApplicationVersion;
