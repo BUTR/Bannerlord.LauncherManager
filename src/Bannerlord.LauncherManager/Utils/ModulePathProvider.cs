@@ -57,7 +57,7 @@ internal class SteamModuleProvider : IModulePathProvider
         var steamApps = installPath.Substring(0, installPath.IndexOf("common", StringComparison.Ordinal));
         var workshopDir = Path.Combine(steamApps, "workshop", "content", "261550");
 
-        var directories = _handler.ReadDirectoryFileList(workshopDir);
+        var directories = _handler.ReadDirectoryList(workshopDir);
         // Optional
         //if (directories is null) throw new DirectoryNotFoundException($"installPath: {installPath}. Steam's Modules directory not found!");
         if (directories is null) yield break;
