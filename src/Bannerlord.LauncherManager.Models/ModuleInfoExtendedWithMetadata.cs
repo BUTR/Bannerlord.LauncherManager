@@ -4,9 +4,10 @@ using System.Collections.Generic;
 
 namespace Bannerlord.LauncherManager.Models;
 
-public record ModuleInfoExtendedWithMetadata : ModuleInfoExtendedWithPath
+public record ModuleInfoExtendedWithMetadata : ModuleInfoExtended
 {
     public ModuleProviderType ModuleProviderType { get; set; }
+    public string Path { get; set; } = string.Empty;
 
     public ModuleInfoExtendedWithMetadata() { }
     public ModuleInfoExtendedWithMetadata(ModuleProviderType moduleProviderType, string path, string id, string name, bool isOfficial, ApplicationVersion version, bool isSingleplayerModule, bool isMultiplayerModule,
@@ -28,8 +29,9 @@ public record ModuleInfoExtendedWithMetadata : ModuleInfoExtendedWithPath
         DependentModuleMetadatas = dependentModuleMetadatas;
         Url = url;
     }
-    public ModuleInfoExtendedWithMetadata(ModuleInfoExtended module, ModuleProviderType moduleProviderType, string path) : base(module, path)
+    public ModuleInfoExtendedWithMetadata(ModuleInfoExtended module, ModuleProviderType moduleProviderType, string path) : base(module)
     {
         ModuleProviderType = moduleProviderType;
+        Path = path;
     }
 }

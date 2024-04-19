@@ -17,6 +17,8 @@ namespace Bannerlord.LauncherManager.Native.Tests;
 [JsonSerializable(typeof(SubModuleInfoExtended))]
 [JsonSerializable(typeof(ModuleInfoExtended))]
 [JsonSerializable(typeof(ModuleInfoExtended[]))]
+[JsonSerializable(typeof(ModuleInfoExtendedWithPath))]
+[JsonSerializable(typeof(ModuleInfoExtendedWithPath[]))]
 [JsonSerializable(typeof(ModuleInfoExtendedWithMetadata))]
 [JsonSerializable(typeof(ModuleInfoExtendedWithMetadata[]))]
 [JsonSerializable(typeof(ModuleSorterOptions))]

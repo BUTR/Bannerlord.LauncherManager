@@ -22,8 +22,9 @@ public class LauncherManagerHandlerExposer : LauncherManagerHandler
         IDialogProvider dialogProviderProvider,
         INotificationProvider notificationProviderProvider,
         ILoadOrderStateProvider loadOrderStateProvider) :
-        base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider) { }
-    
+        base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider)
+    { }
+
     public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
 }
 
@@ -75,6 +76,7 @@ public class HandlerTests
         var expectedLoadOrderIds = new[] { "Test", "Test2" };
 
         var moduleViewModels = Array.Empty<IModuleViewModel>();
+        var setModuleViewModels = default(IReadOnlyList<IModuleViewModel>)!;
 
         var handler = new LauncherManagerHandlerExposer(
             dialogProviderProvider: new CallbackDialogProvider(
@@ -104,9 +106,9 @@ public class HandlerTests
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
                 getAllModuleViewModels: () => moduleViewModels,
                 getModuleViewModels: () => moduleViewModels,
-                setModuleViewModels: null!)
+                setModuleViewModels: (x) => setModuleViewModels = x)
         );
-        
+
         var modules = handler.GetModules();
         moduleViewModels = new IModuleViewModel[]
         {
@@ -130,7 +132,77 @@ public class HandlerTests
 
         handler.Sort();
 
-        Assert.That(loadOrder.Select(x => x.Key).ToArray(), Is.EqualTo(expectedLoadOrderIds));
+        Assert.That(setModuleViewModels.Select(x => x.ModuleInfoExtended.Id).ToArray(), Is.EqualTo(expectedLoadOrderIds));
+    }
+
+    [Test]
+    public void OrderBy_Test()
+    {
+        var loadOrder = new LoadOrder
+        {
+            {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 0 }},
+            {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 1 }},
+        };
+        var expectedLoadOrderIds = new[] { "Test", "Test2" };
+
+        var moduleViewModels = Array.Empty<IModuleViewModel>();
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogProviderProvider: new CallbackDialogProvider(
+                sendDialog: null!
+            ),
+            fileSystemProvider: new CallbackFileSystemProvider(
+                readFileContent: Read,
+                writeFileContent: null!,
+                readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
+                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: () => Path.GetFullPath(GamePath)!
+            ),
+            notificationProviderProvider: new CallbackNotificationProvider(
+                sendNotification: (id, type, message, ms) => { }
+            ),
+            launcherStateUProvider: new CallbackLauncherStateProvider(
+                setGameParameters: (executable, parameters) => { },
+                getOptions: () => new LauncherOptions(false, false, false, "English"),
+                getState: () => new LauncherState(true)
+            ),
+            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
+                loadLoadOrder: null!,
+                saveLoadOrder: lo => loadOrder = lo
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: () => moduleViewModels,
+                getModuleViewModels: () => moduleViewModels,
+                setModuleViewModels: null!)
+        );
+
+        handler.RefreshModules();
+        var modules = handler.GetModules();
+        moduleViewModels = new IModuleViewModel[]
+        {
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 0,
+            },
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 1,
+            },
+        };
+
+        var result = handler.TryOrderByLoadOrder(loadOrder.Keys, x => true, out var issues, out var sorted);
+
+        Assert.That(sorted.Select(x => x.ModuleInfoExtended.Id).ToArray(), Is.EqualTo(expectedLoadOrderIds));
     }
 
     [Test]
@@ -213,7 +285,7 @@ public class HandlerTests
                 getModuleViewModels: null!,
                 setModuleViewModels: null!)
         );
-        
+
         var installResult = handler.TestModuleContent(files);
         Assert.That(installResult, Is.Not.Null);
         Assert.That(installResult.Supported, Is.True);
@@ -269,7 +341,7 @@ public class HandlerTests
                 getModuleViewModels: null!,
                 setModuleViewModels: null!)
         );
-        
+
         handler.SetGameStore(GameStore.Steam);
         var installResult = handler.InstallModuleContent(files, [new(moduleInfo, ModuleProviderType.Default, subModuleFile)]);
         Assert.That(installResult, Is.Not.Null);

@@ -51,6 +51,8 @@ public static partial class Bindings
             new JsonStringEnumConverter<ApplicationVersionType>(),
             new JsonStringEnumConverter<ModuleIssueType>(),
             new JsonStringEnumConverter<LoadType>(),
+
+            new JsonStringEnumConverter<ModuleProviderType>(),
         }
     };
 
