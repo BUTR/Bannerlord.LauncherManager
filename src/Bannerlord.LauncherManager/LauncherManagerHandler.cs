@@ -26,11 +26,12 @@ public partial class LauncherManagerHandler
 
     public LauncherManagerHandler()
     {
-        _providers = new IModulePathProvider[]
-        {
+        _providers =
+        [
             new MainModuleProvider(this),
-            new SteamModuleProvider(this)
-        };
+            new SteamModuleProvider(this),
+            new VortexModuleProvider(this)
+        ];
     }
 
     protected void Initialize(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, ILoadOrderPersistenceProvider loadOrderPersistenceProvider,

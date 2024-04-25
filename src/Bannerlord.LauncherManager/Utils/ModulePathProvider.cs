@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Bannerlord.LauncherManager.Utils;
 
@@ -32,7 +33,9 @@ internal class MainModuleProvider : IModulePathProvider
         //if (directories is null) yield break;
         foreach (var moduleFolder in directories)
         {
-            yield return moduleFolder;
+            var files = _handler.ReadDirectoryFileList(moduleFolder) ?? [];
+            if (files.All(x => x != "__folder_managed_by_vortex"))
+                yield return moduleFolder;
         }
     }
 }
@@ -64,6 +67,34 @@ internal class SteamModuleProvider : IModulePathProvider
         foreach (var moduleFolder in directories)
         {
             yield return moduleFolder;
+        }
+    }
+}
+
+internal class VortexModuleProvider : IModulePathProvider
+{
+    public ModuleProviderType ModuleProviderType => ModuleProviderType.Vortex;
+
+    private readonly LauncherManagerHandler _handler;
+
+    public VortexModuleProvider(LauncherManagerHandler handler)
+    {
+        _handler = handler;
+    }
+
+
+    public IEnumerable<string> GetModulePaths()
+    {
+        var installPath = _handler.GetInstallPath();
+        
+        var directories = _handler.ReadDirectoryList(Path.Combine(installPath, Constants.ModulesFolder));
+        if (directories is null) yield break;
+        
+        foreach (var moduleFolder in directories)
+        {
+            var files = _handler.ReadDirectoryFileList(moduleFolder) ?? [];
+            if (files.Any(x => x == "__folder_managed_by_vortex"))
+                yield return moduleFolder;
         }
     }
 }

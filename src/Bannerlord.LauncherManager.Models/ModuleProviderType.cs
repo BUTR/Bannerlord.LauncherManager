@@ -4,4 +4,5 @@ public enum ModuleProviderType
 {
     Default = 0,
     Steam = 1,
+    Vortex = 2,
 }
