@@ -15,7 +15,8 @@ partial class LauncherManagerHandler
     protected static IEnumerable<ModuleInfoExtended> GetLauncherFeatures() =>
         FeatureIds.LauncherFeatures.Select(x => new ModuleInfoExtended { Id = x, IsSingleplayerModule = true });
 
-    private List<ModuleInfoExtendedWithMetadata>? _modules;
+    private List<ModuleInfoExtendedWithMetadata> _modules;
+    private List<ModuleInfoExtendedWithMetadata>? _allModules;
 
     /// <summary>
     /// Internal<br/>
@@ -28,7 +29,30 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => _modules ??= ReloadModules().GroupBy(x => x.Id).Select(x => x.First()).ToList();
+    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules()
+    {
+        if (_allModules is null)
+        {
+            _allModules = ReloadModules().ToList();
+            _modules = _allModules.GroupBy(x => x.Id).Select(x => x.First()).ToList();
+        }
+        
+        return _modules;
+    }
+    
+    /// <summary>
+    /// Internal<br/>
+    /// </summary>
+    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetAllModules()
+    {
+        if (_allModules is null)
+        {
+            _allModules = ReloadModules().ToList();
+            _modules = _allModules.GroupBy(x => x.Id).Select(x => x.First()).ToList();
+        }
+        
+        return _allModules;
+    }
 
     /// <summary>
     /// Internal<br/>
