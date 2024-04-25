@@ -61,7 +61,7 @@ public partial class LauncherManagerHandler
     /// </summary>
     public void RefreshModules()
     {
-        _modules.Clear();
+        _modules = null;
         _allModules = null;
         ExtendedModuleInfoCache = GetLauncherFeatures().Concat(GetModules()).ToDictionary(x => x.Id, x => x);
     }
