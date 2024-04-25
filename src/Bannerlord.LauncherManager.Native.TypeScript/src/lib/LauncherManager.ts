@@ -53,6 +53,9 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public getModules = (): types.ModuleInfoExtendedWithMetadata[] => {
     return this.manager.getModules();
   }
+  public getAllModules = (): types.ModuleInfoExtendedWithMetadata[] => {
+    return this.manager.getAllModules();
+  }
   public getSaveFilePath = (saveFile: string): string => {
     return this.manager.getSaveFilePath(saveFile);
   }

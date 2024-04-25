@@ -96,6 +96,7 @@ export type LauncherManager = {
   getGamePlatform(): GamePlatform;
   getGameVersion(): string;
   getModules(): ModuleInfoExtendedWithMetadata[];
+  getAllModules(): ModuleInfoExtendedWithMetadata[];
   getSaveFilePath(saveFile: string): string;
   getSaveFiles(): SaveMetadata[];
   getSaveMetadata(saveFile: string, data: ArrayBuffer): SaveMetadata;
