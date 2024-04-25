@@ -44,6 +44,7 @@ namespace Bannerlord::LauncherManager
         Napi::Value GetGamePlatform(const CallbackInfo &info);
         Napi::Value GetGameVersion(const CallbackInfo &info);
         Napi::Value GetModules(const CallbackInfo &info);
+        Napi::Value GetAllModules(const CallbackInfo &info);
         Napi::Value GetSaveFilePath(const CallbackInfo &info);
         Napi::Value GetSaveFiles(const CallbackInfo &info);
         Napi::Value GetSaveMetadata(const CallbackInfo &info);
@@ -91,6 +92,7 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::CheckForRootHarmony>("checkForRootHarmony", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetGameVersion>("getGameVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetModules>("getModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::GetAllModules>("getAllModules", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetSaveFilePath>("getSaveFilePath", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetSaveFiles>("getSaveFiles", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetSaveMetadata>("getSaveMetadata", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -620,6 +622,14 @@ namespace Bannerlord::LauncherManager
         const auto env = info.Env();
 
         const auto result = ve_get_modules(this->_pInstance);
+        return ThrowOrReturnJson(env, result);
+    }
+
+    Value LauncherManager::GetAllModules(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+
+        const auto result = ve_get_all_modules(this->_pInstance);
         return ThrowOrReturnJson(env, result);
     }
 

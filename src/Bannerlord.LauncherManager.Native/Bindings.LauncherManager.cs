@@ -345,6 +345,27 @@ public static unsafe partial class Bindings
         }
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_all_modules", CallConvs = [typeof(CallConvCdecl)])]
+    public static return_value_json* GetAllModules(param_ptr* p_handle)
+    {
+        Logger.LogInput();
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            var result = handler.GetAllModules().ToArray();
+
+            Logger.LogOutput(result);
+            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray, false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_json.AsException(e, false);
+        }
+    }
+
 
     [UnmanagedCallersOnly(EntryPoint = "ve_check_for_root_harmony", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* CheckForRootHarmony(param_ptr* p_handle)

@@ -65,6 +65,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
 
 
     public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
+    public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetAllModules() => base.GetAllModules();
 
     public new IModuleViewModel[]? GetModuleViewModels() => base.GetModuleViewModels();
 
