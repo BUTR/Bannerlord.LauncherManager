@@ -73,8 +73,15 @@ partial class LauncherManagerHandler
                     }
                     catch (Exception e)
                     {
-                        throw new Exception($"modulePath: {modulePath}, content: {Convert.ToBase64String(data)}", e);
+                        SendNotification("module-parsing-error-exception", NotificationType.Error, $"Failed to read SubModule.xml at path '{subModulePath}'!\n{e}", 3000);
+                        continue;
                     }
+                    if (string.IsNullOrEmpty(moduleInfoExtended.Id))
+                    {
+                        SendNotification("module-parsing-error-invalid-module-id", NotificationType.Error, $"SubModule.xml has an invalid Id at path '{subModulePath}'!", 3000);
+                        continue;
+                    }
+
                     yield return new ModuleInfoExtendedWithMetadata(moduleInfoExtended, modulePathProvider.ModuleProviderType, subModulePath);
                 }
             }

@@ -59,7 +59,7 @@ export interface SaveMetadata {
 export type GameStore = 'Steam' | 'GOG' | 'Epic' | 'Xbox' | 'Unknown';
 export type GamePlatform = 'Win64' | 'Xbox' | 'Unknown';
 
-export type NotificationType = 'hint' | 'info';
+export type NotificationType = 'hint' | 'info' | 'warning' | 'error';
 export type DialogType = 'warning' | 'fileOpen' | 'fileSave';
 
 export type InstructionType = 'Copy' | 'ModuleInfo';
