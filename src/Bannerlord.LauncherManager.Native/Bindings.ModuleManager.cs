@@ -32,7 +32,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_source);
         try
         {
-            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
 
             var result = ModuleSorter.Sort(source).ToArray();
 
@@ -52,7 +53,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_source, p_options);
         try
         {
-            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var options = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_options, CustomSourceGenerationContext.ModuleSorterOptions);
 
             var result = ModuleSorter.Sort(source, options).ToArray();
@@ -74,7 +76,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_source, p_module);
         try
         {
-            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleUtilities.AreDependenciesPresent(source, module);
@@ -96,7 +99,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_source, p_module);
         try
         {
-            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleUtilities.GetDependencies(source, module).ToArray();
@@ -117,7 +121,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_source, p_module, p_options);
         try
         {
-            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
             var options = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_options, CustomSourceGenerationContext.ModuleSorterOptions);
 
@@ -142,7 +147,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_modules, p_target_module);
         try
         {
-            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var isSelected = Marshal.GetDelegateForFunctionPointer<N_IsSelected>(new IntPtr(p_is_selected));
@@ -177,7 +183,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_modules, p_target_module);
         try
         {
-            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleUtilities.ValidateLoadOrder(modules, targetModule).ToArray();
@@ -207,7 +214,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_module, p_target_module);
         try
         {
-            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var getSelected = Marshal.GetDelegateForFunctionPointer<N_GetSelected>(new IntPtr(p_get_selected));
@@ -287,7 +295,8 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_module, p_target_module);
         try
         {
-            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();;
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var getSelected = Marshal.GetDelegateForFunctionPointer<N_GetSelected>(new IntPtr(p_get_selected));
@@ -388,7 +397,7 @@ public static unsafe partial class Bindings
             var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
 
             Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
+            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithPath, false);
         }
         catch (Exception e)
         {
@@ -406,10 +415,10 @@ public static unsafe partial class Bindings
             doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var module = ModuleInfoExtended.FromXml(doc);
-            var result = new ModuleInfoExtendedWithMetadata(module, Enum.TryParse<ModuleProviderType>(new string(param_string.ToSpan(p_path)), out var e) ? e : ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
+            var result = new ModuleInfoExtendedWithMetadata(module, Enum.TryParse<ModuleProviderType>(new string(param_string.ToSpan(p_module_provider)), out var e) ? e : ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
 
             Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
+            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata, false);
         }
         catch (Exception e)
         {

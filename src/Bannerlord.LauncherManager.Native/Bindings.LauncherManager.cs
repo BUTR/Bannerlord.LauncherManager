@@ -179,8 +179,10 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
-            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray);
+            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray)
+                .Where(x => x is not null).ToArray();;
+            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray)
+                .Where(x => x is not null).ToArray();;
 
             var result = handler.InstallModuleContent(files, moduleInfos);
             Logger.LogOutput(result);

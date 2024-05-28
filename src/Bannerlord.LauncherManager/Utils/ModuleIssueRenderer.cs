@@ -57,6 +57,9 @@ public static class ModuleIssueRenderer
 
         ModuleIssueType.DependencyNotLoadedAfterThis => new BUTRTextObject("{=2ALJB7z2}'{SOURCEID}' should be loaded after '{TARGETID}'")
             .SetTextVariable("ID", issue.SourceId),
+        
+        // TODO:
+        // Add new overloads
 
         _ => throw new ArgumentOutOfRangeException()
     };
