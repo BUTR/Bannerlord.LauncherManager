@@ -59,8 +59,12 @@ public static class ModuleIssueRenderer
             .SetTextVariable("ID", issue.SourceId),
         
         // TODO:
-        // Add new overloads
-
+        ModuleIssueType.MissingModuleId => new BUTRTextObject($"Module Id is missing for '{issue.Target.Name}'"),
+        ModuleIssueType.MissingModuleName => new BUTRTextObject($"Module Name is missing in '{issue.Target.Id}'"),
+        
+        ModuleIssueType.DependencyIsNull => new BUTRTextObject($"Found a null dependency in '{issue.Target.Id}'"),
+        ModuleIssueType.DependencyMissingModuleId => new BUTRTextObject($"Module Id is missing for one if the dependencies of '{issue.Target.Id}'"),
+        
         _ => throw new ArgumentOutOfRangeException()
     };
 }
