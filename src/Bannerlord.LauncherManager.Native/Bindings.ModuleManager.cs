@@ -411,7 +411,6 @@ public static unsafe partial class Bindings
         try
         {
             var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
-            doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var module = ModuleInfoExtended.FromXml(doc);
             var result = new ModuleInfoExtendedWithMetadata(module, Enum.TryParse<ModuleProviderType>(new string(param_string.ToSpan(p_module_provider)), out var e) ? e : ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
