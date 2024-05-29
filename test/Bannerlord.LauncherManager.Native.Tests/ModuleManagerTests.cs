@@ -37,6 +37,9 @@ public partial class ModuleManagerTests : BaseTests
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static unsafe partial return_value_json* bmm_get_module_info(param_string* p_xml_content);
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe partial return_value_json* bmm_get_module_info_with_metadata(param_string* p_xml_content, param_string* p_module_provider, param_string* p_path);
+
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static unsafe partial return_value_json* bmm_get_sub_module_info(param_string* p_xml_content);
 
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]

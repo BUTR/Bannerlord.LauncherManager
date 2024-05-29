@@ -111,8 +111,7 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var doc = new XmlDocument();
-            doc.LoadXml(new string(param_string.ToSpan(p_xml)));
+            var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml));
             BUTRLocalizationManager.LoadLanguage(doc);
 
             Logger.LogOutput();

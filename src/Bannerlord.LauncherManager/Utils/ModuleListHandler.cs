@@ -246,9 +246,7 @@ public class ModuleListHandler
             return;
         }
 
-        var document = new XmlDocument();
-        using var stream = new MemoryStream(data);
-        document.Load(stream);
+        var document = ReaderUtils.Read(data);
 
         var importedModules = new List<ModuleListEntry>();
         foreach (var xmlNode in document.DocumentElement?.SelectNodes("PresetModule")?.OfType<XmlNode>() ?? Enumerable.Empty<XmlNode>())

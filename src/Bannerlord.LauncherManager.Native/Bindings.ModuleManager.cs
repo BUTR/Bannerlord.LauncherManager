@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Xml;
+using Bannerlord.LauncherManager.Utils;
 
 namespace Bannerlord.LauncherManager.Native;
 
@@ -369,8 +370,7 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_xml_content);
         try
         {
-            var doc = new XmlDocument();
-            doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
+            var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
 
             var result = ModuleInfoExtended.FromXml(doc);
 
@@ -390,8 +390,7 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_xml_content, p_path);
         try
         {
-            var doc = new XmlDocument();
-            doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
+            var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
 
             var module = ModuleInfoExtended.FromXml(doc);
             var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
@@ -411,7 +410,7 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_xml_content, p_path);
         try
         {
-            var doc = new XmlDocument();
+            var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
             doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
 
             var module = ModuleInfoExtended.FromXml(doc);
@@ -433,8 +432,7 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_xml_content);
         try
         {
-            var doc = new XmlDocument();
-            doc.LoadXml(new string(param_string.ToSpan(p_xml_content)));
+            var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
 
             var result = SubModuleInfoExtended.FromXml(doc);
             if (result is null)
