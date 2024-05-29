@@ -53,7 +53,6 @@ public record LoadOrder : IDictionary<string, LoadOrderEntry>
 
     public void Sanitize()
     {
-        Remove(null!);
         foreach (var key in this.Where(x => x.Value is null).Select(x => x.Key).ToArray())
             Remove(key);
     }

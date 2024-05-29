@@ -156,26 +156,20 @@ namespace Bannerlord::LauncherManager
 
             const auto strCopy = CopyWithFree(str.Utf16Value());
 
-            ConsoleLog(env, String::New(env, "14"));
             std::stringstream ss;
             ss << data;
-            ConsoleLog(env, String::New(env, ss.str()));
             ss = std::stringstream();
             ss << data->p_callback_ptr;
-            ConsoleLog(env, String::New(env, ss.str()));
             ss = std::stringstream();
             ss << data->p_callback;
-            ConsoleLog(env, String::New(env, ss.str()));
 
             data->p_callback(data->p_callback_ptr, strCopy.get());
-            ConsoleLog(env, String::New(env, "15"));
             delete data;
             return info.Env().Null();
         }
         catch (const std::exception &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            ConsoleLog(env, String::New(env, conv.from_bytes(e.what())));
             return info.Env().Null();
         }
     }
