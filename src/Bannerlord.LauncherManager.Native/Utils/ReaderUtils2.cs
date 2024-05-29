@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml;
 
-namespace Bannerlord.LauncherManager.Native;
+namespace Bannerlord.LauncherManager.Native.Utils;
 
 public static class ReaderUtils2
 {

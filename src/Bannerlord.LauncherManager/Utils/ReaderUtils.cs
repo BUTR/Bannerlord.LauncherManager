@@ -18,7 +18,7 @@ public static class ReaderUtils
         var utf8BOM = BOMMarkUtf8.AsSpan();
         var utf16BEBOM = BOMMarkUtf16BE.AsSpan();
         var utf16LEBOM = BOMMarkUtf16LE.AsSpan();
-        
+
 #if NETSTANDARD2_1_OR_GREATER
         Span<byte> preamblePreallocated = stackalloc byte[4];
         ms.Read(preamblePreallocated);
@@ -27,11 +27,11 @@ public static class ReaderUtils
         ms.Read(preamblePreallocatedArray, 0, 4);
         var preamblePreallocated = preamblePreallocatedArray.AsSpan();
 #endif
-        
+
         var bomOffset = preamblePreallocated.StartsWith(utf8BOM) ? BOMMarkUtf8.Length :
             preamblePreallocated.StartsWith(utf16BEBOM) ? BOMMarkUtf16BE.Length :
             preamblePreallocated.StartsWith(utf16LEBOM) ? BOMMarkUtf16LE.Length : 0;
-        
+
         ms.Seek(bomOffset > 0 ? bomOffset : 0, SeekOrigin.Begin);
         var doc = new XmlDocument();
         doc.Load(new XmlTextReader(sr));

@@ -36,7 +36,7 @@ internal sealed unsafe class LauncherStateProvider : ILauncherStateProvider
         Logger.LogInput();
 
         fixed (char* pExecutable = executable)
-        fixed (char* pGameParameters = BUTR.NativeAOT.Shared.Utils.SerializeJson(gameParameters, Bindings.CustomSourceGenerationContext.IReadOnlyListString))
+        fixed (char* pGameParameters = BUTR.NativeAOT.Shared.Utils.SerializeJson(gameParameters, Bindings.CustomSourceGenerationContext.IReadOnlyListString) ?? string.Empty)
         {
             Logger.LogPinned(pExecutable, pGameParameters);
 
@@ -54,7 +54,7 @@ internal sealed unsafe class LauncherStateProvider : ILauncherStateProvider
         using var result = SafeStructMallocHandle.Create(_getOptions(_pOwner), true);
         if (result.IsNull) return LauncherOptions.Empty;
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.LauncherOptions)!;
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.LauncherOptions) ?? LauncherOptions.Empty;
         Logger.LogOutput(returnResult);
         return returnResult;
     }
@@ -66,7 +66,7 @@ internal sealed unsafe class LauncherStateProvider : ILauncherStateProvider
         using var result = SafeStructMallocHandle.Create(_getState(_pOwner), true);
         if (result.IsNull) return LauncherState.Empty;
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.LauncherState)!;
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.LauncherState) ?? LauncherState.Empty;
         Logger.LogOutput(returnResult);
         return returnResult;
     }

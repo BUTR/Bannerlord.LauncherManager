@@ -67,7 +67,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
     public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetAllModules() => base.GetAllModules();
 
-    public new IModuleViewModel[]? GetModuleViewModels() => base.GetModuleViewModels();
+    public new IEnumerable<IModuleViewModel>? GetModuleViewModels() => base.GetModuleViewModels();
 
     public new void ShowHint(BUTRTextObject message) => base.ShowHint(message);
     public new void ShowHint(string message) => base.ShowHint(message);

@@ -41,7 +41,11 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
         using var result = SafeStructMallocHandle.Create(_getAllModuleViewModels(_pOwner), true);
         if (result.IsNull) return null;
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).Cast<IModuleViewModel>().ToArray();
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
+            .Where(x => x is not null)
+            .Cast<IModuleViewModel>()
+            .OrderBy(x => x.Index)
+            .ToArray();
         Logger.LogOutput(returnResult);
         return returnResult;
     }
@@ -53,7 +57,11 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
         using var result = SafeStructMallocHandle.Create(_getModuleViewModels(_pOwner), true);
         if (result.IsNull) return null;
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?.OrderBy(x => x.Index).Cast<IModuleViewModel>().ToArray();
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
+            .Where(x => x is not null)
+            .Cast<IModuleViewModel>()
+            .OrderBy(x => x.Index)
+            .ToArray();
         Logger.LogOutput(returnResult);
         return returnResult;
     }
@@ -63,12 +71,11 @@ internal sealed unsafe class LoadOrderStateProvider : ILoadOrderStateProvider
         Logger.LogInput();
 
         var moduleViewModelsCasted = moduleViewModels.OfType<ModuleViewModel>().ToList();
-        fixed (char* pModuleViewModels = BUTR.NativeAOT.Shared.Utils.SerializeJson(moduleViewModelsCasted, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel))
+        fixed (char* pModuleViewModels = BUTR.NativeAOT.Shared.Utils.SerializeJson(moduleViewModelsCasted, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel) ?? string.Empty)
         {
             Logger.LogPinned(pModuleViewModels);
 
             using var result = SafeStructMallocHandle.Create(_setModuleViewModels(_pOwner, (param_json*) pModuleViewModels), true);
-
         }
         Logger.LogOutput();
     }

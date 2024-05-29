@@ -36,10 +36,10 @@ partial class LauncherManagerHandler
             _allModules = ReloadModules().ToList();
             _modules = _allModules.GroupBy(x => x.Id).Select(x => x.First()).ToList();
         }
-        
+
         return _modules;
     }
-    
+
     /// <summary>
     /// Internal<br/>
     /// </summary>
@@ -50,7 +50,7 @@ partial class LauncherManagerHandler
             _allModules = ReloadModules().ToList();
             _modules = _allModules.GroupBy(x => x.Id).Select(x => x.First()).ToList();
         }
-        
+
         return _allModules;
     }
 

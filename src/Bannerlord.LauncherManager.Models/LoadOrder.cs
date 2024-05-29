@@ -50,4 +50,11 @@ public record LoadOrder : IDictionary<string, LoadOrderEntry>
     public LoadOrderEntry this[string key] { get => _implementation[key]; set => _implementation[key] = value; }
     public ICollection<string> Keys => _implementation.Keys;
     public ICollection<LoadOrderEntry> Values => _implementation.Values;
+
+    public void Sanitize()
+    {
+        Remove(null!);
+        foreach (var key in this.Where(x => x.Value is null).Select(x => x.Key).ToArray())
+            Remove(key);
+    }
 }

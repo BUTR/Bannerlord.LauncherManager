@@ -56,7 +56,7 @@ internal sealed unsafe class DialogProvider : IDialogProvider
         var pCallbackStorage = GCHandle.ToIntPtr(GCHandle.Alloc(new CallbackStorage(result => onResult((string) result)), GCHandleType.Normal)).ToPointer();
         fixed (char* pType = type)
         fixed (char* pTitle = title)
-        fixed (char* pFilters = BUTR.NativeAOT.Shared.Utils.SerializeJson(filters, Bindings.CustomSourceGenerationContext.IReadOnlyListDialogFileFilter))
+        fixed (char* pFilters = BUTR.NativeAOT.Shared.Utils.SerializeJson(filters, Bindings.CustomSourceGenerationContext.IReadOnlyListDialogFileFilter) ?? string.Empty)
         fixed (char* pMessage = message)
         {
             Logger.LogPinned(pType, pTitle, pFilters, pMessage);

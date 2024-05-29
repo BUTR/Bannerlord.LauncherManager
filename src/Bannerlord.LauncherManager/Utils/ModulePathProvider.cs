@@ -86,10 +86,10 @@ internal class VortexModuleProvider : IModulePathProvider
     public IEnumerable<string> GetModulePaths()
     {
         var installPath = _handler.GetInstallPath();
-        
+
         var directories = _handler.ReadDirectoryList(Path.Combine(installPath, Constants.ModulesFolder));
         if (directories is null) yield break;
-        
+
         foreach (var moduleFolder in directories)
         {
             var files = _handler.ReadDirectoryFileList(moduleFolder) ?? [];

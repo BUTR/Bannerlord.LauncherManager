@@ -2,6 +2,8 @@
 
 using BUTR.NativeAOT.Shared;
 
+using System;
+
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
 internal sealed unsafe class GameInfoProvider : IGameInfoProvider
@@ -15,16 +17,16 @@ internal sealed unsafe class GameInfoProvider : IGameInfoProvider
         _getInstallPath = getInstallPath;
     }
 
-    public string GetInstallPath() => GetInstallPathNative();
+    public string GetInstallPath() => new(GetInstallPathNative());
 
-    private string GetInstallPathNative()
+    private ReadOnlySpan<char> GetInstallPathNative()
     {
         Logger.LogInput();
 
         using var result = SafeStructMallocHandle.Create(_getInstallPath(_pOwner), true);
         using var installPath = result.ValueAsString();
 
-        var returnResult = new string(installPath);
+        var returnResult = installPath.ToSpan();
         Logger.LogOutput(returnResult, nameof(GetInstallPath));
         return returnResult;
     }

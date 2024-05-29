@@ -3,7 +3,6 @@ using Bannerlord.LauncherManager.Models;
 using Bannerlord.LauncherManager.Utils;
 using Bannerlord.ModuleManager;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,7 +31,7 @@ partial class LauncherManagerHandler
         }
 
         IsSorting = true;
-        var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended).ToArray() ?? [];
+        var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended) ?? [];
         var sorted = Sort(modules);
         var sortedViewModels = GetViewModelsFromModules(sorted);
         SetModuleViewModels(sortedViewModels);

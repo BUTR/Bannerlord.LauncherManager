@@ -88,9 +88,9 @@ public class ModuleListHandler
             }
         }
 
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
+        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
 
-        var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (idDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
@@ -156,9 +156,9 @@ public class ModuleListHandler
     }
     private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
+        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
 
-        var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (nameDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
@@ -236,9 +236,9 @@ public class ModuleListHandler
     }
     private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
+        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
 
-        var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (idDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
@@ -422,9 +422,9 @@ public class ModuleListHandler
 
     private ModuleListEntry[] ReadSaveFileModuleList(byte[] data)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
+        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
 
-        var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (nameDuplicates.Count > 0)
         {
             _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");

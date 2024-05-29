@@ -17,7 +17,11 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_modules);
         try
         {
-            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray);
+            //if (p_modules is null)
+            //    return return_value_json.AsValue(["Invalid module list!"], CustomSourceGenerationContext.StringArray, false);
+
+            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
+                .Where(x => x is not null).ToArray();
 
             var result = LoadOrderChecker.IsLoadOrderCorrect(modules).ToArray();
 
@@ -37,6 +41,9 @@ public static unsafe partial class Bindings
         Logger.LogInput(p_module);
         try
         {
+            //if (p_module is null)
+            //    return return_value_string.AsValue(string.Empty, false);
+
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleDependencyConstructor.GetDependencyHint(module);

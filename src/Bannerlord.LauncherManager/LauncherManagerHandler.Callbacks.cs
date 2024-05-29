@@ -113,7 +113,7 @@ partial class LauncherManagerHandler
     /// Callback<br/>
     /// Returns the current shown sorted ViewModels
     /// </summary>
-    protected internal IModuleViewModel[]? GetModuleViewModels()
+    protected internal IEnumerable<IModuleViewModel>? GetModuleViewModels()
     {
         ThrowIfNotInitialized();
         return LoadOrderStateProvider.GetModuleViewModels();

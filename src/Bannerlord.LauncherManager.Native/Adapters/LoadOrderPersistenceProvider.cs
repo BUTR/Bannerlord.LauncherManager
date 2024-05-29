@@ -27,7 +27,8 @@ internal sealed unsafe class LoadOrderPersistenceProvider : ILoadOrderPersistenc
 
         using var result = SafeStructMallocHandle.Create(_getLoadOrder(_pOwner), true);
 
-        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.LoadOrder)!;
+        var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.LoadOrder) ?? new LoadOrder();
+        returnResult.Sanitize();
         Logger.LogOutput(returnResult);
         return returnResult;
     }
@@ -36,7 +37,9 @@ internal sealed unsafe class LoadOrderPersistenceProvider : ILoadOrderPersistenc
     {
         Logger.LogInput();
 
-        fixed (char* pLoadOrder = BUTR.NativeAOT.Shared.Utils.SerializeJson(loadOrder, Bindings.CustomSourceGenerationContext.LoadOrder))
+        loadOrder.Sanitize();
+
+        fixed (char* pLoadOrder = BUTR.NativeAOT.Shared.Utils.SerializeJson(loadOrder, Bindings.CustomSourceGenerationContext.LoadOrder) ?? string.Empty)
         {
             Logger.LogPinned(pLoadOrder);
 

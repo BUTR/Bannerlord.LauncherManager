@@ -3,6 +3,7 @@
 using BUTR.NativeAOT.Shared;
 
 using System;
+using System.Linq;
 
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
@@ -77,7 +78,7 @@ internal sealed unsafe class FileSystemProvider : IFileSystemProvider
             using var result = SafeStructMallocHandle.Create(_readDirectoryFileList(_pOwner, (param_string*) pDirectoryPath), true);
             if (result.IsNull) return null;
 
-            var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.StringArray);
+            var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.StringArray)?.Where(x => x is not null).ToArray();
             Logger.LogOutput(returnResult);
             return returnResult;
         }
@@ -94,7 +95,7 @@ internal sealed unsafe class FileSystemProvider : IFileSystemProvider
             using var result = SafeStructMallocHandle.Create(_readDirectoryList(_pOwner, (param_string*) pDirectoryPath), true);
             if (result.IsNull) return null;
 
-            var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.StringArray);
+            var returnResult = result.ValueAsJson(Bindings.CustomSourceGenerationContext.StringArray)?.Where(x => x is not null).ToArray();
             Logger.LogOutput(returnResult);
             return returnResult;
         }

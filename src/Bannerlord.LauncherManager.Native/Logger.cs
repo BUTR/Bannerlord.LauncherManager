@@ -123,6 +123,11 @@ public static class Logger
         Log($"{caller} - Finished: {param}");
     }
     [Conditional("LOGGING")]
+    public static void LogOutput(ReadOnlySpan<char> param, [CallerMemberName] string? caller = null)
+    {
+        Log($"{caller} - Finished: {param}");
+    }
+    [Conditional("LOGGING")]
     public static void LogOutput<T1>(T1 result, [CallerMemberName] string? caller = null)
     {
         if (Bindings.CustomSourceGenerationContext.GetTypeInfo(typeof(T1)) is JsonTypeInfo<T1> jsonTypeInfo)

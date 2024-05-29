@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using Bannerlord.ModuleManager;
+﻿using Bannerlord.ModuleManager;
+
+using System.Collections.Generic;
 
 namespace Bannerlord.LauncherManager.Models;
 
