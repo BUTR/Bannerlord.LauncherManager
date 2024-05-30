@@ -189,8 +189,9 @@ namespace Bannerlord::LauncherManager
         }
         catch (const Napi::Error &e)
         {
+            const auto stack = e.Value().Get("stack").As<String>();
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
+            return Create(return_value_void{Copy(stack.Utf16Value())});
         }
     }
     static return_value_json *getLoadOrder(void *p_owner) noexcept
