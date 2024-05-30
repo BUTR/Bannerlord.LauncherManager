@@ -28,10 +28,10 @@ namespace Bannerlord::ModuleManager
 
             return Create(return_value_bool{nullptr, data->FIsSelected({moduleId}).As<Boolean>()});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
+            return Create(return_value_bool{Copy(conv.from_bytes(e.Message())), false});
         }
     }
 
@@ -54,10 +54,10 @@ namespace Bannerlord::ModuleManager
 
             return Create(return_value_bool{nullptr, data->FGetSelected({moduleId}).As<Boolean>()});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
+            return Create(return_value_bool{Copy(conv.from_bytes(e.Message())), false});
         }
     }
     static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
@@ -73,10 +73,10 @@ namespace Bannerlord::ModuleManager
             data->FSetSelected({moduleId, value});
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module_id) noexcept
@@ -90,10 +90,10 @@ namespace Bannerlord::ModuleManager
 
             return Create(return_value_bool{nullptr, data->FGetDisabled({moduleId}).As<Boolean>()});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what())), false});
+            return Create(return_value_bool{Copy(conv.from_bytes(e.Message())), false});
         }
     }
     static return_value_void *setDisabled(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
@@ -109,10 +109,10 @@ namespace Bannerlord::ModuleManager
             data->FSetDisabled({moduleId, value});
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
 

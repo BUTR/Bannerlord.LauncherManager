@@ -167,7 +167,7 @@ namespace Bannerlord::LauncherManager
             delete data;
             return info.Env().Null();
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return info.Env().Null();
@@ -187,10 +187,10 @@ namespace Bannerlord::LauncherManager
             manager->FSetGameParameters({executable, gameParameters});
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_json *getLoadOrder(void *p_owner) noexcept
@@ -203,10 +203,10 @@ namespace Bannerlord::LauncherManager
             const auto result = manager->FGetLoadOrder({}).As<Object>();
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_void *setLoadOrder(void *p_owner, char16_t *p_load_order) noexcept
@@ -220,10 +220,10 @@ namespace Bannerlord::LauncherManager
             manager->FSetLoadOrder({loadOrder});
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_void *sendNotification(void *p_owner, char16_t *p_id, char16_t *p_type, char16_t *p_message, uint32_t displayMs) noexcept
@@ -240,10 +240,10 @@ namespace Bannerlord::LauncherManager
             manager->FSendNotification({id, type, message, displayMs_});
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_void *sendDialog(void *p_owner, char16_t *p_type, char16_t *p_title, char16_t *p_message, char16_t *p_filters, void *p_callback_ptr, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
@@ -278,10 +278,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_string *getInstallPath(void *p_owner) noexcept
@@ -294,10 +294,10 @@ namespace Bannerlord::LauncherManager
             const auto result = manager->FGetInstallPath({}).As<String>();
             return Create(return_value_string{nullptr, Copy(result.Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_string{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_data *readFileContent(void *p_owner, char16_t *p_file_path, int32_t p_offset, int32_t p_length) noexcept
@@ -326,10 +326,10 @@ namespace Bannerlord::LauncherManager
             auto buffer = result.As<Buffer<uint8_t>>();
             return Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_data{Copy(conv.from_bytes(e.what())), nullptr, 0});
+            return Create(return_value_data{Copy(conv.from_bytes(e.Message())), nullptr, 0});
         }
     }
     static return_value_void *writeFileContent(void *p_owner, char16_t *p_file_path, uint8_t *p_data, int32_t length) noexcept
@@ -349,10 +349,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_json *readDirectoryFileList(void *p_owner, char16_t *p_directory_path) noexcept
@@ -371,10 +371,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_json *readDirectoryList(void *p_owner, char16_t *p_directory_path) noexcept
@@ -393,10 +393,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_json *getAllModuleViewModels(void *p_owner) noexcept
@@ -414,10 +414,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_json *getModuleViewModels(void *p_owner) noexcept
@@ -435,10 +435,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_void *setModuleViewModels(void *p_owner, char16_t *p_module_view_models) noexcept
@@ -457,10 +457,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_void{nullptr});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
         }
     }
     static return_value_json *getOptions(void *p_owner) noexcept
@@ -478,10 +478,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
     static return_value_json *getState(void *p_owner) noexcept
@@ -499,10 +499,10 @@ namespace Bannerlord::LauncherManager
 
             return Create(return_value_json{nullptr, Copy(JSONStringify(env, result.As<Object>()).Utf16Value())});
         }
-        catch (const std::exception &e)
+        catch (const Napi::Error &e)
         {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
+            return Create(return_value_json{Copy(conv.from_bytes(e.Message())), nullptr});
         }
     }
 
