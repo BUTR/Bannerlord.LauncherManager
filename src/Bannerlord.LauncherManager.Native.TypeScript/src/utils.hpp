@@ -114,6 +114,19 @@ namespace Utils
         return dst;
     }
 
+    std::u16string GetErrorMessage(const Napi::Error e)
+    {
+        const auto errorValue = e.Value();
+        if (errorValue.Has("stack"))
+        {
+            const auto stack = e.Value().Get("stack").As<String>();
+            return stack.Utf16Value();
+        }
+
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+        return conv.from_bytes(e.Message());
+    }
+
     void ConsoleLog(const Env env, const String message)
     {
         const auto consoleObject = env.Global().Get("console").As<Object>();

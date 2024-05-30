@@ -30,8 +30,7 @@ namespace Bannerlord::ModuleManager
         }
         catch (const Napi::Error &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.Message())), false});
+            return Create(return_value_bool{Copy(GetErrorMessage(e)), false});
         }
     }
 
@@ -56,8 +55,7 @@ namespace Bannerlord::ModuleManager
         }
         catch (const Napi::Error &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.Message())), false});
+            return Create(return_value_bool{Copy(GetErrorMessage(e)), false});
         }
     }
     static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
@@ -75,8 +73,7 @@ namespace Bannerlord::ModuleManager
         }
         catch (const Napi::Error &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
         }
     }
     static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module_id) noexcept
@@ -92,8 +89,7 @@ namespace Bannerlord::ModuleManager
         }
         catch (const Napi::Error &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.Message())), false});
+            return Create(return_value_bool{Copy(GetErrorMessage(e)), false});
         }
     }
     static return_value_void *setDisabled(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
@@ -111,8 +107,7 @@ namespace Bannerlord::ModuleManager
         }
         catch (const Napi::Error &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.Message()))});
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
         }
     }
 
