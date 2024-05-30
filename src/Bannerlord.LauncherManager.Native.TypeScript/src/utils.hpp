@@ -4,6 +4,7 @@
 #include <napi.h>
 #include <cstdint>
 #include "Bannerlord.LauncherManager.Native.h"
+#include <codecvt>
 
 using namespace Napi;
 using namespace Bannerlord::LauncherManager::Native;

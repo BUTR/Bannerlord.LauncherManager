@@ -3,7 +3,6 @@
 
 #include "utils.hpp"
 #include "Bannerlord.LauncherManager.Native.h"
-#include <codecvt>
 #include <sstream>
 #include <string>
 
