@@ -41,9 +41,6 @@ export interface ModuleViewModel {
 }
 
 export interface LauncherOptions {
-  language: string;
-  unblockFiles: boolean;
-  fixCommonIssues: boolean;
   betaSorting: boolean;
 }
 
