@@ -22,15 +22,15 @@ export class Utils {
     return Utils.addon.getDependencyHint(module);
   }
 
-  public loadLocalization = (xml: string): void => {
+  public static loadLocalization = (xml: string): void => {
     Utils.initialize();
     return Utils.addon.loadLocalization(xml);
   }
-  public setLanguage = (language: string): void => {
+  public static setLanguage = (language: string): void => {
     Utils.initialize();
     return Utils.addon.setLanguage(language);
   }
-  public localizeString = (template: string, values: { [value: string]: string }): string => {
+  public static localizeString = (template: string, values: { [value: string]: string }): string => {
     Utils.initialize();
     return Utils.addon.localizeString(template, values);
   }
