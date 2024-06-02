@@ -59,6 +59,25 @@ public static unsafe partial class Bindings
             return return_value_string.AsException(e, false);
         }
     }
+    [UnmanagedCallersOnly(EntryPoint = "utils_render_module_issue", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
+    public static return_value_string* RenderModuleIssue([IsConst<IsPtrConst>] param_json* p_module_issue)
+    {
+        Logger.LogInput(p_module_issue);
+        try
+        {
+            var moduleIssue = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_issue, CustomSourceGenerationContext.ModuleIssue);
+
+            var result = ModuleIssueRenderer.Render(moduleIssue);
+
+            Logger.LogOutput(result);
+            return return_value_string.AsValue(result, false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_string.AsException(e, false);
+        }
+    }
 
     [UnmanagedCallersOnly(EntryPoint = "utils_load_localization", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* LoadLocalization(param_string* p_xml)

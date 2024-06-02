@@ -33,6 +33,17 @@ namespace Bannerlord::Utils
         return ThrowOrReturnString(env, result);
     }
 
+    Value RenderModuleIssue(const CallbackInfo &info)
+    {
+        const auto env = info.Env();
+        const auto moduleIssue = JSONStringify(env, info[0].As<Object>());
+
+        const auto moduleIssueCopy = CopyWithFree(moduleIssue.Utf16Value());
+
+        const auto result = utils_render_module_issue(moduleIssueCopy.get());
+        return ThrowOrReturnString(env, result);
+    }
+
     void LoadLocalization(const CallbackInfo &info)
     {
         const auto env = info.Env();
@@ -73,6 +84,8 @@ namespace Bannerlord::Utils
         exports.Set("isLoadOrderCorrect", Function::New(env, IsLoadOrderCorrect));
 
         exports.Set("getDependencyHint", Function::New(env, GetDependencyHint));
+
+        exports.Set("renderModuleIssue", Function::New(env, RenderModuleIssue));
 
         exports.Set("loadLocalization", Function::New(env, LoadLocalization));
         exports.Set("setLanguage", Function::New(env, SetLanguage));

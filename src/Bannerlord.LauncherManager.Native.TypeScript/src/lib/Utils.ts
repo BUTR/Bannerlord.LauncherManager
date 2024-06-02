@@ -22,6 +22,11 @@ export class Utils {
     return Utils.addon.getDependencyHint(module);
   }
 
+  public static renderModuleIssue(moduleIssue: types.ModuleIssue): string {
+    Utils.initialize();
+    return Utils.addon.renderModuleIssue(moduleIssue);
+  }
+
   public static loadLocalization = (xml: string): void => {
     Utils.initialize();
     return Utils.addon.loadLocalization(xml);
