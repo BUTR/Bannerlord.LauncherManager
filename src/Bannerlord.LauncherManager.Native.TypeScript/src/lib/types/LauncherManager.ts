@@ -102,8 +102,6 @@ export type LauncherManager = {
   getSaveMetadata(saveFile: string, data: ArrayBuffer): SaveMetadata;
   installModule(files: string[], moduleInfos: ModuleInfoExtendedWithMetadata[]): InstallResult;
   isSorting(): boolean;
-  loadLocalization(xml: string): void;
-  localizeString(template: string, values: { [value: string]: string }): string;
   moduleListHandlerExport(): void;
   moduleListHandlerExportSaveFile(saveFile: string): void;
   moduleListHandlerImport(): Promise<boolean>;

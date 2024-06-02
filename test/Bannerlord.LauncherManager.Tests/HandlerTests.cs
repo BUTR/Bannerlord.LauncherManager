@@ -165,7 +165,7 @@ public class HandlerTests
             ),
             launcherStateUProvider: new CallbackLauncherStateProvider(
                 setGameParameters: (executable, parameters) => { },
-                getOptions: () => new LauncherOptions(false, false, false, "English"),
+                getOptions: () => new LauncherOptions(false),
                 getState: () => new LauncherState(true)
             ),
             loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(

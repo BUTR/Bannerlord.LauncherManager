@@ -71,12 +71,6 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public isSorting = (): boolean => {
     return this.manager.isSorting();
   }
-  public loadLocalization = (xml: string): void => {
-    return this.manager.loadLocalization(xml);
-  }
-  public localizeString = (template: string, values: { [value: string]: string }): string => {
-    return this.manager.localizeString(template, values);
-  }
   public moduleListHandlerExport = (): void => {
     return this.manager.moduleListHandlerExport();
   }

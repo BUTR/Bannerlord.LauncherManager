@@ -2,7 +2,6 @@
 using Bannerlord.LauncherManager.Models;
 using Bannerlord.LauncherManager.Native.Adapters;
 using Bannerlord.LauncherManager.Native.Models;
-using Bannerlord.LauncherManager.Native.Utils;
 using Bannerlord.LauncherManager.Utils;
 
 using BUTR.NativeAOT.Shared;
@@ -95,29 +94,6 @@ public static unsafe partial class Bindings
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             handler.Dispose();
-
-            Logger.LogOutput();
-            return return_value_void.AsValue(false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_void.AsException(e, false);
-        }
-    }
-
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_load_localization", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* LoadLocalization(param_ptr* p_handle, param_string* p_xml)
-    {
-        Logger.LogInput();
-        try
-        {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-
-            var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml));
-            BUTRLocalizationManager.LoadLanguage(doc);
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -836,34 +812,6 @@ public static unsafe partial class Bindings
 
             Logger.LogOutput();
             return return_value_string.AsValue(handler.GetPlatform().ToStringFast(), false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_string.AsException(e, false);
-        }
-    }
-
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_localize_string", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_string* LocalizeString(param_ptr* p_handle, param_string* p_template, param_json* p_values)
-    {
-        Logger.LogInput(p_template, p_values);
-        try
-        {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-
-            //if (p_values is null)
-            //    return return_value_string.AsValue(string.Empty, false);
-
-            var template = new string(param_string.ToSpan(p_template));
-            var values = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_values, CustomSourceGenerationContext.DictionaryStringString);
-
-            var result = new BUTRTextObject(template, values).ToString();
-
-            Logger.LogOutput(result);
-            return return_value_string.AsValue(result, false);
         }
         catch (Exception e)
         {
