@@ -54,7 +54,7 @@ internal class SteamModuleProvider : IModulePathProvider
     public IEnumerable<string> GetModulePaths()
     {
         var installPath = _handler.GetInstallPath();
-        if (!installPath.ToLower().Contains("steamapps"))
+        if (!installPath.ToLower().Contains("steamapps") || !installPath.ToLower().Contains("common"))
             yield break;
 
         var steamApps = installPath.Substring(0, installPath.IndexOf("common", StringComparison.Ordinal));
