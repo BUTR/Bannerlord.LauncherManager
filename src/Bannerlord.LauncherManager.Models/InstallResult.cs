@@ -28,7 +28,7 @@ public record ModuleInfoInstallInstruction : IInstallInstruction
 }
 public record CopyStoreInstallInstruction : IInstallInstruction
 {
-    public InstallInstructionType Type { get; set; } = InstallInstructionType.Copy;
+    public InstallInstructionType Type { get; set; } = InstallInstructionType.CopyStore;
     public required GameStore Store { get; set; }
     public required string ModuleId { get; set; }
     public required string Source { get; set; }
