@@ -30,6 +30,8 @@ partial class LauncherManagerHandler
         return SupportedResult.AsSupported;
     }
 
+    private sealed record FileWithModuleInfo(string File, string ModuleBasePath, ModuleInfoExtendedWithMetadata ModuleInfo);
+    
     /// <summary>
     /// External<br/>
     /// Two ways to handle installation:<br/>
@@ -42,45 +44,94 @@ partial class LauncherManagerHandler
     /// </summary>
     public InstallResult InstallModuleContent(string[] files, ModuleInfoExtendedWithMetadata[] moduleInfos)
     {
-        var installPath = GetInstallPath();
-        var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
-
         var lowerSubModuleName = Constants.SubModuleName.ToLower();
         if (!files.Any(x => x.ToLower().Contains(lowerSubModuleName)))
             return InstallResult.AsInvalid;
 
         files = files.Where(x => !EndsInDirectorySeparator(x)).ToArray();
 
-        var instructions = files.Where(x => x.EndsWith(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase)).Select(file =>
+        var filesWithModuleInfos = files.Where(x => x.EndsWith(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase)).SelectMany(file =>
         {
             var moduleInfo = moduleInfos.FirstOrDefault(x => x.Path == file);
-            if (moduleInfo is null) return new List<IInstallInstruction>();
+            if (moduleInfo is null) return new List<FileWithModuleInfo>();
 
             var subModuleFileIdx = file.IndexOf(Constants.SubModuleName, StringComparison.OrdinalIgnoreCase);
             var moduleBasePath = file.Substring(0, subModuleFileIdx);
-            return files.Where(y => y.StartsWith(moduleBasePath)).Where(y =>
-            {
-                var modulePath = y.Substring(moduleBasePath.Length);
-                if (!modulePath.StartsWith(Constants.BinFolder, StringComparison.OrdinalIgnoreCase)) return true;
-                var binPath = modulePath.Substring(4);
-                // Avoid unnecessary bin folder copy
-                return platform switch
-                {
-                    GamePlatform.Win64 => binPath.StartsWith(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase),
-                    GamePlatform.Xbox => binPath.StartsWith(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase),
-                    _ => true,
-                };
-            }).Select(file2 => new CopyInstallInstruction
-            {
-                ModuleId = moduleInfo.Id,
-                Source = file2,
-                Destination = Path.Combine(Constants.ModulesFolder, moduleInfo.Id, file2.Substring(subModuleFileIdx))
-            }).Concat(new IInstallInstruction[]
-            {
-                new ModuleInfoInstallInstruction(moduleInfo),
-            }).ToList();
-        }).SelectMany(x => x).ToList();
+            return files.Where(y => y.StartsWith(moduleBasePath)).Select(y => new FileWithModuleInfo(y, moduleBasePath, moduleInfo));
+        }).ToArray();
+        
+        var moduleInfoInstructions = filesWithModuleInfos.Select(x => x.ModuleInfo).Distinct().Select(x => new ModuleInfoInstallInstruction(x)).ToArray();
+        var copyInstructions = filesWithModuleInfos.SelectMany(GetCopyInstructions).ToArray();
+        var copyStoreInstructions = filesWithModuleInfos.SelectMany(GetStoreCopyInstructions).ToArray();
+        
+        return new InstallResult
+        {
+            Instructions = copyInstructions.Concat(copyStoreInstructions).Concat(moduleInfoInstructions).ToList()
+        };
+    }
 
-        return new InstallResult { Instructions = instructions };
+    private IEnumerable<IInstallInstruction> GetCopyInstructions(FileWithModuleInfo filesWithModuleInfo)
+    {
+        var file = filesWithModuleInfo.File;
+        var moduleBasePath = filesWithModuleInfo.ModuleBasePath;
+        var moduleInfo = filesWithModuleInfo.ModuleInfo;
+
+        var modulePath = file.Substring(moduleBasePath.Length);
+        if (modulePath.StartsWith(Constants.BinFolder, StringComparison.OrdinalIgnoreCase)) yield break;
+        
+        var destination = Path.Combine(Constants.ModulesFolder, moduleInfo.Id, file.Substring(moduleBasePath.Length));
+        yield return new CopyInstallInstruction
+        {
+            ModuleId = moduleInfo.Id,
+            Source = file,
+            Destination = destination,
+        };
+    }
+    
+    private IEnumerable<IInstallInstruction> GetStoreCopyInstructions(FileWithModuleInfo filesWithModuleInfo)
+    {
+        var file = filesWithModuleInfo.File;
+        var moduleBasePath = filesWithModuleInfo.ModuleBasePath;
+        var moduleInfo = filesWithModuleInfo.ModuleInfo;
+
+        var modulePath = file.Substring(moduleBasePath.Length);
+        if (!modulePath.StartsWith(Constants.BinFolder, StringComparison.OrdinalIgnoreCase)) yield break;
+        var binPath = modulePath.Substring(4);
+        
+        var destination = Path.Combine(Constants.ModulesFolder, moduleInfo.Id, file.Substring(moduleBasePath.Length));
+        if (binPath.StartsWith(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new CopyStoreInstallInstruction
+            {
+                Store = GameStore.Steam,
+                ModuleId = moduleInfo.Id,
+                Source = file,
+                Destination = destination,
+            };
+            yield return new CopyStoreInstallInstruction
+            {
+                Store = GameStore.GOG,
+                ModuleId = moduleInfo.Id,
+                Source = file,
+                Destination = destination,
+            };
+            yield return new CopyStoreInstallInstruction
+            {
+                Store = GameStore.Epic,
+                ModuleId = moduleInfo.Id,
+                Source = file,
+                Destination = destination,
+            };
+        }
+        else if (binPath.StartsWith(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new CopyStoreInstallInstruction
+            {
+                Store = GameStore.Xbox,
+                ModuleId = moduleInfo.Id,
+                Source = file,
+                Destination = destination,
+            };
+        }
     }
 }

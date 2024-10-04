@@ -25,6 +25,9 @@ public static partial class Bindings
                 case CopyInstallInstruction copyInstallInstruction:
                     JsonSerializer.Serialize(writer, copyInstallInstruction, CustomSourceGenerationContext.CopyInstallInstruction);
                     break;
+                case CopyStoreInstallInstruction supportedStoresInstallInstruction:
+                    JsonSerializer.Serialize(writer, supportedStoresInstallInstruction, CustomSourceGenerationContext.CopyStoreInstallInstruction);
+                    break;
             }
         }
     }

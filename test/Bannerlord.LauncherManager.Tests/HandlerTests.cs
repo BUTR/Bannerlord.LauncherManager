@@ -215,7 +215,7 @@ public class HandlerTests
             fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
-                readDirectoryFileList: null!,
+                readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
                 readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
@@ -303,12 +303,14 @@ public class HandlerTests
         var subModuleFile = "Test\\SubModule.xml";
         var win64Dll = $"Test\\bin\\{Constants.Win64Configuration}\\Test.dll";
         var xboxDll = $"Test\\bin\\{Constants.XboxConfiguration}\\Test.dll";
+        var prefab = $"Test\\Prefabs\\prefab.xml";
         var files = new[]
         {
             moduleFolder,
             subModuleFile,
             win64Dll,
             xboxDll,
+            prefab,
         };
 
         var handler = new LauncherManagerHandlerExposer(
@@ -346,11 +348,20 @@ public class HandlerTests
         var installResult = handler.InstallModuleContent(files, [new(moduleInfo, ModuleProviderType.Default, subModuleFile)]);
         Assert.That(installResult, Is.Not.Null);
         Assert.That(installResult.Instructions, Is.Not.Null);
-        Assert.That(installResult.Instructions.Count, Is.EqualTo(3));
+        Assert.That(installResult.Instructions.Count, Is.EqualTo(7));
         Assert.That(installResult.Instructions[0], Is.InstanceOf<CopyInstallInstruction>());
         Assert.That(installResult.Instructions[1], Is.InstanceOf<CopyInstallInstruction>());
-        Assert.That(installResult.Instructions[2], Is.InstanceOf<ModuleInfoInstallInstruction>());
+        Assert.That(installResult.Instructions[2], Is.InstanceOf<CopyStoreInstallInstruction>());
+        Assert.That(installResult.Instructions[3], Is.InstanceOf<CopyStoreInstallInstruction>());
+        Assert.That(installResult.Instructions[4], Is.InstanceOf<CopyStoreInstallInstruction>());
+        Assert.That(installResult.Instructions[5], Is.InstanceOf<CopyStoreInstallInstruction>());
+        Assert.That(installResult.Instructions[6], Is.InstanceOf<ModuleInfoInstallInstruction>());
         Assert.That(((CopyInstallInstruction) installResult.Instructions[0]).Source, Is.EqualTo(subModuleFile));
-        Assert.That(((CopyInstallInstruction) installResult.Instructions[1]).Source, Is.EqualTo(win64Dll));
+        Assert.That(((CopyInstallInstruction) installResult.Instructions[1]).Source, Is.EqualTo(prefab));
+        Assert.That(((CopyStoreInstallInstruction) installResult.Instructions[2]).Source, Is.EqualTo(win64Dll));
+        Assert.That(((CopyStoreInstallInstruction) installResult.Instructions[3]).Source, Is.EqualTo(win64Dll));
+        Assert.That(((CopyStoreInstallInstruction) installResult.Instructions[4]).Source, Is.EqualTo(win64Dll));
+        Assert.That(((CopyStoreInstallInstruction) installResult.Instructions[5]).Source, Is.EqualTo(xboxDll));
+        Assert.That(((ModuleInfoInstallInstruction) installResult.Instructions[6]).ModuleInfo, Is.EqualTo(moduleInfo));
     }
 }

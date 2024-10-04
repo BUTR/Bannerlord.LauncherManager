@@ -59,9 +59,10 @@ export type GamePlatform = 'Win64' | 'Xbox' | 'Unknown';
 export type NotificationType = 'hint' | 'info' | 'warning' | 'error';
 export type DialogType = 'warning' | 'fileOpen' | 'fileSave';
 
-export type InstructionType = 'Copy' | 'ModuleInfo';
+export type InstructionType = 'Copy' | 'ModuleInfo' | 'CopyStore';
 export interface InstallInstruction {
   type: InstructionType;
+  store?: GameStore;
   moduleInfo?: ModuleInfoExtended;
   source?: string;
   destination?: string;

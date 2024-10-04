@@ -26,6 +26,19 @@ public record ModuleInfoInstallInstruction : IInstallInstruction
     [SetsRequiredMembers, JsonConstructor]
     public ModuleInfoInstallInstruction(ModuleInfoExtended moduleInfo) => (ModuleInfo) = (moduleInfo);
 }
+public record CopyStoreInstallInstruction : IInstallInstruction
+{
+    public InstallInstructionType Type { get; set; } = InstallInstructionType.Copy;
+    public required GameStore Store { get; set; }
+    public required string ModuleId { get; set; }
+    public required string Source { get; set; }
+    public required string Destination { get; set; }
+
+    public CopyStoreInstallInstruction() { }
+    [SetsRequiredMembers, JsonConstructor]
+    public CopyStoreInstallInstruction(GameStore store, string moduleId, string source, string destination) =>
+        (Store, ModuleId, Source, Destination) = (store, moduleId, source, destination);
+}
 
 public record NoneInstallInstruction : IInstallInstruction
 {
@@ -42,6 +55,7 @@ public enum InstallInstructionType
     None,
     Copy,
     ModuleInfo,
+    CopyStore
 }
 
 public interface IInstallInstruction
