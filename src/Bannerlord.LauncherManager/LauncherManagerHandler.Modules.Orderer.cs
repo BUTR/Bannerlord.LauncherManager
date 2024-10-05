@@ -74,7 +74,7 @@ partial class LauncherManagerHandler
             .Select(x => moduleViewModelLookup[x.Id])
             .ToList();
 
-        var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules).ToList();
+        var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules.Where(x => moduleViewModelLookup[x.Id].IsSelected).ToList()).ToList();
         if (!overwriteWhenFailure && existingLoadOrderValidationIssues.Count != 0)
         {
             issues = existingLoadOrderValidationIssues;
@@ -99,7 +99,7 @@ partial class LauncherManagerHandler
                 SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
         }
 
-        var providedLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(originalOrderedModules).ToList();
+        var providedLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(originalOrderedModules.Where(x => moduleViewModelLookup[x.Id].IsSelected).ToList()).ToList();
         issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
         orderedModules = existingOrderedViewModels;
         var idx = 0;
