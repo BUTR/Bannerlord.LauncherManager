@@ -82,7 +82,7 @@ partial class LauncherManagerHandler
             return false;
         }
 
-        var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedViewModels.Select(x => x.ModuleInfoExtended).ToList()).ToList();
+        var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedViewModels.Where(x => x.IsSelected).Select(x => x.ModuleInfoExtended).ToList()).ToList();
         if (!overwriteWhenFailure && loadOrderValidationIssues.Count != 0)
         {
             issues = loadOrderValidationIssues;
