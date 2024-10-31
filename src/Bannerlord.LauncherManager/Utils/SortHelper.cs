@@ -9,53 +9,6 @@ namespace Bannerlord.LauncherManager.Utils;
 
 public static class SortHelper
 {
-    private class ModuleContext<TModuleViewModel> where TModuleViewModel : class, IModuleViewModel
-    {
-        private readonly IDictionary<string, TModuleViewModel> _lookup;
-        public ModuleContext(IEnumerable<TModuleViewModel> moduleVMs)
-        {
-            _lookup = moduleVMs.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
-        }
-        public ModuleContext(IDictionary<string, TModuleViewModel> lookup)
-        {
-            _lookup = lookup;
-        }
-
-        public bool GetIsValid(ModuleInfoExtended module)
-        {
-            if (FeatureIds.LauncherFeatures.Contains(module.Id))
-                return true;
-
-            return _lookup[module.Id].IsValid;
-        }
-        public bool GetIsSelected(ModuleInfoExtended module)
-        {
-            if (FeatureIds.LauncherFeatures.Contains(module.Id))
-                return false;
-
-            return _lookup[module.Id].IsSelected;
-        }
-        public void SetIsSelected(ModuleInfoExtended module, bool value)
-        {
-            if (FeatureIds.LauncherFeatures.Contains(module.Id))
-                return;
-            _lookup[module.Id].IsSelected = value;
-        }
-        public bool GetIsDisabled(ModuleInfoExtended module)
-        {
-            if (FeatureIds.LauncherFeatures.Contains(module.Id))
-                return false;
-
-            return _lookup[module.Id].IsDisabled;
-        }
-        public void SetIsDisabled(ModuleInfoExtended module, bool value)
-        {
-            if (FeatureIds.LauncherFeatures.Contains(module.Id))
-                return;
-            _lookup[module.Id].IsDisabled = value;
-        }
-    }
-
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -63,7 +16,7 @@ public static class SortHelper
         where TModuleViewModel : class, IModuleViewModel
     {
         var modules = moduleVMs.Select(x => x.ModuleInfoExtended).ToList();
-        var ctx = new ModuleContext<TModuleViewModel>(lookup);
+        var ctx = new DefaultModuleContext<TModuleViewModel>(lookup);
 
         if (moduleVM.IsSelected)
             ModuleUtilities.DisableModule(modules, moduleVM.ModuleInfoExtended, ctx.GetIsSelected, ctx.SetIsSelected, ctx.GetIsDisabled, ctx.SetIsDisabled);
@@ -78,7 +31,7 @@ public static class SortHelper
         where TModuleViewModel : class, IModuleViewModel
     {
         var modules = moduleVMs.Select(x => x.ModuleInfoExtended).Concat(FeatureIds.LauncherFeatures.Select(x => new ModuleInfoExtended { Id = x })).ToList();
-        var ctx = new ModuleContext<TModuleViewModel>(lookup);
+        var ctx = new DefaultModuleContext<TModuleViewModel>(lookup);
 
         return ModuleUtilities.ValidateModule(modules, moduleVM.ModuleInfoExtended, ctx.GetIsSelected, ctx.GetIsValid).Select(ModuleIssueRenderer.Render);
     }
