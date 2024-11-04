@@ -10,10 +10,6 @@ namespace Bannerlord.LauncherManager.Native;
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_SetGameParametersDelegate(param_ptr* p_owner, param_string* p_executable, param_json* p_game_parameters);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_json* N_GetLoadOrderDelegate(param_ptr* p_owner);
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_void* N_SetLoadOrderDelegate(param_ptr* p_owner, param_json* p_load_order);
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_SendNotificationDelegate(param_ptr* p_owner, param_string* p_id, param_string* p_type, param_string* p_message, param_uint displayMs);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_SendDialogDelegate(param_ptr* p_owner, param_string* p_type, param_string* p_title, param_string* p_message, param_json* p_filters, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback);

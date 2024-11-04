@@ -30,12 +30,11 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     public LauncherManagerHandlerNative(param_ptr* pOwner,
         ILauncherStateProvider launcherStateUProvider,
         IGameInfoProvider gameInfoProvider,
-        ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
         IFileSystemProvider fileSystemProvider,
         IDialogProvider dialogProvider,
         INotificationProvider notificationProvider,
         ILoadOrderStateProvider loadOrderStateProvider) :
-        base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProvider, notificationProvider, loadOrderStateProvider)
+        base(launcherStateUProvider, gameInfoProvider, fileSystemProvider, dialogProvider, notificationProvider, loadOrderStateProvider)
     {
         OwnerPtr = pOwner;
         HandlePtr = (VoidPtr*) GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Normal)).ToPointer();
@@ -57,9 +56,6 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
     {
         ReleaseUnmanagedResources();
     }
-
-    public new void SaveLoadOrder(LoadOrder loadOrder) => base.SaveLoadOrder(loadOrder);
-    public new LoadOrder LoadLoadOrder() => base.LoadLoadOrder();
 
     public new void SetGameParameterLoadOrder(LoadOrder loadOrder) => base.SetGameParameterLoadOrder(loadOrder);
 

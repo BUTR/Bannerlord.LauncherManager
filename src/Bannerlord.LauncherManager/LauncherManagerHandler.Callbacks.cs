@@ -19,26 +19,6 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal LoadOrder LoadLoadOrder()
-    {
-        ThrowIfNotInitialized();
-        return LoadOrderPersistenceProvider.LoadLoadOrder();
-    }
-
-    /// <summary>
-    /// Callback<br/>
-    /// </summary>
-    protected internal void SaveLoadOrder(LoadOrder loadOrder)
-    {
-        ThrowIfNotInitialized();
-        LoadOrderPersistenceProvider.SaveLoadOrder(loadOrder);
-
-        SetGameParameterLoadOrder(loadOrder);
-    }
-
-    /// <summary>
-    /// Callback<br/>
-    /// </summary>
     protected internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
     {
         ThrowIfNotInitialized();

@@ -60,10 +60,6 @@ public static unsafe partial class Bindings
                     Marshal.GetDelegateForFunctionPointer<N_GetOptions>(new IntPtr(p_get_options)),
                     Marshal.GetDelegateForFunctionPointer<N_GetState>(new IntPtr(p_get_state))
                 ),
-                loadOrderPersistenceProvider: new LoadOrderPersistenceProvider(p_owner,
-                    Marshal.GetDelegateForFunctionPointer<N_GetLoadOrderDelegate>(new IntPtr(p_load_load_order)),
-                    Marshal.GetDelegateForFunctionPointer<N_SetLoadOrderDelegate>(new IntPtr(p_save_load_order))
-                ),
                 notificationProvider: new NotificationProvider(p_owner,
                     Marshal.GetDelegateForFunctionPointer<N_SendNotificationDelegate>(new IntPtr(p_send_notification))
                 ),
@@ -224,52 +220,6 @@ public static unsafe partial class Bindings
         }
     }
 
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_load_load_order", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* LoadLoadOrder(param_ptr* p_handle)
-    {
-        Logger.LogInput();
-        try
-        {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-
-            var result = handler.LoadLoadOrder();
-
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.LoadOrder, false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_json.AsException(e, false);
-        }
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_save_load_order", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SaveLoadOrder(param_ptr* p_handle, param_json* p_load_order)
-    {
-        Logger.LogInput(p_load_order);
-        try
-        {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-
-            //if (p_load_order is null)
-            //    return return_value_void.AsValue(false);
-
-            var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
-            handler.SaveLoadOrder(loadOrder);
-
-            Logger.LogOutput();
-            return return_value_void.AsValue(false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_void.AsException(e, false);
-        }
-    }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_refresh_modules", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* RefreshModules(param_ptr* p_handle)

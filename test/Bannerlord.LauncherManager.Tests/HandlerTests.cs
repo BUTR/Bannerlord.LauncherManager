@@ -17,12 +17,11 @@ public class LauncherManagerHandlerExposer : LauncherManagerHandler
     public LauncherManagerHandlerExposer(
         ILauncherStateProvider launcherStateUProvider,
         IGameInfoProvider gameInfoProvider,
-        ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
         IFileSystemProvider fileSystemProvider,
         IDialogProvider dialogProviderProvider,
         INotificationProvider notificationProviderProvider,
         ILoadOrderStateProvider loadOrderStateProvider) :
-        base(launcherStateUProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider)
+        base(launcherStateUProvider, gameInfoProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider)
     { }
 
     public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
@@ -99,10 +98,6 @@ public class HandlerTests
                 getOptions: null!,
                 getState: null!
             ),
-            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
-                loadLoadOrder: null!,
-                saveLoadOrder: lo => loadOrder = lo
-            ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
                 getAllModuleViewModels: () => moduleViewModels,
                 getModuleViewModels: () => moduleViewModels,
@@ -168,10 +163,6 @@ public class HandlerTests
                 getOptions: () => new LauncherOptions(false),
                 getState: () => new LauncherState(true)
             ),
-            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
-                loadLoadOrder: null!,
-                saveLoadOrder: lo => loadOrder = lo
-            ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
                 getAllModuleViewModels: () => moduleViewModels,
                 getModuleViewModels: () => moduleViewModels,
@@ -229,10 +220,6 @@ public class HandlerTests
                 getOptions: null!,
                 getState: null!
             ),
-            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
-                loadLoadOrder: null!,
-                saveLoadOrder: null!
-            ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
                 getAllModuleViewModels: null!,
                 getModuleViewModels: null!,
@@ -275,10 +262,6 @@ public class HandlerTests
                 setGameParameters: null!,
                 getOptions: null!,
                 getState: null!
-            ),
-            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
-                loadLoadOrder: null!,
-                saveLoadOrder: null!
             ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
                 getAllModuleViewModels: null!,
@@ -333,10 +316,6 @@ public class HandlerTests
                 setGameParameters: null!,
                 getOptions: null!,
                 getState: null!
-            ),
-            loadOrderPersistenceProvider: new CallbackLoadOrderPersistenceProvider(
-                loadLoadOrder: null!,
-                saveLoadOrder: null!
             ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
                 getAllModuleViewModels: null!,

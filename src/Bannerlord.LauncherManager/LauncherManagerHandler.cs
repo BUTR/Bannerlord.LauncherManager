@@ -18,7 +18,6 @@ public partial class LauncherManagerHandler
     private bool _isInitialized;
     protected ILauncherStateProvider LauncherStateProvider { get; private set; } = default!;
     protected IGameInfoProvider GameInfoProvider { get; private set; } = default!;
-    protected ILoadOrderPersistenceProvider LoadOrderPersistenceProvider { get; private set; } = default!;
     protected IFileSystemProvider FileSystemProvider { get; private set; } = default!;
     protected IDialogProvider DialogProvider { get; private set; } = default!;
     protected INotificationProvider NotificationProvider { get; private set; } = default!;
@@ -34,8 +33,8 @@ public partial class LauncherManagerHandler
         ];
     }
 
-    protected void Initialize(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
-        IFileSystemProvider fileSystemProvider, IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider)
+    protected void Initialize(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, IFileSystemProvider fileSystemProvider,
+        IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider)
     {
         if (_isInitialized)
             throw new LauncherManagerInitializedTwiceException();
@@ -43,17 +42,16 @@ public partial class LauncherManagerHandler
         _isInitialized = true;
         LauncherStateProvider = launcherStateProvider;
         GameInfoProvider = gameInfoProvider;
-        LoadOrderPersistenceProvider = loadOrderPersistenceProvider;
         FileSystemProvider = fileSystemProvider;
         DialogProvider = dialogProvider;
         NotificationProvider = notificationProvider;
         LoadOrderStateProvider = loadOrderStateProvider;
     }
 
-    public LauncherManagerHandler(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, ILoadOrderPersistenceProvider loadOrderPersistenceProvider,
-        IFileSystemProvider fileSystemProvider, IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider) : this()
+    public LauncherManagerHandler(ILauncherStateProvider launcherStateProvider, IGameInfoProvider gameInfoProvider, IFileSystemProvider fileSystemProvider,
+        IDialogProvider dialogProvider, INotificationProvider notificationProvider, ILoadOrderStateProvider loadOrderStateProvider) : this()
     {
-        Initialize(launcherStateProvider, gameInfoProvider, loadOrderPersistenceProvider, fileSystemProvider, dialogProvider, notificationProvider, loadOrderStateProvider);
+        Initialize(launcherStateProvider, gameInfoProvider, fileSystemProvider, dialogProvider, notificationProvider, loadOrderStateProvider);
     }
 
     /// <summary>

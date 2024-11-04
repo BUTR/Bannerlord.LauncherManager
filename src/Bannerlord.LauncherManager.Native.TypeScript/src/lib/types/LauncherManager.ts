@@ -120,7 +120,5 @@ export type LauncherManager = {
   dialogTestWarning(): Promise<string>;
   dialogTestFileOpen(): Promise<string>;
 
-  saveLoadOrder(loadOrder: LoadOrder): void;
-  loadLoadOrder(): LoadOrder;
   setGameParameterLoadOrder(loadOrder: LoadOrder): void;
 }
