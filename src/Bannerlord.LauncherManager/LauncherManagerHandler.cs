@@ -86,6 +86,11 @@ public partial class LauncherManagerHandler
         if (GetAllModuleViewModels() is not { } viewModels)
             return Array.Empty<IModuleViewModel>();
 
-        return modules.Select(moduleInfoExtended => viewModels.First(x => x.ModuleInfoExtended == moduleInfoExtended)).ToList();
+        return modules.Select((moduleInfoExtended, i) =>
+        {
+            var vm = viewModels.First(x => x.ModuleInfoExtended == moduleInfoExtended);
+            vm.Index = i;
+            return vm;
+        }).ToList();
     }
 }
