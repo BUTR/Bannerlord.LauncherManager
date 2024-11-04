@@ -93,9 +93,7 @@ partial class LauncherManagerHandler
         // Toggle IsSelected
         foreach (var moduleVM in existingOrderedViewModels)
         {
-            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
-                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
-            if (!isModuleSelected(moduleVM.ModuleInfoExtended.Id) && moduleVM.IsSelected)
+            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) != moduleVM.IsSelected)
                 SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
         }
 
@@ -163,9 +161,7 @@ partial class LauncherManagerHandler
         // Toggle IsSelected
         foreach (var moduleVM in existingOrderedViewModels)
         {
-            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) && !moduleVM.IsSelected)
-                SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
-            if (!isModuleSelected(moduleVM.ModuleInfoExtended.Id) && moduleVM.IsSelected)
+            if (isModuleSelected(moduleVM.ModuleInfoExtended.Id) != moduleVM.IsSelected)
                 SortHelper.ToggleModuleSelection(existingOrderedViewModels, moduleViewModelLookup, moduleVM);
         }
 
