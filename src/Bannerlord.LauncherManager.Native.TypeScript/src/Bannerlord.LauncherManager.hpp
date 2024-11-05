@@ -19,8 +19,6 @@ namespace Bannerlord::LauncherManager
         FunctionReference FGetProfileById;
         FunctionReference FGetActiveGameId;
         FunctionReference FSetGameParameters;
-        FunctionReference FGetLoadOrder;
-        FunctionReference FSetLoadOrder;
         FunctionReference FSendNotification;
         FunctionReference FSendDialog;
         FunctionReference FGetInstallPath;
@@ -175,37 +173,6 @@ namespace Bannerlord::LauncherManager
             const auto gameParameters = JSONParse(env, p_game_parameters == nullptr ? String::New(env, "") : String::New(env, p_game_parameters));
 
             manager->FSetGameParameters({executable, gameParameters});
-            return Create(return_value_void{nullptr});
-        }
-        catch (const Napi::Error &e)
-        {
-            return Create(return_value_void{Copy(GetErrorMessage(e))});
-        }
-    }
-    static return_value_json *getLoadOrder(void *p_owner) noexcept
-    {
-        try
-        {
-            const auto manager = static_cast<const LauncherManager *const>(p_owner);
-            const auto env = manager->Env();
-
-            const auto result = manager->FGetLoadOrder({}).As<Object>();
-            return Create(return_value_json{nullptr, Copy(JSONStringify(env, result).Utf16Value())});
-        }
-        catch (const Napi::Error &e)
-        {
-            return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
-        }
-    }
-    static return_value_void *setLoadOrder(void *p_owner, char16_t *p_load_order) noexcept
-    {
-        try
-        {
-            const auto manager = static_cast<const LauncherManager *const>(p_owner);
-            const auto env = manager->Env();
-
-            const auto loadOrder = JSONParse(env, p_load_order == nullptr ? String::New(env, "") : String::New(env, p_load_order));
-            manager->FSetLoadOrder({loadOrder});
             return Create(return_value_void{nullptr});
         }
         catch (const Napi::Error &e)
@@ -485,25 +452,21 @@ namespace Bannerlord::LauncherManager
     {
         const auto env = info.Env();
         this->FSetGameParameters = Persistent(info[0].As<Function>());
-        this->FGetLoadOrder = Persistent(info[1].As<Function>());
-        this->FSetLoadOrder = Persistent(info[2].As<Function>());
-        this->FSendNotification = Persistent(info[3].As<Function>());
-        this->FSendDialog = Persistent(info[4].As<Function>());
-        this->FGetInstallPath = Persistent(info[5].As<Function>());
-        this->FReadFileContent = Persistent(info[6].As<Function>());
-        this->FWriteFileContent = Persistent(info[7].As<Function>());
-        this->FReadDirectoryFileList = Persistent(info[8].As<Function>());
-        this->FReadDirectoryList = Persistent(info[9].As<Function>());
-        this->FGetAllModuleViewModels = Persistent(info[10].As<Function>());
-        this->FGetModuleViewModels = Persistent(info[11].As<Function>());
-        this->FSetModuleViewModels = Persistent(info[12].As<Function>());
-        this->FGetOptions = Persistent(info[13].As<Function>());
-        this->FGetState = Persistent(info[14].As<Function>());
+        this->FSendNotification = Persistent(info[1].As<Function>());
+        this->FSendDialog = Persistent(info[2].As<Function>());
+        this->FGetInstallPath = Persistent(info[3].As<Function>());
+        this->FReadFileContent = Persistent(info[4].As<Function>());
+        this->FWriteFileContent = Persistent(info[5].As<Function>());
+        this->FReadDirectoryFileList = Persistent(info[6].As<Function>());
+        this->FReadDirectoryList = Persistent(info[7].As<Function>());
+        this->FGetAllModuleViewModels = Persistent(info[8].As<Function>());
+        this->FGetModuleViewModels = Persistent(info[9].As<Function>());
+        this->FSetModuleViewModels = Persistent(info[10].As<Function>());
+        this->FGetOptions = Persistent(info[11].As<Function>());
+        this->FGetState = Persistent(info[12].As<Function>());
 
         const auto result = ve_create_handler(this,
                                               setGameParameters,
-                                              getLoadOrder,
-                                              setLoadOrder,
                                               sendNotification,
                                               sendDialog,
                                               getInstallPath,
@@ -522,8 +485,6 @@ namespace Bannerlord::LauncherManager
     LauncherManager::~LauncherManager()
     {
         this->FSetGameParameters.Unref();
-        this->FGetLoadOrder.Unref();
-        this->FSetLoadOrder.Unref();
         this->FSendNotification.Unref();
         this->FSendDialog.Unref();
         this->FGetInstallPath.Unref();

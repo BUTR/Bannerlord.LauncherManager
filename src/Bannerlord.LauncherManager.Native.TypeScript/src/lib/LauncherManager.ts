@@ -7,8 +7,6 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
 
   public constructor(
     setGameParameters: (executable: string, gameParameters: string[]) => void,
-    getLoadOrder: () => types.LoadOrder,
-    setLoadOrder: (loadOrder: types.LoadOrder) => void,
     sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void,
     sendDialog: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>,
     getInstallPath: () => string,
@@ -25,8 +23,6 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
     const addon: types.INativeExtension = require('./../../launchermanager.node');
     this.manager = new addon.LauncherManager(
       setGameParameters,
-      getLoadOrder,
-      setLoadOrder,
       sendNotification,
       sendDialog,
       getInstallPath,

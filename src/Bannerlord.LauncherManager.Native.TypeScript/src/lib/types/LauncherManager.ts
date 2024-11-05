@@ -3,8 +3,6 @@ import { ModuleInfoExtended, ModuleInfoExtendedWithMetadata } from "./Bannerlord
 export interface INativeExtension {
   LauncherManager: new (
     setGameParameters: (executable: string, gameParameters: string[]) => void,
-    getLoadOrder: () => LoadOrder,
-    setLoadOrder: (loadOrder: LoadOrder) => void,
     sendNotification: (id: string, type: NotificationType, message: string, delayMS: number) => void,
     sendDialog: (type: DialogType, title: string, message: string, filters: FileFilter[]) => Promise<string>,
     getInstallPath: () => string,
