@@ -10,6 +10,20 @@ namespace Bannerlord.LauncherManager.Utils;
 public static class SortHelper
 {
     /// <summary>
+    /// Given a list of modules provided as <paramref name="source"/>, automatically
+    /// sorts the modules such that they form a valid load order based on module metadata.
+    /// </summary>
+    public static IEnumerable<ModuleInfoExtended> AutoSort(IEnumerable<ModuleInfoExtended> source)
+    {
+        var orderedModules = source
+            .OrderByDescending(x => x.IsOfficial)
+            .ThenBy(x => x.Id, new AlphanumComparatorFast())
+            .ToArray();
+
+        return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
+    }
+    
+    /// <summary>
     /// External<br/>
     /// </summary>
     public static void ToggleModuleSelection<TModuleViewModel>(IEnumerable<TModuleViewModel> moduleVMs, IDictionary<string, TModuleViewModel> lookup, TModuleViewModel moduleVM)
