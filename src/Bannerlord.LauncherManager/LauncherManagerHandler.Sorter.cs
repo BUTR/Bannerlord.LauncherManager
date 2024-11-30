@@ -20,19 +20,9 @@ partial class LauncherManagerHandler
     /// </summary>
     public void Sort()
     {
-        static IEnumerable<ModuleInfoExtended> Sort(IEnumerable<ModuleInfoExtended> source)
-        {
-            var orderedModules = source
-                .OrderByDescending(x => x.IsOfficial)
-                .ThenBy(x => x.Id, new AlphanumComparatorFast())
-                .ToArray();
-
-            return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
-        }
-
         IsSorting = true;
         var modules = GetModuleViewModels()?.Select(x => x.ModuleInfoExtended) ?? [];
-        var sorted = Sort(modules);
+        var sorted = SortHelper.AutoSort(modules);
         var sortedViewModels = GetViewModelsFromModules(sorted);
         SetModuleViewModels(sortedViewModels);
 
