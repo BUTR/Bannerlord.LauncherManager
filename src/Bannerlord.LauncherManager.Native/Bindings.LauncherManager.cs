@@ -19,8 +19,6 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_ptr* CreateHandler(param_ptr* p_owner,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, return_value_void*> p_set_game_parameters,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_load_load_order,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, return_value_void*> p_save_load_order,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, return_value_void*> p_send_notification,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void>, return_value_void*> p_send_dialog,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_get_install_path,
