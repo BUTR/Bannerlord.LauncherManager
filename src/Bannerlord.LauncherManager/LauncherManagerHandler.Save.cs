@@ -1,6 +1,8 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -9,15 +11,15 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual SaveMetadata[] GetSaveFiles() => [];
+    public virtual Task<IReadOnlyList<SaveMetadata>> GetSaveFilesAsync() => Task.FromResult<IReadOnlyList<SaveMetadata>>([]);
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual SaveMetadata? GetSaveMetadata(string fileName, ReadOnlySpan<byte> data) => null;
+    public virtual Task<SaveMetadata?> GetSaveMetadataAsync(string fileName, ReadOnlyMemory<byte> data) => Task.FromResult<SaveMetadata?>(null);
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual string? GetSaveFilePath(string saveFile) => null;
+    public virtual Task<string?> GetSaveFilePathAsync(string saveFile) => Task.FromResult<string?>(null);
 }

@@ -6,60 +6,60 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   private manager: types.LauncherManager;
 
   public constructor(
-    setGameParameters: (executable: string, gameParameters: string[]) => void,
-    sendNotification: (id: string, type: types.NotificationType, message: string, delayMS: number) => void,
-    sendDialog: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>,
-    getInstallPath: () => string,
-    readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null,
-    writeFileContent: (filePath: string, data: Uint8Array) => void,
-    readDirectoryFileList: (directoryPath: string) => string[] | null,
-    readDirectoryList: (directoryPath: string) => string[] | null,
-    getAllModuleViewModels: () => types.ModuleViewModel[] | null,
-    getModuleViewModels: () => types.ModuleViewModel[] | null,
-    setModuleViewModels: (moduleViewModels: types.ModuleViewModel[]) => void,
-    getOptions: () => types.LauncherOptions,
-    getState: () => types.LauncherState) {
+    setGameParametersAsync: (executable: string, gameParameters: string[]) => Promise<void>,
+    sendNotificationAsync: (id: string, type: types.NotificationType, message: string, delayMS: number) => Promise<void>,
+    sendDialogAsync: (type: types.DialogType, title: string, message: string, filters: types.FileFilter[]) => Promise<string>,
+    getInstallPathAsync: () => Promise<string>,
+    readFileContentAsync: (filePath: string, offset: number, length: number) => Promise<Uint8Array | null>,
+    writeFileContentAsync: (filePath: string, data: Uint8Array) => Promise<void>,
+    readDirectoryFileListAsync: (directoryPath: string) => Promise<string[] | null>,
+    readDirectoryListAsync: (directoryPath: string) => Promise<string[] | null>,
+    getAllModuleViewModelsAsync: () => Promise<types.ModuleViewModel[] | null>,
+    getModuleViewModelsAsync: () => Promise<types.ModuleViewModel[] | null>,
+    setModuleViewModelsAsync: (moduleViewModels: types.ModuleViewModel[]) => Promise<void>,
+    getOptionsAsync: () => Promise<types.LauncherOptions>,
+    getStateAsync: () => Promise<types.LauncherState>) {
 
     const addon: types.INativeExtension = require('./../../launchermanager.node');
     this.manager = new addon.LauncherManager(
-      setGameParameters,
-      sendNotification,
-      sendDialog,
-      getInstallPath,
-      readFileContent,
-      writeFileContent,
-      readDirectoryFileList,
-      readDirectoryList,
-      getAllModuleViewModels,
-      getModuleViewModels,
-      setModuleViewModels,
-      getOptions,
-      getState,
+      setGameParametersAsync,
+      sendNotificationAsync,
+      sendDialogAsync,
+      getInstallPathAsync,
+      readFileContentAsync,
+      writeFileContentAsync,
+      readDirectoryFileListAsync,
+      readDirectoryListAsync,
+      getAllModuleViewModelsAsync,
+      getModuleViewModelsAsync,
+      setModuleViewModelsAsync,
+      getOptionsAsync,
+      getStateAsync,
     );
   }
-  public checkForRootHarmony = (): void => {
-    return this.manager.checkForRootHarmony();
+  public checkForRootHarmonyAsync = (): Promise<void> => {
+    return this.manager.checkForRootHarmonyAsync();
   }
-  public getGamePlatform = (): types.GamePlatform => {
-    return this.manager.getGamePlatform();
+  public getGamePlatformAsync = (): Promise<types.GamePlatform> => {
+    return this.manager.getGamePlatformAsync();
   }
-  public getGameVersion = (): string => {
-    return this.manager.getGameVersion();
+  public getGameVersionAsync = (): Promise<string> => {
+    return this.manager.getGameVersionAsync();
   }
-  public getModules = (): types.ModuleInfoExtendedWithMetadata[] => {
-    return this.manager.getModules();
+  public getModulesAsync = (): Promise<types.ModuleInfoExtendedWithMetadata[]> => {
+    return this.manager.getModulesAsync();
   }
-  public getAllModules = (): types.ModuleInfoExtendedWithMetadata[] => {
-    return this.manager.getAllModules();
+  public getAllModulesAsync = (): Promise<types.ModuleInfoExtendedWithMetadata[]> => {
+    return this.manager.getAllModulesAsync();
   }
-  public getSaveFilePath = (saveFile: string): string => {
-    return this.manager.getSaveFilePath(saveFile);
+  public getSaveFilePathAsync = (saveFile: string): Promise<string> => {
+    return this.manager.getSaveFilePathAsync(saveFile);
   }
-  public getSaveFiles = (): types.SaveMetadata[] => {
-    return this.manager.getSaveFiles();
+  public getSaveFilesAsync = (): Promise<types.SaveMetadata[]> => {
+    return this.manager.getSaveFilesAsync();
   }
-  public getSaveMetadata = (saveFile: string, data: ArrayBuffer): types.SaveMetadata => {
-    return this.manager.getSaveMetadata(saveFile, data);
+  public getSaveMetadataAsync = (saveFile: string, data: ArrayBuffer): Promise<types.SaveMetadata> => {
+    return this.manager.getSaveMetadataAsync(saveFile, data);
   }
   public installModule = (files: string[], moduleInfos: types.ModuleInfoExtendedWithMetadata[]): types.InstallResult => {
     return this.manager.installModule(files, moduleInfos);
@@ -67,61 +67,61 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public isSorting = (): boolean => {
     return this.manager.isSorting();
   }
-  public moduleListHandlerExport = (): void => {
-    return this.manager.moduleListHandlerExport();
+  public moduleListHandlerExportAsync = (): Promise<void> => {
+    return this.manager.moduleListHandlerExportAsync();
   }
-  public moduleListHandlerExportSaveFile = (saveFile: string): void => {
-    return this.manager.moduleListHandlerExportSaveFile(saveFile);
+  public moduleListHandlerExportSaveFileAsync = (saveFile: string): Promise<void> => {
+    return this.manager.moduleListHandlerExportSaveFileAsync(saveFile);
   }
-  public moduleListHandlerImport = (): Promise<boolean> => {
-    return this.manager.moduleListHandlerImport();
+  public moduleListHandlerImportAsync = (): Promise<boolean> => {
+    return this.manager.moduleListHandlerImportAsync();
   }
-  public moduleListHandlerImportSaveFile = (saveFile: string): Promise<boolean> => {
-    return this.manager.moduleListHandlerImportSaveFile(saveFile);
+  public moduleListHandlerImportSaveFileAsync = (saveFile: string): Promise<boolean> => {
+    return this.manager.moduleListHandlerImportSaveFileAsync(saveFile);
   }
-  public orderByLoadOrder = (loadOrder: types.LoadOrder): types.OrderByLoadOrderResult => {
-    return this.manager.orderByLoadOrder(loadOrder);
+  public orderByLoadOrderAsync = (loadOrder: types.LoadOrder): Promise<types.OrderByLoadOrderResult> => {
+    return this.manager.orderByLoadOrderAsync(loadOrder);
   }
-  public refreshModules = (): void => {
-    return this.manager.refreshModules();
+  public refreshModulesAsync = (): Promise<void> => {
+    return this.manager.refreshModulesAsync();
   }
-  public refreshGameParameters = (): void => {
-    return this.manager.refreshGameParameters();
+  public refreshGameParametersAsync = (): Promise<void> => {
+    return this.manager.refreshGameParametersAsync();
   }
-  public setGameParameterExecutable(executable: string): void {
-    return this.manager.setGameParameterExecutable(executable);
+  public setGameParameterExecutableAsync(executable: string): Promise<void> {
+    return this.manager.setGameParameterExecutableAsync(executable);
   }
-  public setGameParameterSaveFile(saveName: string): void {
-    return this.manager.setGameParameterSaveFile(saveName);
+  public setGameParameterSaveFileAsync(saveName: string): Promise<void> {
+    return this.manager.setGameParameterSaveFileAsync(saveName);
   }
-  public setGameParameterContinueLastSaveFile(value: boolean): void {
-    return this.manager.setGameParameterContinueLastSaveFile(value);
+  public setGameParameterContinueLastSaveFileAsync(value: boolean): Promise<void> {
+    return this.manager.setGameParameterContinueLastSaveFileAsync(value);
   }
   public setGameStore(gameStore: types.GameStore): void {
     return this.manager.setGameStore(gameStore);
   }
-  public sort = (): void => {
-    return this.manager.sort();
+  public sortAsync = (): Promise<void> => {
+    return this.manager.sortAsync();
   }
-  public sortHelperChangeModulePosition = (moduleViewModel: types.ModuleViewModel, insertIndex: number): boolean => {
-    return this.manager.sortHelperChangeModulePosition(moduleViewModel, insertIndex);
+  public sortHelperChangeModulePositionAsync = (moduleViewModel: types.ModuleViewModel, insertIndex: number): Promise<boolean> => {
+    return this.manager.sortHelperChangeModulePositionAsync(moduleViewModel, insertIndex);
   }
-  public sortHelperToggleModuleSelection = (moduleViewModel: types.ModuleViewModel): types.ModuleViewModel => {
-    return this.manager.sortHelperToggleModuleSelection(moduleViewModel);
+  public sortHelperToggleModuleSelectionAsync = (moduleViewModel: types.ModuleViewModel): Promise<types.ModuleViewModel> => {
+    return this.manager.sortHelperToggleModuleSelectionAsync(moduleViewModel);
   }
-  public sortHelperValidateModule = (moduleViewModel: types.ModuleViewModel): string[] => {
-    return this.manager.sortHelperValidateModule(moduleViewModel);
+  public sortHelperValidateModuleAsync = (moduleViewModel: types.ModuleViewModel): Promise<string[]> => {
+    return this.manager.sortHelperValidateModuleAsync(moduleViewModel);
   }
   public testModule = (files: string[]): types.SupportedResult => {
     return this.manager.testModule(files);
   }
-  public dialogTestWarning = (): Promise<string> => {
-    return this.manager.dialogTestWarning();
+  public dialogTestWarningAsync = (): Promise<string> => {
+    return this.manager.dialogTestWarningAsync();
   }
-  public dialogTestFileOpen = (): Promise<string> => {
-    return this.manager.dialogTestFileOpen();
+  public dialogTestFileOpenAsync = (): Promise<string> => {
+    return this.manager.dialogTestFileOpenAsync();
   }
-  public setGameParameterLoadOrder = (loadOrder: types.LoadOrder): void => {
-    return this.manager.setGameParameterLoadOrder(loadOrder);
+  public setGameParameterLoadOrderAsync = (loadOrder: types.LoadOrder): Promise<void> => {
+    return this.manager.setGameParameterLoadOrderAsync(loadOrder);
   }
 }

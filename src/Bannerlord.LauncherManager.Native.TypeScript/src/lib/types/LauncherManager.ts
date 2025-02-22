@@ -2,19 +2,19 @@ import { ModuleInfoExtended, ModuleInfoExtendedWithMetadata } from "./Bannerlord
 
 export interface INativeExtension {
   LauncherManager: new (
-    setGameParameters: (executable: string, gameParameters: string[]) => void,
-    sendNotification: (id: string, type: NotificationType, message: string, delayMS: number) => void,
-    sendDialog: (type: DialogType, title: string, message: string, filters: FileFilter[]) => Promise<string>,
-    getInstallPath: () => string,
-    readFileContent: (filePath: string, offset: number, length: number) => Uint8Array | null,
-    writeFileContent: (filePath: string, data: Uint8Array) => void,
-    readDirectoryFileList: (directoryPath: string) => string[] | null,
-    readDirectoryList: (directoryPath: string) => string[] | null,
-    getAllModuleViewModels: () => ModuleViewModel[] | null,
-    getModuleViewModels: () => ModuleViewModel[] | null,
-    setModuleViewModels: (moduleViewModels: ModuleViewModel[]) => void,
-    getOptions: () => LauncherOptions,
-    getState: () => LauncherState,
+    setGameParametersAsync: (executable: string, gameParameters: string[]) => Promise<void>,
+    sendNotificationAsync: (id: string, type: NotificationType, message: string, delayMS: number) => Promise<void>,
+    sendDialogAsync: (type: DialogType, title: string, message: string, filters: FileFilter[]) => Promise<string>,
+    getInstallPathAsync: () => Promise<string>,
+    readFileContentAsync: (filePath: string, offset: number, length: number) => Promise<Uint8Array | null>,
+    writeFileContentAsync: (filePath: string, data: Uint8Array) => Promise<void>,
+    readDirectoryFileListAsync: (directoryPath: string) => Promise<string[] | null>,
+    readDirectoryListAsync: (directoryPath: string) => Promise<string[] | null>,
+    getAllModuleViewModelsAsync: () => Promise<ModuleViewModel[] | null>,
+    getModuleViewModelsAsync: () => Promise<ModuleViewModel[] | null>,
+    setModuleViewModelsAsync: (moduleViewModels: ModuleViewModel[]) => Promise<void>,
+    getOptionsAsync: () => Promise<LauncherOptions>,
+    getStateAsync: () => Promise<LauncherState>,
   ) => LauncherManager
 }
 
@@ -88,35 +88,35 @@ export interface FileFilter {
 export type LauncherManager = {
   constructor(): LauncherManager;
 
-  checkForRootHarmony(): void;
-  getGamePlatform(): GamePlatform;
-  getGameVersion(): string;
-  getModules(): ModuleInfoExtendedWithMetadata[];
-  getAllModules(): ModuleInfoExtendedWithMetadata[];
-  getSaveFilePath(saveFile: string): string;
-  getSaveFiles(): SaveMetadata[];
-  getSaveMetadata(saveFile: string, data: ArrayBuffer): SaveMetadata;
+  checkForRootHarmonyAsync(): Promise<void>;
+  getGamePlatformAsync(): Promise<GamePlatform>;
+  getGameVersionAsync(): Promise<string>;
+  getModulesAsync(): Promise<ModuleInfoExtendedWithMetadata[]>;
+  getAllModulesAsync(): Promise<ModuleInfoExtendedWithMetadata[]>;
+  getSaveFilePathAsync(saveFile: string): Promise<string>;
+  getSaveFilesAsync(): Promise<SaveMetadata[]>;
+  getSaveMetadataAsync(saveFile: string, data: ArrayBuffer): Promise<SaveMetadata>;
   installModule(files: string[], moduleInfos: ModuleInfoExtendedWithMetadata[]): InstallResult;
   isSorting(): boolean;
-  moduleListHandlerExport(): void;
-  moduleListHandlerExportSaveFile(saveFile: string): void;
-  moduleListHandlerImport(): Promise<boolean>;
-  moduleListHandlerImportSaveFile(saveFile: string): Promise<boolean>;
-  orderByLoadOrder(loadOrder: LoadOrder): OrderByLoadOrderResult;
-  refreshModules(): void;
-  refreshGameParameters(): void;
-  setGameParameterExecutable(executable: string): void;
-  setGameParameterSaveFile(saveName: string): void;
-  setGameParameterContinueLastSaveFile(value: boolean): void;
+  moduleListHandlerExportAsync(): Promise<void>;
+  moduleListHandlerExportSaveFileAsync(saveFile: string): Promise<void>;
+  moduleListHandlerImportAsync(): Promise<boolean>;
+  moduleListHandlerImportSaveFileAsync(saveFile: string): Promise<boolean>;
+  orderByLoadOrderAsync(loadOrder: LoadOrder): Promise<OrderByLoadOrderResult>;
+  refreshModulesAsync(): Promise<void>;
+  refreshGameParametersAsync(): Promise<void>;
+  setGameParameterExecutableAsync(executable: string): Promise<void>;
+  setGameParameterSaveFileAsync(saveName: string): Promise<void>;
+  setGameParameterContinueLastSaveFileAsync(value: boolean): Promise<void>;
   setGameStore(gameStore: GameStore): void;
-  sort(): void;
-  sortHelperChangeModulePosition(moduleViewModel: ModuleViewModel, insertIndex: number): boolean;
-  sortHelperToggleModuleSelection(moduleViewModel: ModuleViewModel): ModuleViewModel;
-  sortHelperValidateModule(moduleViewModel: ModuleViewModel): string[];
+  sortAsync(): Promise<void>;
+  sortHelperChangeModulePositionAsync(moduleViewModel: ModuleViewModel, insertIndex: number): Promise<boolean>;
+  sortHelperToggleModuleSelectionAsync(moduleViewModel: ModuleViewModel): Promise<ModuleViewModel>;
+  sortHelperValidateModuleAsync(moduleViewModel: ModuleViewModel): Promise<string[]>;
   testModule(files: string[]): SupportedResult;
 
-  dialogTestWarning(): Promise<string>;
-  dialogTestFileOpen(): Promise<string>;
+  dialogTestWarningAsync(): Promise<string>;
+  dialogTestFileOpenAsync(): Promise<string>;
 
-  setGameParameterLoadOrder(loadOrder: LoadOrder): void;
+  setGameParameterLoadOrderAsync(loadOrder: LoadOrder): Promise<void>;
 }

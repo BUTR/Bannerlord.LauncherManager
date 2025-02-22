@@ -14,20 +14,21 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Native;
 
-internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandler, IDisposable
+internal sealed class LauncherManagerHandlerNative : LauncherManagerHandler, IDisposable
 {
     private static readonly string SavePath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Mount and Blade II Bannerlord", "Game Saves");
 
-    public static LauncherManagerHandlerNative? FromPointer(void* ptr) => GCHandle.FromIntPtr(new IntPtr(ptr)).Target as LauncherManagerHandlerNative;
+    public static unsafe LauncherManagerHandlerNative? FromPointer(void* ptr) => GCHandle.FromIntPtr(new IntPtr(ptr)).Target as LauncherManagerHandlerNative;
 
-    public param_ptr* OwnerPtr { get; }
-    public VoidPtr* HandlePtr { get; }
+    public unsafe param_ptr* OwnerPtr { get; }
+    public unsafe VoidPtr* HandlePtr { get; }
 
-    public LauncherManagerHandlerNative(param_ptr* pOwner,
+    public unsafe LauncherManagerHandlerNative(param_ptr* pOwner,
         ILauncherStateProvider launcherStateUProvider,
         IGameInfoProvider gameInfoProvider,
         IFileSystemProvider fileSystemProvider,
@@ -40,7 +41,7 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
         HandlePtr = (VoidPtr*) GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Normal)).ToPointer();
     }
 
-    private void ReleaseUnmanagedResources()
+    private unsafe void ReleaseUnmanagedResources()
     {
         var handle = GCHandle.FromIntPtr(new IntPtr(HandlePtr));
         if (handle.IsAllocated) handle.Free();
@@ -57,47 +58,47 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
         ReleaseUnmanagedResources();
     }
 
-    public new void SetGameParameterLoadOrder(LoadOrder loadOrder) => base.SetGameParameterLoadOrder(loadOrder);
+    public new async Task SetGameParameterLoadOrderAsync(LoadOrder loadOrder) => await base.SetGameParameterLoadOrderAsync(loadOrder);
 
 
-    public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
-    public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetAllModules() => base.GetAllModules();
+    public new async Task<IReadOnlyList<ModuleInfoExtendedWithMetadata>> GetModulesAsync() => await base.GetModulesAsync();
+    public new async Task<IReadOnlyList<ModuleInfoExtendedWithMetadata>> GetAllModulesAsync() => await base.GetAllModulesAsync();
 
-    public new IEnumerable<IModuleViewModel>? GetModuleViewModels() => base.GetModuleViewModels();
+    public new async Task<IEnumerable<IModuleViewModel>?> GetModuleViewModelsAsync() => await base.GetModuleViewModelsAsync();
 
-    public new void ShowHint(BUTRTextObject message) => base.ShowHint(message);
-    public new void ShowHint(string message) => base.ShowHint(message);
+    public new async Task ShowHintAsync(BUTRTextObject message) => await base.ShowHintAsync(message);
+    public new async Task ShowHintAsync(string message) => await base.ShowHintAsync(message);
 
-    public new void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult) => base.SendDialog(type, title, message, filters, onResult);
+    public new async Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters) => await base.SendDialogAsync(type, title, message, filters);
 
-    public override SaveMetadata? GetSaveMetadata(string fileName, ReadOnlySpan<byte> data)
+    public override Task<SaveMetadata?> GetSaveMetadataAsync(string fileName, ReadOnlyMemory<byte> data)
     {
-        var length = BitConverter.ToInt32(data.Slice(0, 4));
-        if (length > 5 * 1024 * 1024) return null; // 5MB JSON? Orly?
-        if (length > data.Length - 4) return null;
+        var length = BitConverter.ToInt32(data.Slice(0, 4).Span);
+        if (length > 5 * 1024 * 1024) return Task.FromResult<SaveMetadata?>(null); // 5MB JSON? Orly?
+        if (length > data.Length - 4) return Task.FromResult<SaveMetadata?>(null);
 
         try
         {
-            var metadata = JsonSerializer.Deserialize(Encoding.UTF8.GetString(data.Slice(4, length)), Bindings.CustomSourceGenerationContext.TWSaveMetadata);
-            if (metadata == null) return null;
-            return new SaveMetadata(Path.GetFileName(fileName), metadata);
+            var metadata = JsonSerializer.Deserialize(Encoding.UTF8.GetString(data.Slice(4, length).Span), Bindings.CustomSourceGenerationContext.TWSaveMetadata);
+            if (metadata == null) return Task.FromResult<SaveMetadata?>(null);
+            return Task.FromResult<SaveMetadata?>(new SaveMetadata(Path.GetFileName(fileName), metadata));
         }
         catch (JsonException)
         {
-            return null;
+            return Task.FromResult<SaveMetadata?>(null);
         }
     }
 
-    public override SaveMetadata[] GetSaveFiles()
+    public override async Task<IReadOnlyList<SaveMetadata>> GetSaveFilesAsync()
     {
-        IEnumerable<SaveMetadata> GetSaveFilesInternal()
+        async IAsyncEnumerable<SaveMetadata> GetSaveFilesInternal()
         {
-            foreach (var filePath in ReadDirectoryFileList(SavePath) ?? [])
+            foreach (var filePath in await ReadDirectoryFileListAsync(SavePath) ?? [])
             {
-                if (ReadFileContent(filePath, 0, 4) is not { } lengthData) continue;
+                if (await ReadFileContentAsync(filePath, 0, 4) is not { } lengthData) continue;
                 var length = BitConverter.ToInt32(lengthData, 0);
                 if (length > 5 * 1024 * 1024) continue; // 5MB JSON? Orly?
-                if (ReadFileContent(filePath, 4, length) is not { } jsonData) continue;
+                if (await ReadFileContentAsync(filePath, 4, length) is not { } jsonData) continue;
 
                 SaveMetadata? saveMetadata;
                 try
@@ -111,21 +112,24 @@ internal sealed unsafe class LauncherManagerHandlerNative : LauncherManagerHandl
                 yield return saveMetadata;
             }
         }
-        return GetSaveFilesInternal().ToArray();
+        return await GetSaveFilesInternal().ToArrayAsync();
     }
 
-    public override string GetSaveFilePath(string saveFile) => Path.Combine(SavePath, $"{saveFile}.sav");
-
-
-    public override string GetGameVersion()
+    public override Task<string?> GetSaveFilePathAsync(string saveFile)
     {
-        var gamePath = GetInstallPath();
+        return Task.FromResult<string?>(Path.Combine(SavePath, $"{saveFile}.sav"));
+    }
+
+
+    public override async Task<string> GetGameVersionAsync()
+    {
+        var gamePath = await GetInstallPathAsync();
         return Fetcher.GetVersion(gamePath, Constants.TaleWorldsLibrary);
     }
 
-    public override int GetChangeset()
+    public override async Task<int> GetChangesetAsync()
     {
-        var gamePath = GetInstallPath();
+        var gamePath = await GetInstallPathAsync();
         return Fetcher.GetChangeSet(gamePath, Constants.TaleWorldsLibrary);
     }
 }

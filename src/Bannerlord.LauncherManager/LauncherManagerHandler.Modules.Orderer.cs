@@ -6,8 +6,8 @@ using Bannerlord.ModuleManager;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -19,28 +19,29 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public bool TryOrderByLoadOrder(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, [NotNullWhen(false)] out IReadOnlyList<string>? issues,
-        out IReadOnlyList<IModuleViewModel> orderedModules)
+    public async Task<OrderByLoadOrderResult> TryOrderByLoadOrderAsync(
+        IEnumerable<string> loadOrder,
+        Func<string, bool> isModuleSelected)
     {
-        var options = GetOptions();
+        var options = await GetOptionsAsync();
+        
         return options.BetaSorting
-            ? TryOrderByLoadOrderBeta(loadOrder, isModuleSelected, out issues, out orderedModules)
-            : TryOrderByLoadOrderTW(loadOrder, isModuleSelected, out issues, out orderedModules);
+            ? await TryOrderByLoadOrderBetaAsync(loadOrder, isModuleSelected)
+            : await TryOrderByLoadOrderTWAsync(loadOrder, isModuleSelected);
     }
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal bool TryOrderByLoadOrderTW(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, [NotNullWhen(false)] out IReadOnlyList<string>? issues,
-        out IReadOnlyList<IModuleViewModel> orderedModules, bool overwriteWhenFailure = false)
+    protected internal async Task<OrderByLoadOrderResult> TryOrderByLoadOrderTWAsync(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, bool overwriteWhenFailure = false)
     {
-        var state = GetState();
-
         var originalOrderedModules = new List<ModuleInfoExtendedWithMetadata>();
 
-        var moduleViewModels = GetAllModuleViewModels() ?? [];
+        var moduleViewModels = await GetAllModuleViewModelsAsync() ?? [];
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
+        var state = await GetStateAsync();
+        
         // Load the load order modules
         foreach (var id in loadOrder)
         {
@@ -76,19 +77,11 @@ partial class LauncherManagerHandler
 
         var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules.Where(x => moduleViewModelLookup[x.Id].IsSelected).ToList()).ToList();
         if (!overwriteWhenFailure && existingLoadOrderValidationIssues.Count != 0)
-        {
-            issues = existingLoadOrderValidationIssues;
-            orderedModules = existingOrderedViewModels;
-            return false;
-        }
+            return new(false, existingLoadOrderValidationIssues, existingOrderedViewModels);
 
         var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedViewModels.Where(x => x.IsSelected).Select(x => x.ModuleInfoExtended).ToList()).ToList();
         if (!overwriteWhenFailure && loadOrderValidationIssues.Count != 0)
-        {
-            issues = loadOrderValidationIssues;
-            orderedModules = existingOrderedViewModels;
-            return false;
-        }
+            return new(false, loadOrderValidationIssues, existingOrderedViewModels);
 
         // Toggle IsSelected
         foreach (var moduleVM in existingOrderedViewModels)
@@ -98,27 +91,26 @@ partial class LauncherManagerHandler
         }
 
         var providedLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(originalOrderedModules.Where(x => moduleViewModelLookup[x.Id].IsSelected).ToList()).ToList();
-        issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
-        orderedModules = existingOrderedViewModels;
+        var issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
+        var orderedModules = existingOrderedViewModels;
         var idx = 0;
         foreach (var viewModel in orderedModules)
             viewModel.Index = idx++;
-        return true;
+        return new(true, issues, orderedModules);
     }
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal bool TryOrderByLoadOrderBeta(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected, [NotNullWhen(false)] out IReadOnlyList<string>? issues,
-        out IReadOnlyList<IModuleViewModel> orderedModules)
+    protected internal async Task<OrderByLoadOrderResult> TryOrderByLoadOrderBetaAsync(IEnumerable<string> loadOrder, Func<string, bool> isModuleSelected)
     {
-        var state = GetState();
-
         var originalOrderedModules = new List<ModuleInfoExtendedWithMetadata>();
 
-        var moduleViewModels = GetAllModuleViewModels() ?? [];
+        var moduleViewModels = await GetAllModuleViewModelsAsync() ?? [];
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
+        var state = await GetStateAsync();
+        
         // Load all modules
         foreach (var moduleInfoExtended in ExtendedModuleInfoCache.Values)
         {
@@ -144,19 +136,11 @@ partial class LauncherManagerHandler
         // Check the present load order
         var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(presentOrderedIds.Select(x => ExtendedModuleInfoCache[x]).ToList()).ToList();
         if (loadOrderValidationIssues.Count != 0)
-        {
-            issues = loadOrderValidationIssues;
-            orderedModules = existingOrderedViewModels;
-            return false;
-        }
+            return new(false, loadOrderValidationIssues, existingOrderedViewModels);
 
         var existingLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(existingOrderedModules).ToList();
         if (existingLoadOrderValidationIssues.Count != 0)
-        {
-            issues = existingLoadOrderValidationIssues;
-            orderedModules = existingOrderedViewModels;
-            return false;
-        }
+            return new(false, existingLoadOrderValidationIssues, existingOrderedViewModels);
 
         // Toggle IsSelected
         foreach (var moduleVM in existingOrderedViewModels)
@@ -186,9 +170,9 @@ partial class LauncherManagerHandler
                 var yIdx = existingOrderedViewModels.IndexOf(z => z.ModuleInfoExtended.Id == yId);
                 if (xIdx > yIdx)
                 {
-                    if (!SortHelper.ChangeModulePosition(existingOrderedViewModels, moduleViewModelLookup, moduleViewModelLookup[xId], yIdx))
+                    if (!SortHelper.ChangeModulePosition(existingOrderedViewModels, moduleViewModelLookup, moduleViewModelLookup[xId], yIdx).Success)
                     {
-                        if (!SortHelper.ChangeModulePosition(existingOrderedViewModels, moduleViewModelLookup, moduleViewModelLookup[yId], xIdx))
+                        if (!SortHelper.ChangeModulePosition(existingOrderedViewModels, moduleViewModelLookup, moduleViewModelLookup[yId], xIdx).Success)
                         {
                             hasInvalid = true;
                         }
@@ -198,19 +182,15 @@ partial class LauncherManagerHandler
         }
 
         if (retryCount >= retryCountMax)
-        {
-            issues = new[] { new BUTRTextObject("{=sLf3eIpH}Failed to order the module list!").ToString() };
-            orderedModules = existingOrderedViewModels;
-            return false;
-        }
+            return new(false, [new BUTRTextObject("{=sLf3eIpH}Failed to order the module list!").ToString()], existingOrderedViewModels);
 
         var providedLoadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(originalOrderedModules).ToList();
-        issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
-        orderedModules = existingOrderedViewModels;
+        var issues = providedLoadOrderValidationIssues.Count > 0 ? providedLoadOrderValidationIssues : null;
+        var orderedModules = existingOrderedViewModels;
         var idx = 0;
         foreach (var viewModel in orderedModules)
             viewModel.Index = idx++;
-        return true;
+        return new(true, issues, orderedModules);
     }
 
     /// <summary>

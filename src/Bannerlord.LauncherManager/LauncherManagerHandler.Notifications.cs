@@ -2,6 +2,7 @@
 using Bannerlord.LauncherManager.Models;
 
 using System;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -10,10 +11,10 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal void ShowHint(BUTRTextObject message) => SendNotification(Guid.NewGuid().ToString(), NotificationType.Hint, message.ToString(), 0);
+    protected internal async Task ShowHintAsync(BUTRTextObject message) => await SendNotificationAsync(Guid.NewGuid().ToString(), NotificationType.Hint, message.ToString(), 0);
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal void ShowHint(string message) => SendNotification(Guid.NewGuid().ToString(), NotificationType.Hint, message, 0);
+    protected internal async Task ShowHintAsync(string message) => await SendNotificationAsync(Guid.NewGuid().ToString(), NotificationType.Hint, message, 0);
 }

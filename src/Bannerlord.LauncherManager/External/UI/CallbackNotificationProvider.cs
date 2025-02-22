@@ -1,6 +1,7 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
 using System;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.External.UI;
 
@@ -13,5 +14,9 @@ public sealed class CallbackNotificationProvider : INotificationProvider
         _sendNotification = sendNotification;
     }
 
-    public void SendNotification(string id, NotificationType type, string message, uint displayMs) => _sendNotification(id, type, message, displayMs);
+    public Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
+    {
+        _sendNotification(id, type, message, displayMs);
+        return Task.CompletedTask;
+    }
 }

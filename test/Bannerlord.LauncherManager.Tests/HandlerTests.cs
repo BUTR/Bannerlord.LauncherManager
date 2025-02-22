@@ -9,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FetchBannerlordVersion;
+
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Tests;
 
@@ -24,7 +27,9 @@ public class LauncherManagerHandlerExposer : LauncherManagerHandler
         base(launcherStateUProvider, gameInfoProvider, fileSystemProvider, dialogProviderProvider, notificationProviderProvider, loadOrderStateProvider)
     { }
 
-    public new IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules() => base.GetModules();
+    public new async Task<IReadOnlyList<ModuleInfoExtendedWithMetadata>> GetModulesAsync() => await base.GetModulesAsync();
+
+    public override async Task<string> GetGameVersionAsync() => Fetcher.GetVersion(await GetInstallPathAsync(), Constants.TaleWorldsLibrary);
 }
 
 public class HandlerTests
@@ -40,15 +45,21 @@ public class HandlerTests
 
     private const string GamePath = "./Data/game/";
 
-    private static byte[]? Read(string filePath, int offset, int length)
+    private static void Read(string filePath, int offset, int length, Action<byte[]?> callback)
     {
-        if (!File.Exists(filePath)) return null;
+        if (!File.Exists(filePath))
+        {
+            callback(null);
+            return;
+        }
 
         if (offset == 0 && length == -1)
         {
-            return File.ReadAllBytes(filePath);
+            callback(File.ReadAllBytes(filePath));
+            return;
         }
-        else if (offset >= 0 && length > 0)
+        
+        if (offset >= 0 && length > 0)
         {
             using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             var data = new byte[length];
@@ -56,16 +67,16 @@ public class HandlerTests
             var readLength = fs.Read(data, 0, length);
             if (readLength != length)
                 throw new Exception();
-            return data;
+            callback(data);
+            return;
         }
-        else
-        {
-            return null;
-        }
+        
+        callback(null);
+        return;
     }
 
     [Test]
-    public void Sorter_Sort_Test()
+    public async Task Sorter_Sort_Test()
     {
         var loadOrder = new LoadOrder
         {
@@ -84,29 +95,29 @@ public class HandlerTests
             fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
-                readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
-                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
+                readDirectoryFileList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetFiles(directory) : null),
+                readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: () => Path.GetFullPath(GamePath)!
+                getInstallPath: callback => callback(Path.GetFullPath(GamePath)!)
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: (id, type, message, ms) => { }
             ),
             launcherStateUProvider: new CallbackLauncherStateProvider(
-                setGameParameters: (executable, parameters) => { },
+                setGameParameters: (executable, parameters, callback) => callback(),
                 getOptions: null!,
                 getState: null!
             ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
-                getAllModuleViewModels: () => moduleViewModels,
-                getModuleViewModels: () => moduleViewModels,
-                setModuleViewModels: (x) => setModuleViewModels = x)
+                getAllModuleViewModels: callback => callback(moduleViewModels),
+                getModuleViewModels: callback => callback(moduleViewModels),
+                setModuleViewModels: (x, callback) => { setModuleViewModels = x; callback(); })
         );
 
-        var modules = handler.GetModules();
-        moduleViewModels = new IModuleViewModel[]
-        {
+        var modules = await handler.GetModulesAsync();
+        moduleViewModels =
+        [
             new ModuleViewModel
             {
                 ModuleInfoExtended = modules.First(x => x.Id == "Test"),
@@ -123,15 +134,15 @@ public class HandlerTests
                 IsDisabled = false,
                 Index = 1,
             },
-        };
+        ];
 
-        handler.Sort();
+        await handler.SortAsync();
 
         Assert.That(setModuleViewModels.Select(x => x.ModuleInfoExtended.Id).ToArray(), Is.EqualTo(expectedLoadOrderIds));
     }
 
     [Test]
-    public void OrderBy_Test()
+    public async Task OrderBy_Test()
     {
         var loadOrder = new LoadOrder
         {
@@ -149,30 +160,30 @@ public class HandlerTests
             fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
-                readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
-                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
+                readDirectoryFileList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetFiles(directory) : null),
+                readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: () => Path.GetFullPath(GamePath)!
+                getInstallPath: (callback) => callback(Path.GetFullPath(GamePath)!)
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: (id, type, message, ms) => { }
             ),
             launcherStateUProvider: new CallbackLauncherStateProvider(
-                setGameParameters: (executable, parameters) => { },
-                getOptions: () => new LauncherOptions(false),
-                getState: () => new LauncherState(true)
+                setGameParameters: (executable, parameters, callback) => callback(),
+                getOptions: (callback) => callback(new LauncherOptions(false)),
+                getState: (callback) => callback(new LauncherState(true))
             ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
-                getAllModuleViewModels: () => moduleViewModels,
-                getModuleViewModels: () => moduleViewModels,
+                getAllModuleViewModels: (callback) => callback(moduleViewModels),
+                getModuleViewModels: (callback) => callback(moduleViewModels),
                 setModuleViewModels: null!)
         );
 
-        handler.RefreshModules();
-        var modules = handler.GetModules();
-        moduleViewModels = new IModuleViewModel[]
-        {
+        await handler.RefreshModulesAsync();
+        var modules = await handler.GetModulesAsync();
+        moduleViewModels =
+        [
             new ModuleViewModel
             {
                 ModuleInfoExtended = modules.First(x => x.Id == "Test"),
@@ -189,15 +200,15 @@ public class HandlerTests
                 IsDisabled = false,
                 Index = 1,
             },
-        };
+        ];
 
-        var result = handler.TryOrderByLoadOrder(loadOrder.Keys, x => true, out var issues, out var sorted);
+        var (result, issues, sorted) = await handler.TryOrderByLoadOrderAsync(loadOrder.Keys, x => true);
 
         Assert.That(sorted.Select(x => x.ModuleInfoExtended.Id).ToArray(), Is.EqualTo(expectedLoadOrderIds));
     }
 
     [Test]
-    public void ModuleProvider_GetModules_Test()
+    public async Task ModuleProvider_GetModules_Test()
     {
         var handler = new LauncherManagerHandlerExposer(
             dialogProviderProvider: new CallbackDialogProvider(
@@ -206,11 +217,11 @@ public class HandlerTests
             fileSystemProvider: new CallbackFileSystemProvider(
                 readFileContent: Read,
                 writeFileContent: null!,
-                readDirectoryFileList: directory => Directory.Exists(directory) ? Directory.GetFiles(directory) : null,
-                readDirectoryList: directory => Directory.Exists(directory) ? Directory.GetDirectories(directory) : null
+                readDirectoryFileList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetFiles(directory) : null),
+                readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: () => Path.GetFullPath(GamePath)!
+                getInstallPath: (callback) => callback("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount & Blade II Bannerlord")
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!
@@ -226,7 +237,9 @@ public class HandlerTests
                 setModuleViewModels: null!)
         );
 
-        var modules = handler.GetModules().ToList();
+        var version = await handler.GetGameVersionAsync();
+
+        var modules = await handler.GetModulesAsync();
 
         Assert.That(modules.Count, Is.GreaterThanOrEqualTo(1));
     }
@@ -307,7 +320,7 @@ public class HandlerTests
                 readDirectoryList: null!
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: () => Path.GetFullPath(GamePath)!
+                getInstallPath: (callback) => callback(Path.GetFullPath(GamePath)!)
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!

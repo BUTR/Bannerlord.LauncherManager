@@ -120,7 +120,7 @@ public sealed unsafe class LauncherManagerWrapper
 
 public sealed partial class LauncherManagerTests : BaseTests
 {
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial return_value_ptr* ve_create_handler(param_ptr* p_owner,
         delegate*<param_ptr*, param_string*, param_json*, return_value_void*> p_set_game_parameters,
         delegate*<param_ptr*, return_value_json*> p_load_load_order,
@@ -137,16 +137,16 @@ public sealed partial class LauncherManagerTests : BaseTests
         delegate*<param_ptr*, return_value_json*> p_get_options,
         delegate*<param_ptr*, return_value_json*> p_get_state);
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial return_value_json* ve_install_module(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos);
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     public static unsafe partial return_value_json* ve_get_save_files(param_ptr* p_handle);
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     public static unsafe partial return_value_json* ve_get_save_metadata(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len);
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     public static unsafe partial return_value_string* ve_get_save_file_path(param_ptr* p_handle, param_string* p_save_file);
 
     [Test]

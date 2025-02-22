@@ -11,6 +11,102 @@ using namespace Bannerlord::LauncherManager::Native;
 
 namespace Utils
 {
+    struct CallbackData
+    {
+        Napi::Promise::Deferred deferred;
+        Napi::ThreadSafeFunction tsfn;
+    };
+
+    template <typename Callback>
+    CallbackData *CreateCallbackData(Napi::Env env, Callback callback, const char *callbackName)
+    {
+        auto *cbData = new CallbackData{Napi::Promise::Deferred::New(env), Napi::ThreadSafeFunction()};
+
+        // Initialize the ThreadSafeFunction
+        cbData->tsfn = Napi::ThreadSafeFunction::New(
+            env, Napi::Function::New(env, callback),
+            callbackName, 0, 1);
+
+        return cbData;
+    }
+
+    void VoidCallback(param_ptr *handler)
+    {
+        auto *cbData = static_cast<CallbackData *>(handler);
+
+        cbData->tsfn.BlockingCall([cbData](Napi::Env env, Napi::Function jsCallback)
+                                  {
+            cbData->deferred.Resolve(env.Undefined());
+    
+            cbData->tsfn.Release();
+            delete cbData; });
+    }
+
+    void JsonCallback(param_ptr *handler, char16_t *dataJson)
+    {
+        auto *cbData = static_cast<CallbackData *>(handler);
+
+        cbData->tsfn.BlockingCall(dataJson, [cbData](Napi::Env env, Napi::Function jsCallback, char16_t *dataJson)
+                                  {
+            const auto json = JSONParse(env, dataJson == nullptr ? Napi::String::New(env, "") : Napi::String::New(env, dataJson));
+    
+            cbData->deferred.Resolve(json);
+    
+            cbData->tsfn.Release();
+            delete cbData; });
+    }
+
+    void StringCallback(param_ptr *handler, char16_t *dataStr)
+    {
+        auto *cbData = static_cast<CallbackData *>(handler);
+
+        cbData->tsfn.BlockingCall(dataStr, [cbData](Napi::Env env, Napi::Function jsCallback, char16_t *dataStr)
+                                  {
+            const auto str = dataStr == nullptr ? String::New(env, "") : String::New(env, dataStr);
+    
+            cbData->deferred.Resolve(str);
+    
+            cbData->tsfn.Release();
+            delete cbData; });
+    }
+
+    void BooleanCallback(param_ptr *handler, param_bool dataBoolean)
+    {
+        auto *cbData = static_cast<CallbackData *>(handler);
+
+        cbData->tsfn.BlockingCall(&dataBoolean, [cbData](Napi::Env env, Napi::Function jsCallback, bool *dataBoolean)
+                                  {
+            const auto boolean = Boolean::New(env, *dataBoolean);
+    
+            cbData->deferred.Resolve(boolean);
+    
+            cbData->tsfn.Release();
+            delete cbData; });
+    }
+
+    template <typename GetPromiseFunc, typename ProcessResultFunc>
+    static return_value_void *ExecuteAsync(void *p_owner, GetPromiseFunc getPromise, ProcessResultFunc processResult) noexcept
+    {
+        try
+        {
+            const auto manager = static_cast<const LauncherManager *>(p_owner);
+            const auto env = manager->Env();
+
+            const auto promise = getPromise(manager).As<Napi::Promise>();
+            const auto thenFunc = Napi::Function::New(env, [processResult](const Napi::CallbackInfo &info)
+                                                      { processResult(info[0]); });
+
+            const auto promiseObj = promise.As<Napi::Object>();
+            promiseObj.Get("then").As<Napi::Function>().Call(promiseObj, {thenFunc});
+
+            return Create(return_value_void{nullptr});
+        }
+        catch (const Napi::Error &e)
+        {
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
+    }
+
     struct CallbackStorageSimple
     {
         void *_p_callback_ptr;

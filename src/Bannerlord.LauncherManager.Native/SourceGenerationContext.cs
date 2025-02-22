@@ -23,6 +23,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 [JsonSerializable(typeof(TWSaveMetadata))]
 [JsonSerializable(typeof(SaveMetadata))]
+[JsonSerializable(typeof(IReadOnlyList<SaveMetadata>))]
 [JsonSerializable(typeof(SaveMetadata[]))]
 
 [JsonSerializable(typeof(String[]))]
@@ -38,6 +39,7 @@ namespace Bannerlord.LauncherManager.Native;
 [JsonSerializable(typeof(LoadOrder))]
 
 [JsonSerializable(typeof(ModuleViewModel))]
+[JsonSerializable(typeof(ModuleViewModel[]))]
 [JsonSerializable(typeof(IReadOnlyList<ModuleViewModel>))]
 [JsonSerializable(typeof(LauncherOptions))]
 [JsonSerializable(typeof(LauncherState))]
@@ -49,6 +51,7 @@ namespace Bannerlord.LauncherManager.Native;
 [JsonSerializable(typeof(ModuleInfoExtendedWithPath))]
 [JsonSerializable(typeof(ModuleInfoExtendedWithPath[]))]
 [JsonSerializable(typeof(ModuleInfoExtendedWithMetadata))]
+[JsonSerializable(typeof(IReadOnlyList<ModuleInfoExtendedWithMetadata>))]
 [JsonSerializable(typeof(ModuleInfoExtendedWithMetadata[]))]
 [JsonSerializable(typeof(ModuleSorterOptions))]
 [JsonSerializable(typeof(ModuleIssue[]))]

@@ -11,26 +11,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Native;
 
-public static unsafe partial class Bindings
+public static partial class Bindings
 {
     [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_ptr* CreateHandler(param_ptr* p_owner,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, return_value_void*> p_set_game_parameters,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, return_value_void*> p_send_notification,
+    public static unsafe return_value_ptr* CreateHandler(param_ptr* p_owner,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, void>, return_value_void*> p_set_game_parameters,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, void>, return_value_void*> p_send_notification,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void>, return_value_void*> p_send_dialog,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_get_install_path,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_int, return_value_void*> p_write_file_content,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_file_list,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_all_module_view_models,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_module_view_models,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, return_value_void*> p_set_module_view_models,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_options,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*> p_get_state)
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void>, return_value_void*> p_get_install_path,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_data*, param_int, void>, return_value_void*> p_read_file_content,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_int, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, void>, return_value_void*> p_write_file_content,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void>, return_value_void*> p_read_directory_file_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void>, return_value_void*> p_read_directory_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void>, return_value_void*> p_get_all_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void>, return_value_void*> p_get_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, void>, return_value_void*> p_set_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void>, return_value_void*> p_get_options,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void>, return_value_void*> p_get_state)
     {
         Logger.LogInput();
         try
@@ -79,7 +80,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* DisposeHandler(param_ptr* p_handle)
+    public static unsafe return_value_void* DisposeHandler(param_ptr* p_handle)
     {
         Logger.LogInput();
         try
@@ -101,29 +102,47 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_string* GetGameVersion(param_ptr* p_handle)
+    public static unsafe return_value_void* GetGameVersion(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput();
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var result = handler.GetGameVersion();
+            handler.GetGameVersionAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetGameVersion)}_{nameof(handler.GetGameVersionAsync)}");
+               
+                if (result.IsCompleted)
+                {
+                    fixed (char* pGameVersion = result.Result)
+                    {
+                        Logger.LogPinned(pGameVersion);
+                        
+                        p_callback(p_callback_handler, (param_string*) pGameVersion);
+                        Logger.LogOutput(result, $"{nameof(GetGameVersion)}_{nameof(handler.GetGameVersionAsync)}");
+                    }
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
-            Logger.LogOutput(result, nameof(GetGameVersion));
-            return return_value_string.AsValue(BUTR.NativeAOT.Shared.Utils.Copy(result, false), false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_string.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* TestModule(param_ptr* p_handle, param_json* p_files)
+    public static unsafe return_value_json* TestModule(param_ptr* p_handle, param_json* p_files)
     {
         Logger.LogInput(p_files);
         try
@@ -148,7 +167,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos)
+    public static unsafe return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos)
     {
         Logger.LogInput(p_files, p_module_infos);
         try
@@ -177,7 +196,7 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_bool* IsSorting(param_ptr* p_handle)
+    public static unsafe return_value_bool* IsSorting(param_ptr* p_handle)
     {
         Logger.LogInput();
         try
@@ -198,7 +217,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* Sort(param_ptr* p_handle)
+    public static unsafe return_value_void* Sort(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -206,7 +225,21 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            handler.Sort();
+            handler.SortAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(Sort)}_{nameof(handler.SortAsync)}");
+               
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler);
+                    
+                    Logger.LogOutput($"{nameof(Sort)}_{nameof(handler.SortAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -220,7 +253,7 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_refresh_modules", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* RefreshModules(param_ptr* p_handle)
+    public static unsafe return_value_void* RefreshModules(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -228,7 +261,21 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            handler.RefreshModules();
+            handler.RefreshModulesAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(RefreshModules)}_{nameof(handler.RefreshModulesAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler);
+                    
+                    Logger.LogOutput($"{nameof(RefreshModules)}_{nameof(handler.RefreshModulesAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -242,7 +289,7 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* RefreshGameParameters(param_ptr* p_handle)
+    public static unsafe return_value_void* RefreshGameParameters(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -250,7 +297,21 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            handler.RefreshGameParameters();
+            handler.RefreshGameParametersAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(RefreshGameParameters)}_{nameof(handler.RefreshGameParametersAsync)}");
+               
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler);
+                   
+                    Logger.LogOutput($"{nameof(RefreshGameParameters)}_{nameof(handler.RefreshGameParametersAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -264,50 +325,7 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_modules", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* GetModules(param_ptr* p_handle)
-    {
-        Logger.LogInput();
-        try
-        {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-
-            var result = handler.GetModules().ToArray();
-
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray, false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_json.AsException(e, false);
-        }
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_get_all_modules", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* GetAllModules(param_ptr* p_handle)
-    {
-        Logger.LogInput();
-        try
-        {
-            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-
-            var result = handler.GetAllModules().ToArray();
-
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray, false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_json.AsException(e, false);
-        }
-    }
-
-
-    [UnmanagedCallersOnly(EntryPoint = "ve_check_for_root_harmony", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* CheckForRootHarmony(param_ptr* p_handle)
+    public static unsafe return_value_void* GetModules(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -315,7 +333,104 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            handler.CheckForRootHarmony();
+            handler.GetModulesAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetModules)}_{nameof(handler.GetModulesAsync)}");
+             
+                if (result.IsCompleted)
+                {
+                    var modulesJson = BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata);
+                    fixed (char* pModulesJson = modulesJson ?? string.Empty)
+                    {
+                        Logger.LogPinned(pModulesJson);
+                        
+                        p_callback(p_callback_handler, (param_json*) pModulesJson);
+                  
+                        Logger.LogOutput(result, $"{nameof(GetModules)}_{nameof(handler.GetModulesAsync)}");
+                    }
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "ve_get_all_modules", CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe return_value_void* GetAllModules(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
+    {
+        Logger.LogInput();
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            handler.GetAllModulesAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetAllModules)}_{nameof(handler.GetAllModulesAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    var allModulesJson = BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata);
+                    fixed (char* pAllModulesJson = allModulesJson ?? string.Empty)
+                    {
+                        Logger.LogPinned(pAllModulesJson);
+                        
+                        p_callback(p_callback_handler, (param_json*) pAllModulesJson);
+                    
+                        Logger.LogOutput(result, $"{nameof(GetAllModules)}_{nameof(handler.GetAllModulesAsync)}");
+                    }
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
+
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+    }
+
+
+    [UnmanagedCallersOnly(EntryPoint = "ve_check_for_root_harmony", CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe return_value_void* CheckForRootHarmony(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
+    {
+        Logger.LogInput();
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+            handler.CheckForRootHarmonyAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(CheckForRootHarmony)}_{nameof(IssuesChecker.CheckForRootHarmonyAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler);
+                  
+                    Logger.LogOutput($"{nameof(CheckForRootHarmony)}_{nameof(IssuesChecker.CheckForRootHarmonyAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -329,7 +444,7 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* ModuleListHandlerExport(param_ptr* p_handle)
+    public static unsafe return_value_void* ModuleListHandlerExport(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -338,7 +453,21 @@ public static unsafe partial class Bindings
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var moduleListHandler = new ModuleListHandler(handler);
-            moduleListHandler.Export();
+            moduleListHandler.ExportAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(ModuleListHandlerExport)}_{nameof(moduleListHandler.ExportAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler);
+                    
+                    Logger.LogOutput($"{nameof(ModuleListHandlerExport)}_{nameof(moduleListHandler.ExportAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -351,7 +480,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export_save_file", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* ModuleListHandlerExportSaveFile(param_ptr* p_handle, param_string* p_save_file)
+    public static unsafe return_value_void* ModuleListHandlerExportSaveFile(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput(p_save_file);
         try
@@ -362,7 +491,21 @@ public static unsafe partial class Bindings
             var saveFile = new string(param_string.ToSpan(p_save_file));
 
             var moduleListHandler = new ModuleListHandler(handler);
-            moduleListHandler.ExportSaveFile(saveFile);
+            moduleListHandler.ExportSaveFileAsync(saveFile).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(ModuleListHandlerExportSaveFile)}_{nameof(moduleListHandler.ExportSaveFileAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler);
+                    
+                    Logger.LogOutput($"{nameof(ModuleListHandlerExportSaveFile)}_{nameof(moduleListHandler.ExportSaveFileAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -375,7 +518,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* ModuleListHandlerImport(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
+    public static unsafe return_value_void* ModuleListHandlerImport(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -387,11 +530,20 @@ public static unsafe partial class Bindings
             //    return return_value_void.AsValue(false);
 
             var moduleListHandler = new ModuleListHandler(handler);
-            moduleListHandler.Import(result =>
+            moduleListHandler.ImportAsync().ContinueWith(result =>
             {
-                Logger.LogInput();
-                p_callback(p_callback_handler, result);
-                Logger.LogOutput(result);
+                Logger.LogInput($"{nameof(ModuleListHandlerImport)}_{nameof(moduleListHandler.ImportAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler, result.Result);
+                   
+                    Logger.LogOutput(result, $"{nameof(ModuleListHandlerImport)}_{nameof(moduleListHandler.ImportAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
             });
 
             Logger.LogOutput();
@@ -405,7 +557,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import_save_file", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* ModuleListHandlerImportSaveFile(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
+    public static unsafe return_value_void* ModuleListHandlerImportSaveFile(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
     {
         Logger.LogInput(p_save_file);
         try
@@ -419,11 +571,20 @@ public static unsafe partial class Bindings
             var saveFile = new string(param_string.ToSpan(p_save_file));
 
             var moduleListHandler = new ModuleListHandler(handler);
-            moduleListHandler.ImportSaveFile(saveFile, result =>
+            moduleListHandler.ImportSaveFileAsync(saveFile).ContinueWith(result =>
             {
-                Logger.LogInput();
-                p_callback(p_callback_handler, result);
-                Logger.LogOutput(result);
+                Logger.LogInput($"{nameof(ModuleListHandlerImportSaveFile)}_{nameof(moduleListHandler.ImportSaveFileAsync)}");
+              
+                if (result.IsCompleted)
+                {
+                    p_callback(p_callback_handler, result.Result);
+                  
+                    Logger.LogOutput(result, $"{nameof(ModuleListHandlerImportSaveFile)}_{nameof(moduleListHandler.ImportSaveFileAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
             });
 
             Logger.LogOutput();
@@ -438,159 +599,262 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_validate_module", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* SortHelperValidateModule(param_ptr* p_handle, param_json* p_module_view_model)
+    public static unsafe return_value_void* SortHelperValidateModule(param_ptr* p_handle, param_json* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
     {
         Logger.LogInput(p_module_view_model);
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             //if (p_module_view_model is null)
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.StringArray, false);
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = handler.GetModuleViewModels()?.ToArray() ?? [];
-            var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
-            var result = SortHelper.ValidateModule(modules, lookup, moduleViewModel).ToArray();
+            handler.GetModuleViewModelsAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(SortHelperValidateModule)}_{nameof(handler.GetModuleViewModelsAsync)}");
+              
+                if (result.IsCompleted)
+                {
+                    var modules = result.Result?.ToArray() ?? [];
+                    var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
+                    var validateResult = SortHelper.ValidateModule(modules, lookup, moduleViewModel).ToArray();
+                    var validateResultJson = BUTR.NativeAOT.Shared.Utils.SerializeJson(validateResult, CustomSourceGenerationContext.StringArray);
+                    fixed (char* pValidateResult = validateResultJson ?? string.Empty)
+                    {
+                        Logger.LogPinned(pValidateResult);
+                        
+                        p_callback(p_callback_handler, (param_json*) pValidateResult);
+                       
+                        Logger.LogOutput(validateResult, $"{nameof(SortHelperValidateModule)}_{nameof(handler.GetModuleViewModelsAsync)}");
+                    }
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.StringArray, false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_toggle_module_selection", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* SortHelperToggleModuleSelection(param_ptr* p_handle, param_json* p_module_view_model)
+    public static unsafe return_value_void* SortHelperToggleModuleSelection(param_ptr* p_handle, param_json* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
     {
         Logger.LogInput(p_module_view_model);
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             //if (p_module_view_model is null)
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.StringArray, false);
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = handler.GetModuleViewModels()?.ToArray() ?? [];
-            var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
-            SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
+            handler.GetModuleViewModelsAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(SortHelperToggleModuleSelection)}_{nameof(handler.GetModuleViewModelsAsync)}");
+              
+                if (result.IsCompleted)
+                {
+                    var modules = result.Result?.ToArray() ?? [];
+                    var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
+                    SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
+                    var moduleViewModelJson = BUTR.NativeAOT.Shared.Utils.SerializeJson(moduleViewModel, CustomSourceGenerationContext.ModuleViewModel);
+                    fixed (char* pModuleViewModelJson = moduleViewModelJson ?? string.Empty)
+                    {
+                        Logger.LogPinned(pModuleViewModelJson);
+                        
+                        p_callback(p_callback_handler, (param_json*) pModuleViewModelJson);
+                       
+                        Logger.LogOutput(moduleViewModel, $"{nameof(SortHelperToggleModuleSelection)}_{nameof(handler.GetModuleViewModelsAsync)}");
+                    }
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput(moduleViewModel);
-            return return_value_json.AsValue(moduleViewModel, CustomSourceGenerationContext.ModuleViewModel, false);
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_change_module_position", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_bool* SortHelperChangeModulePosition(param_ptr* p_handle, param_json* p_module_view_model, param_int insertIndex)
+    public static unsafe return_value_void* SortHelperChangeModulePosition(param_ptr* p_handle, param_json* p_module_view_model, param_int insertIndex, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, void> p_callback)
     {
         Logger.LogInput(p_module_view_model, &insertIndex);
+
+        var insertIndexInt = (int) insertIndex;
+
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_bool.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             //if (p_module_view_model is null)
             //    return return_value_bool.AsValue(false, false);
 
             var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
-            var modules = handler.GetModuleViewModels()?.ToArray() ?? [];
-            var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
-            var result = SortHelper.ChangeModulePosition(modules, lookup, moduleViewModel, insertIndex, (issues =>
-            {
-                handler.ShowHint(new BUTRTextObject("{=sP1a61KE}Failed to place the module to the desired position! Placing to the nearest available!{NL}Reason:{NL}{REASONS}").SetTextVariable("REASONS", string.Join("\n", issues)).ToString());
-            }));
+            handler.GetModuleViewModelsAsync().ContinueWith(x => SortHelperChangeModulePositionTask(handler, moduleViewModel, insertIndexInt), x));
 
-            Logger.LogOutput(result);
-            return return_value_bool.AsValue(result, false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_bool.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
+    }
+    private static async Task SortHelperChangeModulePositionTask(LauncherManagerHandlerNative handler, ModuleViewModel moduleViewModel, param_int insertIndex, Action<bool> callback, Task<IEnumerable<IModuleViewModel>> result)
+    {
+        Logger.LogInput();
+        if (result.IsCompleted)
+        {
+            var modules = result.Result?.ToArray() ?? [];
+            var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
+            var (positionResult, issues) = SortHelper.ChangeModulePosition(modules, lookup, moduleViewModel, insertIndex);
+            if (issues is { Count: > 0})
+                await handler.ShowHintAsync(new BUTRTextObject("{=sP1a61KE}Failed to place the module to the desired position! Placing to the nearest available!{NL}Reason:{NL}{REASONS}").SetTextVariable("REASONS", string.Join("\n", issues)).ToString());
+            callback(positionResult);
+            Logger.LogOutput(positionResult);
+        }
+        if (result.IsFaulted)
+            Logger.LogException(result.Exception);
+        if (result.IsCanceled)
+            Logger.LogException(new TaskCanceledException());
     }
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_files", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* GetSaveFiles(param_ptr* p_handle)
+    public static unsafe return_value_void* GetSaveFiles(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
     {
         Logger.LogInput();
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            var result = handler.GetSaveFiles();
+            handler.GetSaveFilesAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetSaveFiles)}_{nameof(handler.GetSaveFilesAsync)}");
+                
+                if (result.IsCompleted)
+                {
+                    var saveFilesJson = BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListSaveMetadata);
+                    fixed (char* pSaveFilesJson = saveFilesJson ?? string.Empty)
+                    {
+                        Logger.LogPinned(pSaveFilesJson);
+                        
+                        p_callback(p_callback_handler, (param_json*) pSaveFilesJson);
+                       
+                        Logger.LogOutput(result, $"{nameof(GetSaveFiles)}_{nameof(handler.GetSaveFilesAsync)}");
+                    }
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.SaveMetadataArray, false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_metadata", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* GetSaveMetadata(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len)
+    public static unsafe return_value_void* GetSaveMetadata(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
     {
         Logger.LogInput(p_save_file, p_data, &data_len);
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var saveFile = new string(param_string.ToSpan(p_save_file));
-            var data = param_data.ToSpan(p_data, data_len);
+            var data = param_data.ToSpan(p_data, data_len).ToArray(); // TODO: 
 
-            var result = handler.GetSaveMetadata(saveFile, data);
-            if (result is null) return return_value_json.AsValue(null, false);
+            handler.GetSaveMetadataAsync(saveFile, data).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetSaveMetadata)}_{nameof(handler.GetSaveMetadataAsync)}");
+               
+                if (result.IsCompleted)
+                {
+                    p_callback(return_value_json.AsValue(result.Result!, CustomSourceGenerationContext.SaveMetadata, false));
+                    
+                    Logger.LogOutput(result.Result, $"{nameof(GetSaveMetadata)}_{nameof(handler.GetSaveMetadataAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.SaveMetadata, false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_file_path", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_string* GetSaveFilePath(param_ptr* p_handle, param_string* p_save_file)
+    public static unsafe return_value_void* GetSaveFilePath(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput(p_save_file);
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             var saveFile = new string(param_string.ToSpan(p_save_file));
 
-            var result = handler.GetSaveFilePath(saveFile);
+            handler.GetSaveFilePathAsync(saveFile).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetSaveFilePath)}_{nameof(handler.GetSaveFilePathAsync)}");
+                if (result.IsCompleted)
+                {
+                    p_callback(return_value_string.AsValue(result.Result, false));
+                    Logger.LogOutput(result, $"{nameof(GetSaveFilePath)}_{nameof(handler.GetSaveFilePathAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
-            Logger.LogOutput(result);
-            return return_value_string.AsValue(result, false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_string.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
@@ -598,13 +862,13 @@ public static unsafe partial class Bindings
     public record OrderByLoadOrderResult(bool Result, IReadOnlyList<string>? Issues, IReadOnlyList<ModuleViewModel>? OrderedModuleViewModels);
 
     [UnmanagedCallersOnly(EntryPoint = "ve_order_by_load_order", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_json* OrderByLoadOrder(param_ptr* p_handle, param_json* p_load_order)
+    public static unsafe return_value_void* OrderByLoadOrder(param_ptr* p_handle, param_json* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_json*, void> p_callback)
     {
         Logger.LogInput(p_load_order);
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             //if (p_load_order is null)
             //    return return_value_json.AsValue(new OrderByLoadOrderResult(false, null, null), CustomSourceGenerationContext.OrderByLoadOrderResult, false);
@@ -612,27 +876,40 @@ public static unsafe partial class Bindings
             var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
 
             var loadOrderDict = loadOrder.ToDictionary(x => x.Key, x => x.Value.IsSelected);
-            var res = handler.TryOrderByLoadOrder(loadOrder.OrderBy(x => x.Value.Index).Select(x => x.Key), x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected, out var issues, out var orderedModuleViewModels);
-            var result = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels.Select(x => new ModuleViewModel(x.ModuleInfoExtended, x.IsValid)
+            handler.TryOrderByLoadOrderAsync(loadOrder.OrderBy(x => x.Value.Index).Select(x => x.Key), x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected).ContinueWith(result =>
             {
-                IsSelected = x.IsSelected,
-                IsDisabled = x.IsDisabled,
-                Index = x.Index,
-            }).ToArray());
+                var (res, issues, orderedModuleViewModels) = result.Result;
+                Logger.LogInput();
+                if (result.IsCompleted)
+                {
+                    var orderByLoadOrderResult = new OrderByLoadOrderResult(res, issues, orderedModuleViewModels.Select(x => new ModuleViewModel(x.ModuleInfoExtended, x.IsValid)
+                    {
+                        IsSelected = x.IsSelected,
+                        IsDisabled = x.IsDisabled,
+                        Index = x.Index,
+                    }).ToArray());
+                    p_callback(return_value_json.AsValue(orderByLoadOrderResult, CustomSourceGenerationContext.OrderByLoadOrderResult, false));
+                    Logger.LogOutput(orderByLoadOrderResult);
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
-            Logger.LogOutput(result);
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.OrderByLoadOrderResult, false);
+            Logger.LogOutput();
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_executable", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetGameParameterExecutable(param_ptr* p_handle, param_string* p_executable)
+    public static unsafe return_value_void* SetGameParameterExecutable(param_ptr* p_handle, param_string* p_executable, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput(p_executable);
         try
@@ -642,7 +919,19 @@ public static unsafe partial class Bindings
 
             var executable = new string(param_string.ToSpan(p_executable));
 
-            handler.SetGameParameterExecutable(executable);
+            handler.SetGameParameterExecutableAsync(executable).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(SetGameParameterExecutable)}_{nameof(handler.SetGameParameterExecutableAsync)}");
+                if (result.IsCompleted)
+                {
+                    p_callback();
+                    Logger.LogOutput($"{nameof(SetGameParameterExecutable)}_{nameof(handler.SetGameParameterExecutableAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -655,7 +944,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_load_order", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetGameParameterLoadOrder(param_ptr* p_handle, param_json* p_load_order)
+    public static unsafe return_value_void* SetGameParameterLoadOrder(param_ptr* p_handle, param_json* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput(p_load_order);
         try
@@ -668,7 +957,19 @@ public static unsafe partial class Bindings
 
             var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
 
-            handler.SetGameParameterLoadOrder(loadOrder);
+            handler.SetGameParameterLoadOrderAsync(loadOrder).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(SetGameParameterLoadOrder)}_{nameof(handler.SetGameParameterLoadOrderAsync)}");
+                if (result.IsCompleted)
+                {
+                    p_callback();
+                    Logger.LogOutput($"{nameof(SetGameParameterLoadOrder)}_{nameof(handler.SetGameParameterLoadOrderAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -681,7 +982,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetGameParameterSaveFile(param_ptr* p_handle, param_string* p_save_file)
+    public static unsafe return_value_void* SetGameParameterSaveFile(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput(p_save_file);
         try
@@ -691,7 +992,19 @@ public static unsafe partial class Bindings
 
             var saveFile = new string(param_string.ToSpan(p_save_file));
 
-            handler.SetGameParameterSaveFile(saveFile);
+            handler.SetGameParameterSaveFileAsync(saveFile).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(SetGameParameterSaveFile)}_{nameof(handler.SetGameParameterSaveFileAsync)}");
+                if (result.IsCompleted)
+                {
+                    p_callback();
+                    Logger.LogOutput($"{nameof(SetGameParameterSaveFile)}_{nameof(handler.SetGameParameterSaveFileAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -704,7 +1017,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_continue_last_save_file", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetGameParameterContinueLastSaveFile(param_ptr* p_handle, param_bool p_value)
+    public static unsafe return_value_void* SetGameParameterContinueLastSaveFile(param_ptr* p_handle, param_bool p_value, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, void> p_callback)
     {
         Logger.LogInput(p_value);
         try
@@ -712,7 +1025,19 @@ public static unsafe partial class Bindings
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
                 return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
-            handler.SetGameParameterContinueLastSaveFile(p_value);
+            handler.SetGameParameterContinueLastSaveFileAsync(p_value).ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(SetGameParameterContinueLastSaveFile)}_{nameof(handler.SetGameParameterContinueLastSaveFileAsync)}");
+                if (result.IsCompleted)
+                {
+                    p_callback();
+                    Logger.LogOutput($"{nameof(SetGameParameterContinueLastSaveFile)}_{nameof(handler.SetGameParameterContinueLastSaveFileAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
 
             Logger.LogOutput();
             return return_value_void.AsValue(false);
@@ -726,7 +1051,7 @@ public static unsafe partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetGameStore(param_ptr* p_handle, param_string* p_game_store)
+    public static unsafe return_value_void* SetGameStore(param_ptr* p_handle, param_string* p_game_store)
     {
         Logger.LogInput(p_game_store);
         try
@@ -750,27 +1075,42 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_game_platform", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_string* GetGamePlatform(param_ptr* p_handle)
+    public static unsafe return_value_void* GetGamePlatform(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput();
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_string.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_void.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
+            handler.GetPlatformAsync().ContinueWith(result =>
+            {
+                Logger.LogInput($"{nameof(GetGamePlatform)}_{nameof(handler.GetPlatformAsync)}");
+                if (result.IsCompleted)
+                {
+                    var platform = result.Result.ToStringFast();
+                    p_callback(return_value_string.AsValue(platform, false));
+                    Logger.LogOutput(platform, $"{nameof(GetGamePlatform)}_{nameof(handler.GetPlatformAsync)}");
+                }
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
+            });
+            
             Logger.LogOutput();
-            return return_value_string.AsValue(handler.GetPlatform().ToStringFast(), false);
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            return return_value_string.AsException(e, false);
+            return return_value_void.AsException(e, false);
         }
     }
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* DialogTestWarning(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
+    public static unsafe return_value_void* DialogTestWarning(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -781,14 +1121,19 @@ public static unsafe partial class Bindings
             //if (p_callback is null)
             //    return return_value_void.AsValue(false);
 
-            handler.SendDialog(DialogType.Warning, "Test Title", "Test Message", Array.Empty<DialogFileFilter>(), result =>
+            handler.SendDialogAsync(DialogType.Warning, "Test Title", "Test Message", Array.Empty<DialogFileFilter>()).ContinueWith(result =>
             {
-                Logger.LogInput($"{nameof(DialogTestWarning)}_{nameof(handler.SendDialog)}");
-                fixed (char* pResult = result ?? string.Empty)
+                Logger.LogInput($"{nameof(DialogTestWarning)}_{nameof(handler.SendDialogAsync)}");
+                if (result.IsCompleted)
                 {
-                    p_callback(p_callback_handler, (param_string*) pResult);
+                    fixed (char* pResult = result.Result ?? string.Empty)
+                        p_callback(p_callback_handler, (param_string*) pResult);
+                    Logger.LogOutput(result, $"{nameof(DialogTestWarning)}_{nameof(handler.SendDialogAsync)}");
                 }
-                Logger.LogOutput(result!, $"{nameof(DialogTestWarning)}_{nameof(handler.SendDialog)}");
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
             });
 
             Logger.LogOutput();
@@ -802,7 +1147,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_file_open", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* DialogTestFileOpen(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
+    public static unsafe return_value_void* DialogTestFileOpen(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, param_string*, void> p_callback)
     {
         Logger.LogInput();
         try
@@ -813,14 +1158,19 @@ public static unsafe partial class Bindings
             //if (p_callback is null)
             //    return return_value_void.AsValue(false);
 
-            handler.SendDialog(DialogType.FileOpen, "Test Title", "Test Message", new[] { new DialogFileFilter("Test Filter", new[] { "*.test" }) }, result =>
+            handler.SendDialogAsync(DialogType.FileOpen, "Test Title", "Test Message", [new DialogFileFilter("Test Filter", ["*.test"])]).ContinueWith(result =>
             {
-                Logger.LogInput($"{nameof(DialogTestFileOpen)}_{nameof(handler.SendDialog)}");
-                fixed (char* pResult = result ?? string.Empty)
+                Logger.LogInput($"{nameof(DialogTestFileOpen)}_{nameof(handler.SendDialogAsync)}");
+                if (result.IsCompleted)
                 {
-                    p_callback(p_callback_handler, (param_string*) pResult);
+                    fixed (char* pResult = result.Result ?? string.Empty)
+                        p_callback(p_callback_handler, (param_string*) pResult);
+                    Logger.LogOutput(result, $"{nameof(DialogTestFileOpen)}_{nameof(handler.SendDialogAsync)}");
                 }
-                Logger.LogOutput(result!, $"{nameof(DialogTestFileOpen)}_{nameof(handler.SendDialog)}");
+                if (result.IsFaulted)
+                    Logger.LogException(result.Exception);
+                if (result.IsCanceled)
+                    Logger.LogException(new TaskCanceledException());
             });
 
             Logger.LogOutput();

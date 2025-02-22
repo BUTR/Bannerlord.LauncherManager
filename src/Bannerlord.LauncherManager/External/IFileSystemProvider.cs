@@ -1,9 +1,11 @@
-﻿namespace Bannerlord.LauncherManager.External;
+﻿using System.Threading.Tasks;
+
+namespace Bannerlord.LauncherManager.External;
 
 public interface IFileSystemProvider
 {
-    byte[]? ReadFileContent(string filePath, int offset, int length);
-    void WriteFileContent(string filePath, byte[]? data);
-    string[]? ReadDirectoryFileList(string directoryPath);
-    string[]? ReadDirectoryList(string directoryPath);
+    Task<byte[]?> ReadFileContentAsync(string filePath, int offset, int length);
+    Task WriteFileContentAsync(string filePath, byte[]? data);
+    Task<string[]?> ReadDirectoryFileListAsync(string directoryPath);
+    Task<string[]?> ReadDirectoryListAsync(string directoryPath);
 }

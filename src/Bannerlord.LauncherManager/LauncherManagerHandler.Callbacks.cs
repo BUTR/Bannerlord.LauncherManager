@@ -1,7 +1,7 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
-using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -10,122 +10,122 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal void RefreshGameParameters(string executable, IReadOnlyList<string> gameParameters)
+    protected internal async Task RefreshGameParametersAsync(string executable, IReadOnlyList<string> gameParameters)
     {
         ThrowIfNotInitialized();
-        LauncherStateProvider.SetGameParameters(executable, gameParameters);
+        await LauncherStateProvider.SetGameParametersAsync(executable, gameParameters);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal void SendNotification(string id, NotificationType type, string message, uint displayMs)
+    protected internal async Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
     {
         ThrowIfNotInitialized();
-        NotificationProvider.SendNotification(id, type, message, displayMs);
+        await NotificationProvider.SendNotificationAsync(id, type, message, displayMs);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
+    protected internal async Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters)
     {
         ThrowIfNotInitialized();
-        DialogProvider.SendDialog(type, title, message, filters, onResult);
+        return await DialogProvider.SendDialogAsync(type, title, message, filters);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal string GetInstallPath()
+    protected internal async Task<string> GetInstallPathAsync()
     {
         ThrowIfNotInitialized();
-        return GameInfoProvider.GetInstallPath();
+        return await GameInfoProvider.GetInstallPathAsync();
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal byte[]? ReadFileContent(string filePath, int offset, int length)
+    protected internal async Task<byte[]?> ReadFileContentAsync(string filePath, int offset, int length)
     {
         ThrowIfNotInitialized();
-        return FileSystemProvider.ReadFileContent(filePath, offset, length);
+        return await FileSystemProvider.ReadFileContentAsync(filePath, offset, length);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal void WriteFileContent(string filePath, byte[]? data)
+    protected internal async Task WriteFileContentAsync(string filePath, byte[]? data)
     {
         ThrowIfNotInitialized();
-        FileSystemProvider.WriteFileContent(filePath, data);
+        await FileSystemProvider.WriteFileContentAsync(filePath, data);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal string[]? ReadDirectoryFileList(string directoryPath)
+    protected internal async Task<string[]?> ReadDirectoryFileListAsync(string directoryPath)
     {
         ThrowIfNotInitialized();
-        return FileSystemProvider.ReadDirectoryFileList(directoryPath);
+        return await FileSystemProvider.ReadDirectoryFileListAsync(directoryPath);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal string[]? ReadDirectoryList(string directoryPath)
+    protected internal async Task<string[]?> ReadDirectoryListAsync(string directoryPath)
     {
         ThrowIfNotInitialized();
-        return FileSystemProvider.ReadDirectoryList(directoryPath);
+        return await FileSystemProvider.ReadDirectoryListAsync(directoryPath);
     }
 
     /// <summary>
     /// Callback<br/>
     /// Returns all available ViewModels
     /// </summary>
-    protected internal IModuleViewModel[]? GetAllModuleViewModels()
+    protected internal async Task<IModuleViewModel[]?> GetAllModuleViewModelsAsync()
     {
         ThrowIfNotInitialized();
-        return LoadOrderStateProvider.GetAllModuleViewModels();
+        return await LoadOrderStateProvider.GetAllModuleViewModelsAsync();
     }
 
     /// <summary>
     /// Callback<br/>
     /// Returns the current shown sorted ViewModels
     /// </summary>
-    protected internal IEnumerable<IModuleViewModel>? GetModuleViewModels()
+    protected internal async Task<IEnumerable<IModuleViewModel>?> GetModuleViewModelsAsync()
     {
         ThrowIfNotInitialized();
-        return LoadOrderStateProvider.GetModuleViewModels();
+        return await LoadOrderStateProvider.GetModuleViewModelsAsync();
     }
 
     /// <summary>
     /// Callback<br/>
     /// Sets the current shown sorted ViewModels
     /// </summary>
-    protected internal void SetModuleViewModels(IReadOnlyList<IModuleViewModel> orderedModules)
+    protected internal async Task SetModuleViewModelsAsync(IReadOnlyList<IModuleViewModel> orderedModules)
     {
         ThrowIfNotInitialized();
 
-        LoadOrderStateProvider.SetModuleViewModels(orderedModules);
+        await LoadOrderStateProvider.SetModuleViewModelsAsync(orderedModules);
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal LauncherOptions GetOptions()
+    protected internal async Task<LauncherOptions> GetOptionsAsync()
     {
         ThrowIfNotInitialized();
-        return LauncherStateProvider.GetOptions();
+        return await LauncherStateProvider.GetOptionsAsync();
     }
 
     /// <summary>
     /// Callback<br/>
     /// </summary>
-    protected internal LauncherState GetState()
+    protected internal async Task<LauncherState> GetStateAsync()
     {
         ThrowIfNotInitialized();
-        return LauncherStateProvider.GetState();
+        return await LauncherStateProvider.GetStateAsync();
     }
 
     private void ThrowIfNotInitialized()

@@ -32,17 +32,17 @@ public class InstallInstructionJsonConverter : JsonConverter<IInstallInstruction
 internal static partial class Utils2
 {
 #if DEBUG
-    public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net8.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
+    public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net8.0/win-arm64/native/Bannerlord.LauncherManager.Native.dll";
 #else
         public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Release/net8.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
 #endif
 
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial void* common_alloc(nuint size);
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial void common_dealloc(void* ptr);
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial int common_alloc_alive_count();
 
     private static readonly JsonSerializerOptions Options = new()

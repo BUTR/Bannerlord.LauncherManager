@@ -25,7 +25,7 @@ test('Main', async (t) => {
     },
   };
 
-  const setGameParameters = (_executable: string, gameParameters: any): void => {
+  const setGameParameters = (_executable: string, gameParameters: any): Promise<void> => {
     //t.deepEqual(executable, 'bin\\Win64_Shipping_Client\\Bannerlord.exe');
     t.deepEqual(gameParameters, [
       '/singleplayer',
@@ -33,25 +33,27 @@ test('Main', async (t) => {
       '',
       ''
     ]);
+    return Promise.resolve();
   };
-  const loadLoadOrder = (): LoadOrder => {
-    return loadOrder;
+  const loadLoadOrder = (): Promise<LoadOrder> => {
+    return Promise.resolve(loadOrder);
   };
-  const saveLoadOrder = (loadOrderOverride: LoadOrder): void => {
+  const saveLoadOrder = (loadOrderOverride: LoadOrder): Promise<void> => {
     loadOrder = loadOrderOverride;
+    return Promise.resolve();
   };
-  const sendNotification = (_id: string, _type: NotificationType, _message: string, _delayMS: number): void => {
-
+  const sendNotification = (_id: string, _type: NotificationType, _message: string, _delayMS: number): Promise<void> => {
+    return Promise.resolve();
   };
   const sendDialog = (_type: DialogType, _title: string, _message: string, _filters: types.FileFilter[]): Promise<string> => {
     return new Promise((resolve) => setTimeout(() => {
       resolve("Testing");
     }, 100));
   };
-  const getInstallPath = (): string => {
-    return gamePath;
+  const getInstallPath = (): Promise<string> => {
+    return Promise.resolve(gamePath);
   };
-  const readFileContent = (filePath: string, offset: number, length: number): Uint8Array | null => {
+  const readFileContent = async (filePath: string, offset: number, length: number): Promise<Uint8Array | null> => {
     if (fs.existsSync(filePath)) {
       if (offset === 0 && length === -1) {
         return fs.readFileSync(filePath);
@@ -66,47 +68,47 @@ test('Main', async (t) => {
     }
     return null;
   };
-  const writeFileContent = (filePath: string, data: Uint8Array): void => {
+  const writeFileContent = (filePath: string, data: Uint8Array): Promise<void> => {
     fs.writeFileSync(filePath, data);
+    return Promise.resolve();
   };
-  const readDirectoryFileList = (directoryPath: string): string[] | null => {
+  const readDirectoryFileList = async (directoryPath: string): Promise<string[] | null> => {
     if (fs.existsSync(directoryPath)) {
       return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isFile()).map(x => path.join(directoryPath, x.name));
     }
     return null;
   };
-  const readDirectoryList = (directoryPath: string): string[] | null => {
+  const readDirectoryList = async (directoryPath: string): Promise<string[] | null> => {
     if (fs.existsSync(directoryPath)) {
       return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isDirectory()).map(x => path.join(directoryPath, x.name));
     }
     return null;
   };
-  const getAllModuleViewModels = (): ModuleViewModel[] | null => {
-    return moduleViewModels;
+  const getAllModuleViewModels = (): Promise<ModuleViewModel[] | null> => {
+    return Promise.resolve(moduleViewModels);
   };
-  const getModuleViewModels = (): ModuleViewModel[] | null => {
-    return moduleViewModels;
+  const getModuleViewModels = (): Promise<ModuleViewModel[] | null> => {
+    return Promise.resolve(moduleViewModels);
   };
-  const setModuleViewModels = (_moduleViewModels: ModuleViewModel[]): void => {
+  const setModuleViewModels = (_moduleViewModels: ModuleViewModel[]): Promise<void> => {
     const tt = 0;
     t.is(tt, 0);
+    return Promise.resolve();
   };
-  const getOptions = (): LauncherOptions => {
-    return {
+  const getOptions = (): Promise<LauncherOptions> => {
+    return Promise.resolve({
       language: "English",
       unblockFiles: true,
       fixCommonIssues: true,
       betaSorting: false,
-    }
+    });
   };
-  const getState = (): LauncherState => {
-    return { isSingleplayer: true };
+  const getState = (): Promise<LauncherState> => {
+    return Promise.resolve({ isSingleplayer: true });
   };
 
   var manager = new NativeLauncherManager(
     setGameParameters,
-    loadLoadOrder,
-    saveLoadOrder,
     sendNotification,
     sendDialog,
     getInstallPath,
@@ -120,11 +122,11 @@ test('Main', async (t) => {
     getOptions,
     getState);
 
-  await manager.dialogTestWarning();
-  await manager.dialogTestFileOpen();
+  await manager.dialogTestWarningAsync();
+  await manager.dialogTestFileOpenAsync();
 
 
-  const modules = manager.getModules();
+  const modules = await manager.getModulesAsync();
   const moduleViewModels: ModuleViewModel[] = [
     {
       moduleInfoExtended: modules.find(x => x.id === "Bannerlord.Harmony")!,
@@ -142,7 +144,7 @@ test('Main', async (t) => {
     }
   ]
 
-  const version = manager.getGameVersion();
+  const version = await manager.getGameVersionAsync();
   if (version === undefined) {
     t.fail();
     return;
@@ -150,7 +152,7 @@ test('Main', async (t) => {
 
   //manager.setGameStore("Steam");
 
-  manager.sort();
+  await manager.sortAsync();
   let expectedLoadOrder: LoadOrder = {
     'Bannerlord.Harmony': {
       id: "Bannerlord.Harmony",

@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -18,12 +19,12 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual string GetGameVersion() => string.Empty;
+    public virtual Task<string> GetGameVersionAsync() => Task.FromResult(string.Empty);
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual int GetChangeset() => -1;
+    public virtual Task<int> GetChangesetAsync() => Task.FromResult(-1);
 
     /// <summary>
     /// External<br/>
@@ -34,7 +35,7 @@ partial class LauncherManagerHandler
     /// External<br/>
     /// Sets the launch arguments for the Bannerlord executable
     /// </summary>
-    public void RefreshGameParameters()
+    public async Task RefreshGameParametersAsync()
     {
         var parameters = new[]
         {
@@ -44,15 +45,15 @@ partial class LauncherManagerHandler
             _continueLastSaveFile ? "/continuegame" : string.Empty
         };
 
-        var installPath = GetInstallPath();
-        var platform = GetPlatform(installPath, _store ??= GetStore(installPath));
+        var installPath = await GetInstallPathAsync();
+        var platform = await GetPlatformAsync(installPath, _store ??= await GetStoreAsync(installPath));
         var win64Executable = System.IO.Path.Combine(Constants.BinFolder, Constants.Win64Configuration, _currentExecutable);
         var xboxExecutable = System.IO.Path.Combine(Constants.BinFolder, Constants.XboxConfiguration, _currentExecutable);
-        var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? [];
+        var binDirectories = await ReadDirectoryListAsync(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? [];
         var hasWin64 = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase));
         var hasXbox = binDirectories.Any(x => System.IO.Path.GetFileName(x).Equals(Constants.XboxConfiguration, StringComparison.OrdinalIgnoreCase));
-        var hasWin64Executable = hasWin64 && ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.Win64Configuration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
-        var hasXboxExecutable = hasXbox && ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.XboxConfiguration))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
+        var hasWin64Executable = hasWin64 && (await ReadDirectoryFileListAsync(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.Win64Configuration)))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
+        var hasXboxExecutable = hasXbox && (await ReadDirectoryFileListAsync(System.IO.Path.Combine(installPath, Constants.BinFolder, Constants.XboxConfiguration)))?.Any(x => System.IO.Path.GetFileName(x).Equals(_currentExecutable)) == true;
         var fullExecutablePath = platform switch
         {
             GamePlatform.Win64 when hasWin64Executable => win64Executable,
@@ -60,8 +61,8 @@ partial class LauncherManagerHandler
             _ => hasWin64Executable ? win64Executable : hasXboxExecutable ? xboxExecutable : string.Empty
         };
 
-        RefreshGameParameters(fullExecutablePath, parameters);
-        //RefreshGameParameters(modules.Any(x => x is { Key: "Bannerlord.BLSE", Value.Enabled: true })
+        await RefreshGameParametersAsync(fullExecutablePath, parameters);
+        //await RefreshGameParametersAsync(modules.Any(x => x is { Key: "Bannerlord.BLSE", Value.Enabled: true })
         //    ? Constants.BLSEExecutable.AsSpan()
         //    : Constants.BannerlordExecutable.AsSpan(), parameters);
     }
@@ -69,46 +70,46 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void SetGameParameterLoadOrder(LoadOrder loadOrder)
+    public async Task SetGameParameterLoadOrderAsync(LoadOrder loadOrder)
     {
         var activeLoadOrder = loadOrder.Where(x => x.Value.IsSelected).Select(x => x.Key).ToArray();
         _currentLoadOrder = activeLoadOrder.Length > 0 ? $"_MODULES_*{string.Join("*", activeLoadOrder)}*_MODULES_" : string.Empty;
-        RefreshGameParameters();
+        await RefreshGameParametersAsync();
     }
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void SetGameParameterExecutable(string executable)
+    public async Task SetGameParameterExecutableAsync(string executable)
     {
         _currentExecutable = executable;
-        RefreshGameParameters();
+        await RefreshGameParametersAsync();
     }
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void SetGameParameterContinueLastSaveFile(bool value)
+    public async Task SetGameParameterContinueLastSaveFileAsync(bool value)
     {
         _continueLastSaveFile = value;
-        RefreshGameParameters();
+        await RefreshGameParametersAsync();
     }
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void SetGameParameterSaveFile(string? saveName)
+    public async Task SetGameParameterSaveFileAsync(string? saveName)
     {
         _currentSaveFile = saveName;
-        RefreshGameParameters();
+        await RefreshGameParametersAsync();
     }
 
     /// <summary>
     /// External<br/>
     /// </summary>
-    public GameStore GetStore(string installPath)
+    public async Task<GameStore> GetStoreAsync(string installPath)
     {
-        var nativeFiles = ReadDirectoryFileList(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? [];
+        var nativeFiles = await ReadDirectoryFileListAsync(System.IO.Path.Combine(installPath, Constants.ModulesFolder, Constants.NativeModule)) ?? [];
         if (nativeFiles.Any(x => x.EndsWith("gdk.target")))
             return GameStore.Xbox;
         if (nativeFiles.Any(x => x.EndsWith("epic.target")))
@@ -124,23 +125,23 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public GamePlatform GetPlatform()
+    public async Task<GamePlatform> GetPlatformAsync()
     {
-        var installPath = GetInstallPath();
-        return GetPlatform(installPath, _store ?? GetStore(installPath));
+        var installPath = await GetInstallPathAsync();
+        return await GetPlatformAsync(installPath, _store ?? await GetStoreAsync(installPath));
     }
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    internal GamePlatform GetPlatform(string installPath, GameStore store)
+    internal async Task<GamePlatform> GetPlatformAsync(string installPath, GameStore store)
     {
         // TODO:
-        GamePlatform GetForUnknownStore()
+        async Task<GamePlatform> GetForUnknownStoreAsync()
         {
-            var internalStore = GetStore(installPath);
+            var internalStore = await GetStoreAsync(installPath);
 
-            var binDirectories = ReadDirectoryList(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? [];
+            var binDirectories = await ReadDirectoryListAsync(System.IO.Path.Combine(installPath, Constants.BinFolder)) ?? [];
             var hasWin64 = binDirectories.Any(x => x.Contains(Constants.Win64Configuration));
             var hasXbox = binDirectories.Any(x => x.Contains(Constants.XboxConfiguration));
 
@@ -158,7 +159,7 @@ partial class LauncherManagerHandler
             };
         }
 
-        return FromStore(store) is var platform && platform == GamePlatform.Unknown ? GetForUnknownStore() : platform;
+        return FromStore(store) is var platform && platform == GamePlatform.Unknown ? await GetForUnknownStoreAsync() : platform;
     }
 
     public static GamePlatform FromStore(GameStore store) => store switch
