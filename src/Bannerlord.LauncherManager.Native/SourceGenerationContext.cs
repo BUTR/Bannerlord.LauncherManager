@@ -17,7 +17,8 @@ namespace Bannerlord.LauncherManager.Native;
     WriteIndented = false,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 
-[JsonSerializable(typeof(Bindings.OrderByLoadOrderResult))]
+[JsonSerializable(typeof(OrderByLoadOrderResult))]
+[JsonSerializable(typeof(Bindings.OrderByLoadOrderResultNative))]
 
 [JsonSerializable(typeof(IReadOnlyList<DialogFileFilter>))]
 

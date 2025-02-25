@@ -23,40 +23,36 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
 
     public Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
     {
-        var tcs = new TaskCompletionSource<object?>();
+        var tcs = new TaskCompletionSource();
         SendNotificationNative(id, type.ToStringFast().ToLowerInvariant(), message, displayMs, tcs);
         return tcs.Task;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static void SendNotificationCallback(param_ptr* pOwner)
+    public static void SendNotificationCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogInput(pOwner);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<object?>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
-            tcs = (TaskCompletionSource<object?>) handle.Target!;
-            tcs.TrySetResult(null);
-            
-            Logger.LogOutput();
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
         }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsVoid(tcs);
+        handle.Free();
+
+        Logger.LogOutput();
     }
 
-    private void SendNotificationNative(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs, TaskCompletionSource<object?> tcs)
+    private void SendNotificationNative(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs, TaskCompletionSource tcs)
     {
         Logger.LogInput(displayMs);
 
@@ -64,8 +60,6 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
         fixed (char* pType = type)
         fixed (char* pMessage = message)
         {
-            Logger.LogPinned(pId, pType, pMessage);
-
             var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
         
             try

@@ -25,6 +25,8 @@ test('Main', async (t) => {
     },
   };
 
+  let moduleViewModels: ModuleViewModel[] = [];
+
   const setGameParameters = (_executable: string, gameParameters: any): Promise<void> => {
     //t.deepEqual(executable, 'bin\\Win64_Shipping_Client\\Bannerlord.exe');
     t.deepEqual(gameParameters, [
@@ -72,17 +74,19 @@ test('Main', async (t) => {
     fs.writeFileSync(filePath, data);
     return Promise.resolve();
   };
-  const readDirectoryFileList = async (directoryPath: string): Promise<string[] | null> => {
+  const readDirectoryFileList = (directoryPath: string): Promise<string[] | null> => {
     if (fs.existsSync(directoryPath)) {
-      return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isFile()).map(x => path.join(directoryPath, x.name));
+      const data = fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isFile()).map(x => path.join(directoryPath, x.name));
+      return Promise.resolve(data);
     }
-    return null;
+    return Promise.resolve(null);
   };
-  const readDirectoryList = async (directoryPath: string): Promise<string[] | null> => {
+  const readDirectoryList = (directoryPath: string): Promise<string[] | null> => {
     if (fs.existsSync(directoryPath)) {
-      return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isDirectory()).map(x => path.join(directoryPath, x.name));
+      const data = fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isDirectory()).map(x => path.join(directoryPath, x.name));
+      return Promise.resolve(data);
     }
-    return null;
+    return Promise.resolve(null);
   };
   const getAllModuleViewModels = (): Promise<ModuleViewModel[] | null> => {
     return Promise.resolve(moduleViewModels);
@@ -127,7 +131,7 @@ test('Main', async (t) => {
 
 
   const modules = await manager.getModulesAsync();
-  const moduleViewModels: ModuleViewModel[] = [
+  moduleViewModels = [
     {
       moduleInfoExtended: modules.find(x => x.id === "Bannerlord.Harmony")!,
       isValid: true,

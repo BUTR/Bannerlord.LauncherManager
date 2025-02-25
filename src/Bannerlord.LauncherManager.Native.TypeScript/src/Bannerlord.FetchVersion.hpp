@@ -11,7 +11,6 @@ using namespace Bannerlord::LauncherManager::Native;
 
 namespace Bannerlord::FetchVersion
 {
-
     Value GetChangeSetWrapped(const CallbackInfo &info)
     {
         const auto env = info.Env();

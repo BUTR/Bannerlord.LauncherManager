@@ -1,8 +1,6 @@
 #ifndef VE_LAUNCHERMANAGER_GUARD_HPP_
 #define VE_LAUNCHERMANAGER_GUARD_HPP_
 
-#define NAMEOF(x) #x
-
 #include "utils.hpp"
 #include "Bannerlord.LauncherManager.Native.h"
 #include <sstream>
@@ -17,6 +15,29 @@ namespace Bannerlord::LauncherManager
     class LauncherManager : public Napi::ObjectWrap<LauncherManager>
     {
     public:
+        Napi::ThreadSafeFunction TSFN = Napi::ThreadSafeFunction::New(Env(), Napi::Function::New(Env(), TSFNFunction), "TSFN", 0, 1);
+        static void TSFNFunction(const Napi::CallbackInfo &info)
+        {
+            // LoggerScope logger(__FUNCTION__);
+            const auto length = info.Length();
+            // logger.Log("Length: " + std::to_string(length));
+            if (length == 2)
+            {
+                const auto promise = info[0].As<Napi::Promise>();
+                const auto onResolve = info[1].As<Napi::Function>();
+                const auto then = promise.Get("then").As<Napi::Function>();
+                then.Call(promise, {onResolve});
+            }
+            else if (length == 3)
+            {
+                const auto promise = info[0].As<Napi::Promise>();
+                const auto onResolve = info[1].As<Napi::Function>();
+                const auto onReject = info[2].As<Napi::Function>();
+                const auto then = promise.Get("then").As<Napi::Function>();
+                then.Call(promise, {onResolve, onReject});
+            }
+        }
+
         FunctionReference FGetActiveProfile;
         FunctionReference FGetProfileById;
         FunctionReference FGetActiveGameId;
@@ -102,7 +123,7 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::RefreshModulesAsync>("refreshModulesAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SetGameParameterExecutableAsync>("setGameParameterExecutableAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SetGameParameterSaveFileAsync>("setGameParameterSaveFileAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-                                          InstanceMethod<&LauncherManager::SortAsync>("sort", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::SortAsync>("sortAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SortHelperChangeModulePositionAsync>("sortHelperChangeModulePositionAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SortHelperToggleModuleSelectionAsync>("sortHelperToggleModuleSelectionAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::SortHelperValidateModuleAsync>("sortHelperValidateModuleAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -136,224 +157,690 @@ namespace Bannerlord::LauncherManager
         return exports;
     }
 
-    static Napi::Value CallbackString(const Napi::CallbackInfo &info)
+    static return_value_void *setGameParameters(param_ptr *p_owner, param_string *p_executable, param_json *p_game_parameters, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_void *)) noexcept
     {
-        const auto data = static_cast<param_callback *>(info.Data());
-        const auto env = info.Env();
-
+        // LoggerScope(__FUNCTION__, p_executable, p_game_parameters);
         try
         {
-            const auto str = info[0].As<String>();
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
 
-            const auto strCopy = CopyWithFree(str.Utf16Value());
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                p_callback(p_callback_handler, Create(return_value_void{}));
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
+                }
+            };
 
-            std::stringstream ss;
-            ss << data;
-            ss = std::stringstream();
-            ss << data->p_callback_ptr;
-            ss = std::stringstream();
-            ss << data->p_callback;
+            const auto callback = [p_executable, p_game_parameters, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto executable = p_executable == nullptr ? env.Null() : String::New(env, p_executable);
+                const auto gameParameters = p_game_parameters == nullptr ? env.Null() : JSONParse(String::New(env, p_game_parameters));
+                const auto promise = manager->FSetGameParameters({executable, gameParameters}).As<Napi::Promise>();
 
-            data->p_callback(data->p_callback_ptr, strCopy.get());
-            delete data;
-            return info.Env().Null();
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
         }
         catch (const Napi::Error &e)
         {
-            return info.Env().Null();
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
         }
     }
+    static return_value_void *sendNotification(param_ptr *p_owner, param_string *p_id, param_string *p_type, param_string *p_message, param_uint displayMs, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_void *)) noexcept
+    {
+        // LoggerScope(__FUNCTION__, p_id, p_type, p_message, displayMs);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
 
-    static return_value_void *setGameParameters(void *p_owner, char16_t *p_executable, char16_t *p_game_parameters, void *p_callback_handler, void(__cdecl *p_callback)(void *)) noexcept
-    {
-        return ExecuteAsync(p_owner, [p_executable, p_game_parameters](const LauncherManager *manager)
-                            {
-        const auto env = manager->Env();
-        const auto executable = p_executable == nullptr ? String::New(env, "") : String::New(env, p_executable);
-        const auto gameParameters = JSONParse(env, p_game_parameters == nullptr ? String::New(env, "") : String::New(env, p_game_parameters));
-        return manager->FSetGameParameters({executable, gameParameters}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            { p_callback(p_callback_handler); });
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                p_callback(p_callback_handler, Create(return_value_void{}));
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_id, p_type, p_message, displayMs, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto id = p_id == nullptr ? env.Null() : String::New(env, p_id);
+                const auto type = p_type == nullptr ? env.Null() : String::New(env, p_type);
+                const auto message = p_message == nullptr ? env.Null() : String::New(env, p_message);
+                const auto displayMs_ = Number::New(env, displayMs);
+                const auto promise = manager->FSendNotification({id, type, message, displayMs_}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *sendNotification(void *p_owner, char16_t *p_id, char16_t *p_type, char16_t *p_message, uint32_t displayMs, void *p_callback_handler, void(__cdecl *p_callback)(void *)) noexcept
+    static return_value_void *sendDialog(param_ptr *p_owner, param_string *p_type, param_string *p_title, param_string *p_message, param_json *p_filters, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_string *)) noexcept
     {
-        return ExecuteAsync(p_owner, [p_id, p_type, p_message, displayMs](const LauncherManager *manager)
-                            {
-        const auto env = manager->Env();
-        const auto id = p_id == nullptr ? String::New(env, "") : String::New(env, p_id);
-        const auto type = p_type == nullptr ? String::New(env, "") : String::New(env, p_type);
-        const auto message = p_message == nullptr ? String::New(env, "") : String::New(env, p_message);
-        const auto displayMs_ = Number::New(env, displayMs);
-        return manager->FSendNotification({id, type, message, displayMs_}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            { p_callback(p_callback_handler); });
+        // LoggerScope(__FUNCTION__, p_type, p_title, p_message, p_filters);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::String>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{nullptr, Copy(result.Utf16Value())}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{nullptr, Copy(result.Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_string{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_type, p_title, p_message, p_filters, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto type = p_type == nullptr ? env.Null() : String::New(env, p_type);
+                const auto title = p_title == nullptr ? env.Null() : String::New(env, p_title);
+                const auto message = p_message == nullptr ? env.Null() : String::New(env, p_message);
+                const auto filters = p_filters == nullptr ? env.Null() : JSONParse(String::New(env, p_filters));
+                const auto promise = manager->FSendDialog({type, title, message, filters}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *sendDialog(void *p_owner, char16_t *p_type, char16_t *p_title, char16_t *p_message, char16_t *p_filters, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *getInstallPath(param_ptr *p_owner, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_string *)) noexcept
     {
-        return ExecuteAsync(p_owner, [p_type, p_title, p_message, p_filters](const LauncherManager *manager)
-                            { 
-            const auto env = manager->Env();
-            const auto type = p_type == nullptr ? String::New(env, "") : String::New(env, p_type);
-            const auto title = p_title == nullptr ? String::New(env, "") : String::New(env, p_title);
-            const auto message = p_message == nullptr ? String::New(env, "") : String::New(env, p_message);
-            const auto filters = JSONParse(env, p_filters == nullptr ? String::New(env, "") : String::New(env, p_filters));
-            return manager->FSendDialog({type, title, message, filters}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto path = CopyWithFree(result.As<String>().Utf16Value());
-                    p_callback(p_callback_handler, path.get());
-                } });
+        // LoggerScope(__FUNCTION__);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::String>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{nullptr, Copy(result.Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_string{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto promise = manager->FGetInstallPath({}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *getInstallPath(void *p_owner, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *readFileContent(param_ptr *p_owner, param_string *p_file_path, param_int offset, param_int length, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_data *)) noexcept
     {
-        return ExecuteAsync(p_owner, [](const LauncherManager *manager)
-                            { 
-            const auto env = manager->Env();
-            return manager->FGetInstallPath({}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto installPath = CopyWithFree(result.As<String>().Utf16Value());
-                    p_callback(p_callback_handler, installPath.get());
-                } });
-    }
-    static return_value_void *readFileContent(void *p_owner, char16_t *p_file_path, int32_t p_offset, int32_t p_length, void *p_callback_handler, void(__cdecl *p_callback)(void *, uint8_t *, int32_t)) noexcept
-    {
-        return ExecuteAsync(p_owner, [p_file_path, p_offset, p_length](const LauncherManager *manager)
-                            { 
-            const auto env = manager->Env();
-            const auto filePath = p_file_path == nullptr ? String::New(env, "") : String::New(env, p_file_path);
-            const auto offset = Number::New(env, p_offset);
-            const auto length = Number::New(env, p_length);
-            return manager->FReadDirectoryFileList({filePath, offset, length}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr, 0);
+        // LoggerScope(__FUNCTION__, p_file_path, offset, length);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_data{}));
                 }
 
-                /*
                 if (!result.IsBuffer())
                 {
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-                    return Create(return_value_void{Copy(conv.from_bytes("Not an Buffer<uint8_t>"))});
+                    p_callback(p_callback_handler, Create(return_value_data{Copy(conv.from_bytes("Not an Buffer<uint8_t>"))}));
                 }
-                */
 
                 auto buffer = result.As<Buffer<uint8_t>>();
-                p_callback(p_callback_handler, buffer.Data(), static_cast<int>(buffer.ByteLength())); });
+                p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_data{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_data{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_file_path, offset, length, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto filePath = p_file_path == nullptr ? env.Null() : String::New(env, p_file_path);
+                const auto offset_ = Number::New(env, offset);
+                const auto length_ = Number::New(env, length);
+                const auto promise = manager->FReadFileContent({filePath, offset_, length_}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *writeFileContent(void *p_owner, char16_t *p_file_path, uint8_t *p_data, int32_t length, void *p_callback_handler, void(__cdecl *p_callback)(void *)) noexcept
+    static return_value_void *writeFileContent(param_ptr *p_owner, param_string *p_file_path, param_data *p_data, param_int length, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_void *)) noexcept
     {
-        return ExecuteAsync(p_owner, [p_file_path, p_data, length](const LauncherManager *manager)
-                            {
-        const auto env = manager->Env();
-        const auto filePath = p_file_path == nullptr ? String::New(env, "") : String::New(env, p_file_path);
-        const auto data = Buffer<uint8_t>::New(env, p_data, static_cast<size_t>(length));
-        return manager->FWriteFileContent({filePath, data}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            { p_callback(p_callback_handler); });
+        // LoggerScope(__FUNCTION__, p_file_path, p_data, length);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                p_callback(p_callback_handler, Create(return_value_void{}));
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_file_path, p_data, length, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto filePath = p_file_path == nullptr ? env.Null() : String::New(env, p_file_path);
+                const auto data = Buffer<uint8_t>::New(env, p_data, static_cast<size_t>(length));
+                const auto promise = manager->FWriteFileContent({filePath, data}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *readDirectoryFileList(void *p_owner, char16_t *p_directory_path, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *readDirectoryFileList(param_ptr *p_owner, param_string *p_directory_path, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *)) noexcept
     {
-        return ExecuteAsync(p_owner, [p_directory_path](const LauncherManager *manager)
-                            { 
-            const auto env = manager->Env();
-            const auto directoryPath = p_directory_path == nullptr ? String::New(env, "") : String::New(env, p_directory_path);
-            return manager->FReadDirectoryFileList({directoryPath}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto fileList = CopyWithFree(JSONStringify(env, result.As<Object>()).Utf16Value());
-                    p_callback(p_callback_handler, fileList.get());
-                } });
+        // LoggerScope(__FUNCTION__, p_directory_path);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{}));
+                }
+                else
+                {
+                    // Logger::Log(NAMEOF(thenCallback), "Value: " + JSONStringify(result).Utf8Value());
+                    p_callback(p_callback_handler, Create(return_value_json{nullptr, Copy(JSONStringify(result).Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_directory_path, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto directoryPath = p_directory_path == nullptr ? env.Null() : String::New(env, p_directory_path);
+                const auto promise = manager->FReadDirectoryFileList({directoryPath}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *readDirectoryList(void *p_owner, char16_t *p_directory_path, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *readDirectoryList(param_ptr *p_owner, param_string *p_directory_path, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *)) noexcept
     {
-        return ExecuteAsync(p_owner, [p_directory_path](const LauncherManager *manager)
-                            { 
-            const auto env = manager->Env();
-            const auto directoryPath = p_directory_path == nullptr ? String::New(env, "") : String::New(env, p_directory_path);
-            return manager->FReadDirectoryList({directoryPath}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto directoryList = CopyWithFree(JSONStringify(env, result.As<Object>()).Utf16Value());
-                    p_callback(p_callback_handler, directoryList.get());
-                } });
+        // LoggerScope(__FUNCTION__, p_directory_path);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{}));
+                }
+                else
+                {
+                    // Logger::Log(NAMEOF(thenCallback), "Value: " + JSONStringify(result).Utf8Value());
+                    p_callback(p_callback_handler, Create(return_value_json{nullptr, Copy(JSONStringify(result).Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_directory_path, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto directoryPath = p_directory_path == nullptr ? env.Null() : String::New(env, p_directory_path);
+                const auto promise = manager->FReadDirectoryList({directoryPath}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *getAllModuleViewModels(void *p_owner, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *getAllModuleViewModels(param_ptr *p_owner, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *)) noexcept
     {
-        return ExecuteAsync(p_owner, [](const LauncherManager *manager)
-                            { return manager->FGetAllModuleViewModels({}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto allModuleViewModels = CopyWithFree(JSONStringify(env, result.As<Napi::Object>()).Utf16Value());
-                    p_callback(p_callback_handler, allModuleViewModels.get());
-                } });
+        // LoggerScope(__FUNCTION__);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{nullptr, Copy(JSONStringify(result).Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto promise = manager->FGetAllModuleViewModels({}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *getModuleViewModels(void *p_owner, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *getModuleViewModels(param_ptr *p_owner, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *)) noexcept
     {
-        return ExecuteAsync(p_owner, [](const LauncherManager *manager)
-                            { return manager->FGetModuleViewModels({}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto moduleViewModels = CopyWithFree(JSONStringify(env, result.As<Napi::Object>()).Utf16Value());
-                    p_callback(p_callback_handler, moduleViewModels.get());
-                } });
+        // LoggerScope(__FUNCTION__);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{nullptr, Copy(JSONStringify(result).Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto promise = manager->FGetModuleViewModels({}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *setModuleViewModels(void *p_owner, char16_t *p_module_view_models, void *p_callback_handler, void(__cdecl *p_callback)(void *)) noexcept
+    static return_value_void *setModuleViewModels(param_ptr *p_owner, param_json *p_module_view_models, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_void *)) noexcept
     {
-        return ExecuteAsync(p_owner, [p_module_view_models](const LauncherManager *manager)
-                            {
-            const auto env = manager->Env();
-            const auto moduleViewModels = JSONParse(env, p_module_view_models ? 
-                Napi::String::New(env, p_module_view_models) : 
-                Napi::String::New(env, ""));
-            return manager->FSetModuleViewModels({moduleViewModels}); }, [p_callback_handler, p_callback](const Napi::Value & /*result*/)
-                            { p_callback(p_callback_handler); });
+        // LoggerScope(__FUNCTION__, p_module_view_models);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                p_callback(p_callback_handler, Create(return_value_void{}));
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [p_module_view_models, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto moduleViewModels = p_module_view_models == nullptr ? env.Null() : JSONParse(Napi::String::New(env, p_module_view_models));
+                const auto promise = manager->FSetModuleViewModels({moduleViewModels}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *getOptions(void *p_owner, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *getOptions(param_ptr *p_owner, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *)) noexcept
     {
-        return ExecuteAsync(p_owner, [](const LauncherManager *manager)
-                            { return manager->FGetOptions({}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto options = CopyWithFree(JSONStringify(env, result.As<Napi::Object>()).Utf16Value());
-                    p_callback(p_callback_handler, options.get());
-                } });
+        // LoggerScope(__FUNCTION__);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{nullptr, Copy(JSONStringify(result).Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto promise = manager->FGetOptions({}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
-    static return_value_void *getState(void *p_owner, void *p_callback_handler, void(__cdecl *p_callback)(void *, char16_t *)) noexcept
+    static return_value_void *getState(param_ptr *p_owner, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *)) noexcept
     {
-        return ExecuteAsync(p_owner, [](const LauncherManager *manager)
-                            { return manager->FGetState({}); }, [p_callback_handler, p_callback](const Napi::Value &result)
-                            {
-                if (result.IsNull()) {
-                    p_callback(p_callback_handler, nullptr);
-                } else {
-                    const auto env = result.Env();
-                    const auto state = CopyWithFree(JSONStringify(env, result.As<Napi::Object>()).Utf16Value());
-                    p_callback(p_callback_handler, state.get());
-                } });
+        // LoggerScope(__FUNCTION__);
+        try
+        {
+            const auto manager = static_cast<const Bannerlord::LauncherManager::LauncherManager *>(p_owner);
+            const auto tsfn = manager->TSFN;
+
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                const auto result = info[0].As<Napi::Object>();
+                if (result.IsNull())
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{nullptr, Copy(JSONStringify(result).Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto env = info.Env();
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(u"Unknown error")}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_json{Copy(GetErrorMessage(error))}));
+                }
+            };
+
+            const auto callback = [onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
+            {
+                const auto promise = manager->FGetState({}).As<Napi::Promise>();
+
+                const auto onResolveCallback = Napi::Function::New(env, onResolve);
+                const auto onRejectCallback = Napi::Function::New(env, onReject);
+                jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+            };
+            tsfn.BlockingCall(manager, callback);
+
+            return Create(return_value_void{});
+        }
+        catch (const Napi::Error &e)
+        {
+            // logger.Log("Error: " + std::string(e.Message()));
+            return Create(return_value_void{Copy(GetErrorMessage(e))});
+        }
     }
 
     LauncherManager::LauncherManager(const CallbackInfo &info) : ObjectWrap<LauncherManager>(info)
     {
-        const auto env = info.Env();
+        const auto env = Env();
+        this->TSFN.Ref(env);
         this->FSetGameParameters = Persistent(info[0].As<Function>());
         this->FSendNotification = Persistent(info[1].As<Function>());
         this->FSendDialog = Persistent(info[2].As<Function>());
@@ -387,6 +874,8 @@ namespace Bannerlord::LauncherManager
 
     LauncherManager::~LauncherManager()
     {
+        const auto env = Env();
+        this->TSFN.Unref(env);
         this->FSetGameParameters.Unref();
         this->FSendNotification.Unref();
         this->FSendDialog.Unref();
@@ -404,219 +893,226 @@ namespace Bannerlord::LauncherManager
 
     Napi::Value LauncherManager::GetGameVersionAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_get_game_version(this->_pInstance, cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleStringResultCallback));
+        const auto result = ve_get_game_version_async(this->_pInstance, cbData, HandleStringResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::TestModule(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto files = JSONStringify(env, info[0].As<Object>());
+        const auto files = JSONStringify(info[0].As<Object>());
 
         const auto filesCopy = CopyWithFree(files.Utf16Value());
 
         const auto result = ve_test_module(this->_pInstance, filesCopy.get());
+        // LOGOUTPUT();
         return ThrowOrReturnJson(env, result);
     }
 
     Napi::Value LauncherManager::InstallModule(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto files = JSONStringify(env, info[0].As<Object>());
-        const auto destinationPath = JSONStringify(env, info[1].As<Object>());
+        const auto files = JSONStringify(info[0].As<Object>());
+        const auto destinationPath = JSONStringify(info[1].As<Object>());
 
         const auto filesCopy = CopyWithFree(files.Utf16Value());
         const auto destinationPathCopy = CopyWithFree(destinationPath.Utf16Value());
 
         const auto result = ve_install_module(this->_pInstance, filesCopy.get(), destinationPathCopy.get());
+        // LOGOUTPUT();
         return ThrowOrReturnJson(env, result);
     }
 
     Napi::Value LauncherManager::IsSorting(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
         const auto result = ve_is_sorting(this->_pInstance);
+        // LOGOUTPUT();
         return ThrowOrReturnBoolean(env, result);
     }
 
     Napi::Value LauncherManager::SortAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_sort(this->_pInstance, cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_sort_async(this->_pInstance, cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::GetModulesAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(JsonCallback));
-        const auto result = ve_get_modules(this->_pInstance, cbData, JsonCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_get_modules_async(this->_pInstance, cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::GetAllModulesAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(JsonCallback));
-        const auto result = ve_get_all_modules(this->_pInstance, cbData, JsonCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_get_all_modules_async(this->_pInstance, cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::RefreshGameParametersAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_refresh_game_parameters(this->_pInstance, cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_refresh_game_parameters_async(this->_pInstance, cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::CheckForRootHarmonyAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_check_for_root_harmony(this->_pInstance, cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        auto result = ve_check_for_root_harmony_async(this->_pInstance, cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::ModuleListHandlerExportAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_module_list_handler_export(this->_pInstance, cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        auto result = ve_module_list_handler_export_async(this->_pInstance, cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::ModuleListHandlerExportSaveFileAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
 
         const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_module_list_handler_export_save_file(this->_pInstance, saveFileCopy.get(), cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        auto result = ve_module_list_handler_export_save_file_async(this->_pInstance, saveFileCopy.get(), cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::ModuleListHandlerImportAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        auto deferred = Promise::Deferred::New(env);
-        auto callbackStorage = CallbackStorage<param_bool>{env, deferred};
-        const auto result = ve_module_list_handler_import(this->_pInstance, static_cast<void *>(&callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_bool)>(&callbackStorage.Callback));
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleBooleanResultCallback));
+        auto result = ve_module_list_handler_import_async(this->_pInstance, cbData, HandleBooleanResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::ModuleListHandlerImportSaveFileAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
 
         const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
 
-        auto deferred = Promise::Deferred::New(env);
-        auto callbackStorage = CallbackStorage<param_bool>{env, deferred};
-        const auto result = ve_module_list_handler_import_save_file(this->_pInstance, saveFileCopy.get(), static_cast<void *>(&callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_bool)>(&callbackStorage.Callback));
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleBooleanResultCallback));
+        auto result = ve_module_list_handler_import_save_file_async(this->_pInstance, saveFileCopy.get(), cbData, HandleBooleanResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::RefreshModulesAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_refresh_modules(this->_pInstance, cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        auto result = ve_refresh_modules_async(this->_pInstance, cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SortHelperChangeModulePositionAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto moduleViewModel = JSONStringify(env, info[0].As<Object>());
+        const auto moduleViewModel = JSONStringify(info[0].As<Object>());
         const auto insertIndex = info[1].As<Number>();
 
         const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(BooleanCallback));
-        const auto result = ve_sort_helper_change_module_position(this->_pInstance, moduleViewModelCopy.get(), insertIndex.Int32Value(), cbData, BooleanCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleBooleanResultCallback));
+        const auto result = ve_sort_helper_change_module_position_async(this->_pInstance, moduleViewModelCopy.get(), insertIndex.Int32Value(), cbData, HandleBooleanResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SortHelperToggleModuleSelectionAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto moduleViewModel = JSONStringify(env, info[0].As<Object>());
+        const auto moduleViewModel = JSONStringify(info[0].As<Object>());
 
         const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_sort_helper_toggle_module_selection(this->_pInstance, moduleViewModelCopy.get(), cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_sort_helper_toggle_module_selection_async(this->_pInstance, moduleViewModelCopy.get(), cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SortHelperValidateModuleAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto moduleViewModel = JSONStringify(env, info[0].As<Object>());
+        const auto moduleViewModel = JSONStringify(info[0].As<Object>());
 
         const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_sort_helper_validate_module(this->_pInstance, moduleViewModelCopy.get(), cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_sort_helper_validate_module_async(this->_pInstance, moduleViewModelCopy.get(), cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::GetSaveFilesAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_get_save_files(this->_pInstance, cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_get_save_files_async(this->_pInstance, cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::GetSaveMetadataAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
         auto data = info[1].As<Buffer<uint8_t>>();
@@ -624,92 +1120,92 @@ namespace Bannerlord::LauncherManager
         const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
         const auto dataCopy = CopyWithFree(data.Data(), data.ByteLength());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(JsonCallback));
-        const auto result = ve_get_save_metadata(this->_pInstance, saveFileCopy.get(), dataCopy.get(), static_cast<int32_t>(data.ByteLength()), cbData, JsonCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_get_save_metadata_async(this->_pInstance, saveFileCopy.get(), dataCopy.get(), static_cast<int32_t>(data.ByteLength()), cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::GetSaveFilePathAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
 
         const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_get_save_file_path(this->_pInstance, saveFileCopy.get(), cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleStringResultCallback));
+        const auto result = ve_get_save_file_path_async(this->_pInstance, saveFileCopy.get(), cbData, HandleStringResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::OrderByLoadOrderAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto loadOrder = JSONStringify(env, info[0].As<Object>());
+        const auto loadOrder = JSONStringify(info[0].As<Object>());
 
         const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_order_by_load_order(this->_pInstance, loadOrderCopy.get(), cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleJsonResultCallback));
+        const auto result = ve_order_by_load_order_async(this->_pInstance, loadOrderCopy.get(), cbData, HandleJsonResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SetGameParameterExecutableAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto executable = info[0].As<String>();
 
         const auto executableCopy = CopyWithFree(executable.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_set_game_parameter_executable(this->_pInstance, executableCopy.get(), cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_set_game_parameter_executable_async(this->_pInstance, executableCopy.get(), cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SetGameParameterSaveFileAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto saveName = info[0].As<String>();
 
         const auto saveNameCopy = CopyWithFree(saveName.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_set_game_parameter_save_file(this->_pInstance, saveNameCopy.get(), cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_set_game_parameter_save_file_async(this->_pInstance, saveNameCopy.get(), cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::DialogTestWarningAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        auto deferred = Promise::Deferred::New(env);
-        auto callbackStorage = new CallbackStorage<param_string *>{env, deferred};
-        const auto result = ve_dialog_test_warning(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_string *)>(callbackStorage->Callback));
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleStringResultCallback));
+        const auto result = ve_dialog_test_warning_async(this->_pInstance, cbData, HandleStringResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
     Napi::Value LauncherManager::DialogTestFileOpenAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        auto deferred = Promise::Deferred::New(env);
-        auto callbackStorage = new CallbackStorage<param_string *>{env, deferred};
-        const auto result = ve_dialog_test_file_open(this->_pInstance, static_cast<void *>(callbackStorage), static_cast<void(__cdecl *)(param_ptr *, param_string *)>(callbackStorage->Callback));
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleStringResultCallback));
+        const auto result = ve_dialog_test_file_open_async(this->_pInstance, cbData, HandleStringResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     void LauncherManager::SetGameStore(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto gameStore = info[0].As<String>();
 
@@ -717,43 +1213,44 @@ namespace Bannerlord::LauncherManager
 
         const auto result = ve_set_game_store(this->_pInstance, gameStoreCopy.get());
         ThrowOrReturn(env, result);
+        // LOGOUTPUT();
     }
 
     Napi::Value LauncherManager::GetGamePlatformAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(StringCallback));
-        const auto result = ve_get_game_platform(this->_pInstance, cbData, StringCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleStringResultCallback));
+        const auto result = ve_get_game_platform_async(this->_pInstance, cbData, HandleStringResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SetGameParameterContinueLastSaveFileAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
         const auto value = info[0].As<Boolean>();
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_set_game_parameter_continue_last_save_file(this->_pInstance, value == true ? 1 : 0, cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_set_game_parameter_continue_last_save_file_async(this->_pInstance, value == true ? 1 : 0, cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::SetGameParameterLoadOrderAsync(const CallbackInfo &info)
     {
+        // LOGINPUT();
         const auto env = info.Env();
-        const auto loadOrder = JSONStringify(env, info[0].As<Object>());
+        const auto loadOrder = JSONStringify(info[0].As<Object>());
 
         const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
 
-        const auto deferred = Napi::Promise::Deferred::New(env);
-        auto *cbData = CreateCallbackData(env, [](const Napi::CallbackInfo &) {}, NAMEOF(VoidCallback));
-        const auto result = ve_set_game_parameter_load_order(this->_pInstance, loadOrderCopy.get(), cbData, VoidCallback);
-        ThrowOrReturn(env, result);
-        return deferred.Promise();
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_set_game_parameter_load_order_async(this->_pInstance, loadOrderCopy.get(), cbData, HandleVoidResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 }
 #endif

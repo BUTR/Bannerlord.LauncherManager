@@ -28,33 +28,27 @@ internal sealed class GameInfoProvider : IGameInfoProvider
     }
     
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetInstallPathNativeCallback(param_ptr* pOwner, param_string* pResult)
+    public static unsafe void GetInstallPathNativeCallback(param_ptr* pOwner, return_value_string* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<string>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
         {
-            var result = new string(param_string.ToSpan(pResult));
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsString(tcs);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<string>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput(result);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
 
     private unsafe void GetInstallPathNative(TaskCompletionSource<string> tcs)

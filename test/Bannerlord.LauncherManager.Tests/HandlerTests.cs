@@ -72,7 +72,6 @@ public class HandlerTests
         }
         
         callback(null);
-        return;
     }
 
     [Test]
@@ -164,19 +163,19 @@ public class HandlerTests
                 readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: (callback) => callback(Path.GetFullPath(GamePath)!)
+                getInstallPath: callback => callback(Path.GetFullPath(GamePath)!)
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: (id, type, message, ms) => { }
             ),
             launcherStateUProvider: new CallbackLauncherStateProvider(
                 setGameParameters: (executable, parameters, callback) => callback(),
-                getOptions: (callback) => callback(new LauncherOptions(false)),
-                getState: (callback) => callback(new LauncherState(true))
+                getOptions: callback => callback(new LauncherOptions(false)),
+                getState: callback => callback(new LauncherState(true))
             ),
             loadOrderStateProvider: new CallbackLoadOrderStateProvider(
-                getAllModuleViewModels: (callback) => callback(moduleViewModels),
-                getModuleViewModels: (callback) => callback(moduleViewModels),
+                getAllModuleViewModels: callback => callback(moduleViewModels),
+                getModuleViewModels: callback => callback(moduleViewModels),
                 setModuleViewModels: null!)
         );
 
@@ -221,7 +220,7 @@ public class HandlerTests
                 readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: (callback) => callback("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount & Blade II Bannerlord")
+                getInstallPath: callback => callback("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount & Blade II Bannerlord")
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!
@@ -320,7 +319,7 @@ public class HandlerTests
                 readDirectoryList: null!
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: (callback) => callback(Path.GetFullPath(GamePath)!)
+                getInstallPath: callback => callback(Path.GetFullPath(GamePath))
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!

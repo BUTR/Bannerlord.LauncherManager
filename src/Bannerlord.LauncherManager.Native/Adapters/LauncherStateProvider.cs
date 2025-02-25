@@ -32,7 +32,7 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
 
     public async Task SetGameParametersAsync(string executable, IReadOnlyList<string> gameParameters)
     {
-        var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         SetGameParametersNative(executable, gameParameters, tcs);
         await tcs.Task;
     }
@@ -52,43 +52,37 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void SetGameParametersNativeCallback(param_ptr* pOwner)
+    public static unsafe void SetGameParametersNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogInput(pOwner);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<object?>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
-            tcs = (TaskCompletionSource<object?>) handle.Target!;
-            tcs.TrySetResult(null);
-            
-            Logger.LogOutput();
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
         }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsVoid(tcs);
+        handle.Free();
+
+        Logger.LogOutput();
     }
-    private unsafe void SetGameParametersNative(ReadOnlySpan<char> executable, IReadOnlyList<string> gameParameters, TaskCompletionSource<object?> tcs)
+    private unsafe void SetGameParametersNative(ReadOnlySpan<char> executable, IReadOnlyList<string> gameParameters, TaskCompletionSource tcs)
     {
         Logger.LogInput();
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         fixed (char* pExecutable = executable)
-        fixed (char* pGameParameters = BUTR.NativeAOT.Shared.Utils.SerializeJson(gameParameters, Bindings.CustomSourceGenerationContext.IReadOnlyListString) ?? string.Empty)
+        fixed (char* pGameParameters = BUTR.NativeAOT.Shared.Utils.SerializeJson(gameParameters, Bindings.CustomSourceGenerationContext.IReadOnlyListString))
         {
-            Logger.LogPinned(pExecutable, pGameParameters);
-
             try
             {
                 using var result = SafeStructMallocHandle.Create(_setGameParameters(_pOwner, (param_string*) pExecutable, (param_json*) pGameParameters, (param_ptr*) GCHandle.ToIntPtr(handle), &SetGameParametersNativeCallback), true);
@@ -106,33 +100,27 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetOptionsNativeCallback(param_ptr* pOwner, param_json* pResult)
+    public static unsafe void GetOptionsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<LauncherOptions>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherOptions?> tcs } handle)
         {
-            var result = BUTR.NativeAOT.Shared.Utils.DeserializeJson(pResult, Bindings.CustomSourceGenerationContext.LauncherOptions);
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherOptions);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<LauncherOptions>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput();
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
     private unsafe void GetOptionsNative(TaskCompletionSource<LauncherOptions> tcs)
     {
@@ -156,33 +144,27 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetStateNativeCallback(param_ptr* pOwner, param_json* pResult)
+    public static unsafe void GetStateNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<LauncherState>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherState?> tcs } handle)
         {
-            var result = BUTR.NativeAOT.Shared.Utils.DeserializeJson(pResult, Bindings.CustomSourceGenerationContext.LauncherState);
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherState);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<LauncherState>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput();
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
     private unsafe void GetStateNative(TaskCompletionSource<LauncherState> tcs)
     {

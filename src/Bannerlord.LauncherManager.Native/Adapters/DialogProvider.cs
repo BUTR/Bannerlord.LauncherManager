@@ -30,33 +30,27 @@ internal sealed class DialogProvider : IDialogProvider
     }
     
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void SendDialogNativeCallback(param_ptr* pOwner, param_string* pResult)
+    public static unsafe void SendDialogNativeCallback(param_ptr* pOwner, return_value_string* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<string>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
         {
-            var result = new string(param_string.ToSpan(pResult));
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsString(tcs);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<string>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput(result);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
     
     private unsafe void SendDialogNative(ReadOnlySpan<char> type, ReadOnlySpan<char> title, ReadOnlySpan<char> message, IReadOnlyList<DialogFileFilter> filters, TaskCompletionSource<string> tcs)
@@ -67,11 +61,9 @@ internal sealed class DialogProvider : IDialogProvider
 
         fixed (char* pType = type)
         fixed (char* pTitle = title)
-        fixed (char* pFilters = BUTR.NativeAOT.Shared.Utils.SerializeJson(filters, Bindings.CustomSourceGenerationContext.IReadOnlyListDialogFileFilter) ?? string.Empty)
+        fixed (char* pFilters = BUTR.NativeAOT.Shared.Utils.SerializeJson(filters, Bindings.CustomSourceGenerationContext.IReadOnlyListDialogFileFilter))
         fixed (char* pMessage = message)
         {
-            Logger.LogPinned(pType, pTitle, pFilters, pMessage);
-
             try
             {
                 using var result = SafeStructMallocHandle.Create(_sendDialog(_pOwner, (param_string*) pType, (param_string*) pTitle, (param_string*) pMessage, (param_json*) pFilters, (param_ptr*) GCHandle.ToIntPtr(handle), &SendDialogNativeCallback), true);

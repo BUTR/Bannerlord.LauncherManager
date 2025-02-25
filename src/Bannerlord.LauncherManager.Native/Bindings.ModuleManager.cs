@@ -36,11 +36,11 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
 
             var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
 
             var result = ModuleSorter.Sort(source).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
@@ -60,12 +60,12 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
 
             var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var options = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_options, CustomSourceGenerationContext.ModuleSorterOptions);
 
             var result = ModuleSorter.Sort(source, options).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
@@ -86,12 +86,12 @@ public static unsafe partial class Bindings
             //    return return_value_bool.AsValue(false, false);
 
             var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleUtilities.AreDependenciesPresent(source, module);
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_bool.AsValue(result, false);
         }
         catch (Exception e)
@@ -112,12 +112,12 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
 
             var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleUtilities.GetDependencies(source, module).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
@@ -137,13 +137,13 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
 
             var source = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_source, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
             var options = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_options, CustomSourceGenerationContext.ModuleSorterOptions);
 
             var result = ModuleUtilities.GetDependencies(source, module, options).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
@@ -166,7 +166,7 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue([new ModuleIssue(new ModuleInfoExtended(), "", ModuleIssueType.NONE, "Invalid input!", ApplicationVersionRange.Empty)], CustomSourceGenerationContext.ModuleIssueArray, false);
 
             var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var isSelected = Marshal.GetDelegateForFunctionPointer<N_IsSelected>(new IntPtr(p_is_selected));
@@ -180,12 +180,12 @@ public static unsafe partial class Bindings
 
                     using var resultStr = SafeStructMallocHandle.Create(isSelected(p_owner, (param_string*) pModuleId), true);
                     var result = resultStr.ValueAsBool();
-                    Logger.LogOutput(result);
+                    Logger.LogOutput();
                     return result;
                 }
             }).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleIssueArray, false);
         }
         catch (Exception e)
@@ -205,12 +205,12 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue([new ModuleIssue(new ModuleInfoExtended(), "", ModuleIssueType.NONE, "Invalid input!", ApplicationVersionRange.Empty)], CustomSourceGenerationContext.ModuleIssueArray, false);
 
             var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleUtilities.ValidateLoadOrder(modules, targetModule).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleIssueArray, false);
         }
         catch (Exception e)
@@ -239,7 +239,7 @@ public static unsafe partial class Bindings
             //    return return_value_void.AsValue(false);
 
             var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var getSelected = Marshal.GetDelegateForFunctionPointer<N_GetSelected>(new IntPtr(p_get_selected));
@@ -256,7 +256,7 @@ public static unsafe partial class Bindings
 
                     using var resultStr = SafeStructMallocHandle.Create(getSelected(p_owner, (param_string*) pModuleId), true);
                     var result = resultStr.ValueAsBool();
-                    Logger.LogOutput(result);
+                    Logger.LogOutput();
                     return result;
                 }
             }, (module, value) =>
@@ -279,7 +279,7 @@ public static unsafe partial class Bindings
 
                     using var resultStr = SafeStructMallocHandle.Create(getDisabled(p_owner, (param_string*) pModuleId), true);
                     var result = resultStr.ValueAsBool();
-                    Logger.LogOutput(result);
+                    Logger.LogOutput();
                     return result;
                 }
             }, (module, value) =>
@@ -323,7 +323,7 @@ public static unsafe partial class Bindings
             //    return return_value_void.AsValue(false);
 
             var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
             var targetModule = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_target_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var getSelected = Marshal.GetDelegateForFunctionPointer<N_GetSelected>(new IntPtr(p_get_selected));
@@ -340,7 +340,7 @@ public static unsafe partial class Bindings
 
                     using var resultStr = SafeStructMallocHandle.Create(getSelected(p_owner, (param_string*) pModuleId), true);
                     var result = resultStr.ValueAsBool();
-                    Logger.LogOutput(result);
+                    Logger.LogOutput();
                     return result;
                 }
             }, (module, value) =>
@@ -363,7 +363,7 @@ public static unsafe partial class Bindings
 
                     using var resultStr = SafeStructMallocHandle.Create(getDisabled(p_owner, (param_string*) pModuleId), true);
                     var result = resultStr.ValueAsBool();
-                    Logger.LogOutput(result);
+                    Logger.LogOutput();
                     return result;
                 }
             }, (module, value) =>
@@ -400,7 +400,7 @@ public static unsafe partial class Bindings
 
             var result = ModuleInfoExtended.FromXml(doc);
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
         }
         catch (Exception e)
@@ -421,7 +421,7 @@ public static unsafe partial class Bindings
             var module = ModuleInfoExtended.FromXml(doc);
             var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithPath, false);
         }
         catch (Exception e)
@@ -441,7 +441,7 @@ public static unsafe partial class Bindings
             var module = ModuleInfoExtended.FromXml(doc);
             var result = new ModuleInfoExtendedWithMetadata(module, Enum.TryParse<ModuleProviderType>(new string(param_string.ToSpan(p_module_provider)), out var e) ? e : ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata, false);
         }
         catch (Exception e)
@@ -504,7 +504,7 @@ public static unsafe partial class Bindings
 
             var result = _applicationVersionComparer.Compare(x, y);
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_int32.AsValue(result, false);
         }
         catch (Exception e)
@@ -528,7 +528,7 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesAllDistinct().ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
@@ -550,7 +550,7 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesLoadBeforeThisDistinct().ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
@@ -572,7 +572,7 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesLoadAfterThisDistinct().ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
@@ -594,7 +594,7 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesIncompatiblesDistinct().ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)

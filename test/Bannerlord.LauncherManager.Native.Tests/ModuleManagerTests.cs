@@ -246,21 +246,23 @@ public partial class ModuleManagerTests : BaseTests
                 Assert.That(dependencies2![0].Id, Is.EqualTo(harmony!.Id), () => string.Join(", ", dependencies2.Select(x => x.Id)));
             });
 
-            var sorted = GetResult<ModuleInfoExtended[]>(bmm_sort(unsortedJson));
+            var sorted = GetResult<ModuleInfoExtended[]>(bmm_sort(unsortedJson))!;
+            Assert.That(sorted, Is.Not.Null);
             using var sortedJson = ToJson(sorted);
             Assert.Multiple(() =>
             {
-                Assert.That(sorted, Has.Length.EqualTo(2), () => string.Join(", ", sorted?.Select(x => x.Id) ?? []));
-                Assert.That(sorted![0].Id, Is.EqualTo(harmony!.Id));
-                Assert.That(sorted![1].Id, Is.EqualTo(uiExtenderEx!.Id));
+                Assert.That(sorted, Has.Length.EqualTo(2), () => string.Join(", ", sorted.Select(x => x.Id)));
+                Assert.That(sorted[0].Id, Is.EqualTo(harmony!.Id));
+                Assert.That(sorted[1].Id, Is.EqualTo(uiExtenderEx!.Id));
             });
             using var moduleSorterOptions2Json = ToJson(new ModuleSorterOptions { SkipOptionals = true, SkipExternalDependencies = true });
-            var sorted2 = GetResult<ModuleInfoExtended[]>(bmm_sort_with_options(unsortedJson, moduleSorterOptions2Json));
+            var sorted2 = GetResult<ModuleInfoExtended[]>(bmm_sort_with_options(unsortedJson, moduleSorterOptions2Json))!;
+            Assert.That(sorted2, Is.Not.Null);
             Assert.Multiple(() =>
             {
-                Assert.That(sorted2, Has.Length.EqualTo(2), () => string.Join(", ", sorted2?.Select(x => x.Id) ?? []));
-                Assert.That(sorted2![0].Id, Is.EqualTo(harmony!.Id));
-                Assert.That(sorted2![1].Id, Is.EqualTo(uiExtenderEx!.Id));
+                Assert.That(sorted2, Has.Length.EqualTo(2), () => string.Join(", ", sorted2.Select(x => x.Id)));
+                Assert.That(sorted2[0].Id, Is.EqualTo(harmony!.Id));
+                Assert.That(sorted2[1].Id, Is.EqualTo(uiExtenderEx!.Id));
             });
 
             var validationResult = GetResult<ModuleIssue[]>(bmm_validate_load_order(sortedJson, harmonyJson));

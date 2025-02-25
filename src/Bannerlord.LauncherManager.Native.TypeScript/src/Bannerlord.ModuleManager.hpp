@@ -18,6 +18,8 @@ namespace Bannerlord::ModuleManager
     };
     static return_value_bool *isSelected(param_ptr *p_owner, param_string *p_module_id) noexcept
     {
+        // LoggerScope(__FUNCTION__, p_module_id);
+
         try
         {
             const auto data = static_cast<const ValidationData *const>(p_owner);
@@ -43,6 +45,8 @@ namespace Bannerlord::ModuleManager
     };
     static return_value_bool *getSelected(param_ptr *p_owner, param_string *p_module_id) noexcept
     {
+        // LoggerScope(__FUNCTION__, p_module_id);
+
         try
         {
             const auto data = static_cast<const EnableDisableData *const>(p_owner);
@@ -59,6 +63,8 @@ namespace Bannerlord::ModuleManager
     }
     static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
     {
+        // LoggerScope(__FUNCTION__, p_module_id, value_raw);
+
         try
         {
             const auto data = static_cast<const EnableDisableData *const>(p_owner);
@@ -77,6 +83,8 @@ namespace Bannerlord::ModuleManager
     }
     static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module_id) noexcept
     {
+        // LoggerScope(__FUNCTION__, p_module_id);
+
         try
         {
             const auto data = static_cast<const EnableDisableData *const>(p_owner);
@@ -93,6 +101,8 @@ namespace Bannerlord::ModuleManager
     }
     static return_value_void *setDisabled(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
     {
+        // LoggerScope(__FUNCTION__, p_module_id, value_raw);
+
         try
         {
             const auto data = static_cast<const EnableDisableData *const>(p_owner);
@@ -113,7 +123,7 @@ namespace Bannerlord::ModuleManager
     Value Sort(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
 
         const auto sourceCopy = CopyWithFree(source.Utf16Value());
 
@@ -123,8 +133,8 @@ namespace Bannerlord::ModuleManager
     Value SortWithOptions(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto options = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto options = JSONStringify(info[1].As<Object>());
 
         const auto sourceCopy = CopyWithFree(source.Utf16Value());
         const auto optionsCopy = CopyWithFree(options.Utf16Value());
@@ -136,8 +146,8 @@ namespace Bannerlord::ModuleManager
     Value AreAllDependenciesOfModulePresent(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto module = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto module = JSONStringify(info[1].As<Object>());
 
         const auto sourceCopy = CopyWithFree(source.Utf16Value());
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
@@ -149,8 +159,8 @@ namespace Bannerlord::ModuleManager
     Value GetDependentModulesOf(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto module = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto module = JSONStringify(info[1].As<Object>());
 
         const auto sourceCopy = CopyWithFree(source.Utf16Value());
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
@@ -161,9 +171,9 @@ namespace Bannerlord::ModuleManager
     Value GetDependentModulesOfWithOptions(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto module = JSONStringify(env, info[1].As<Object>());
-        const auto options = JSONStringify(env, info[2].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto module = JSONStringify(info[1].As<Object>());
+        const auto options = JSONStringify(info[2].As<Object>());
 
         const auto sourceCopy = CopyWithFree(source.Utf16Value());
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
@@ -176,8 +186,8 @@ namespace Bannerlord::ModuleManager
     Value ValidateLoadOrder(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto targetModule = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto targetModule = JSONStringify(info[1].As<Object>());
 
         const auto sourceCopy = CopyWithFree(source.Utf16Value());
         const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
@@ -189,8 +199,8 @@ namespace Bannerlord::ModuleManager
     Value ValidateModule(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto targetModule = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto targetModule = JSONStringify(info[1].As<Object>());
         const auto manager = info[2].As<Object>();
 
         const auto fIsSelected = manager.Get("isSelected").As<Function>();
@@ -207,8 +217,8 @@ namespace Bannerlord::ModuleManager
     void EnableModule(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto targetModule = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto targetModule = JSONStringify(info[1].As<Object>());
         const auto manager = info[2].As<Object>();
 
         const auto fGetSelected = manager.Get("getSelected").As<Function>();
@@ -227,8 +237,8 @@ namespace Bannerlord::ModuleManager
     void DisableModule(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto source = JSONStringify(env, info[0].As<Object>());
-        const auto targetModule = JSONStringify(env, info[1].As<Object>());
+        const auto source = JSONStringify(info[0].As<Object>());
+        const auto targetModule = JSONStringify(info[1].As<Object>());
         const auto manager = info[2].As<Object>();
 
         const auto FGetSelected = manager.Get("getSelected").As<Function>();
@@ -305,8 +315,8 @@ namespace Bannerlord::ModuleManager
     Value CompareVersions(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto x = JSONStringify(env, info[0].As<Object>());
-        const auto y = JSONStringify(env, info[1].As<Object>());
+        const auto x = JSONStringify(info[0].As<Object>());
+        const auto y = JSONStringify(info[1].As<Object>());
 
         const auto xCopy = CopyWithFree(x.Utf16Value());
         const auto yCopy = CopyWithFree(y.Utf16Value());
@@ -318,7 +328,7 @@ namespace Bannerlord::ModuleManager
     Value GetDependenciesAll(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto module = JSONStringify(env, info[0].As<Object>());
+        const auto module = JSONStringify(info[0].As<Object>());
 
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
 
@@ -328,7 +338,7 @@ namespace Bannerlord::ModuleManager
     Value GetDependenciesToLoadBeforeThis(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto module = JSONStringify(env, info[0].As<Object>());
+        const auto module = JSONStringify(info[0].As<Object>());
 
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
 
@@ -338,7 +348,7 @@ namespace Bannerlord::ModuleManager
     Value GetDependenciesToLoadAfterThis(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto module = JSONStringify(env, info[0].As<Object>());
+        const auto module = JSONStringify(info[0].As<Object>());
 
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
 
@@ -348,7 +358,7 @@ namespace Bannerlord::ModuleManager
     Value GetDependenciesIncompatibles(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto module = JSONStringify(env, info[0].As<Object>());
+        const auto module = JSONStringify(info[0].As<Object>());
 
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
 

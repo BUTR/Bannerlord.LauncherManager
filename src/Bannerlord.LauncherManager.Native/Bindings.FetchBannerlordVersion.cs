@@ -22,7 +22,7 @@ public static unsafe partial class Bindings
 
             var result = (uint) Fetcher.GetChangeSet(Path.GetFullPath(gameFolderPath), libAssembly);
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_uint32.AsValue(result, false);
         }
         catch (Exception e)
@@ -64,7 +64,7 @@ public static unsafe partial class Bindings
 
             var result = (uint) Fetcher.GetVersionType(Path.GetFullPath(gameFolderPath), libAssembly);
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_uint32.AsValue(result, false);
         }
         catch (Exception e)

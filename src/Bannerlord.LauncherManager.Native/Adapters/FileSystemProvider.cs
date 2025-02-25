@@ -3,7 +3,6 @@
 using BUTR.NativeAOT.Shared;
 
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -41,7 +40,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
     public async Task WriteFileContentAsync(string filePath, byte[]? data)
     {
-        var tcs = new TaskCompletionSource<object?>();
+        var tcs = new TaskCompletionSource();
         WriteFileContentNative(filePath, data, data?.Length ?? 0, tcs);
         await tcs.Task;
     }
@@ -61,33 +60,27 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     }
     
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void ReadFileContentNativeCallback(param_ptr* pOwner, param_data* pResult, param_int pResultLength)
+    public static unsafe void ReadFileContentNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<byte[]?>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<byte[]?> tcs } handle)
         {
-            var result = param_data.ToSpan(pResult, pResultLength).ToArray();
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var hResult = SafeStructMallocHandle.Create(pResult, true);
+        hResult.SetAsData(tcs);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<byte[]?>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput();
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
     private unsafe void ReadFileContentNative(ReadOnlySpan<char> filePath, int offset, int length, TaskCompletionSource<byte[]?> tcs)
     {
@@ -97,8 +90,6 @@ internal sealed class FileSystemProvider : IFileSystemProvider
         
         fixed (char* pFilePath = filePath)
         {
-            Logger.LogPinned(pFilePath);
-
             try
             {
                 using var result = SafeStructMallocHandle.Create(_readFileContent(_pOwner, (param_string*) pFilePath, offset, length, (param_ptr*) GCHandle.ToIntPtr(handle), &ReadFileContentNativeCallback), true);
@@ -116,33 +107,29 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void WriteFileContentNativeCallback(param_ptr* pOwner)
+    public static unsafe void WriteFileContentNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogInput(pOwner);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<object?>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
-            tcs = (TaskCompletionSource<object?>) handle.Target!;
-            tcs.TrySetResult(null);
-            
-            Logger.LogOutput();
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
         }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsVoid(tcs);
+        handle.Free();
+
+        Logger.LogOutput();
     }
-    private unsafe void WriteFileContentNative(ReadOnlySpan<char> filePath, ReadOnlySpan<byte> data, int length, TaskCompletionSource<object?> tcs)
+    private unsafe void WriteFileContentNative(ReadOnlySpan<char> filePath, ReadOnlySpan<byte> data, int length, TaskCompletionSource tcs)
     {
         Logger.LogInput(length);
 
@@ -151,8 +138,6 @@ internal sealed class FileSystemProvider : IFileSystemProvider
         fixed (char* pFilePath = filePath)
         fixed (byte* pData = data)
         {
-            Logger.LogPinned(pFilePath);
-
             try
             {
                 using var result = SafeStructMallocHandle.Create(_writeFileContent(_pOwner, (param_string*) pFilePath, (param_data*) pData, length, (param_ptr*) GCHandle.ToIntPtr(handle), &WriteFileContentNativeCallback), true);
@@ -171,33 +156,27 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void ReadDirectoryFileListNativeCallback(param_ptr* pOwner, param_json* pResult)
+    public static unsafe void ReadDirectoryFileListNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<string[]?>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string[]?> tcs } handle)
         {
-            var result = BUTR.NativeAOT.Shared.Utils.DeserializeJson(pResult, Bindings.CustomSourceGenerationContext.StringArray)?.Where(x => x is not null).ToArray();
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.StringArray);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<string[]?>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput();
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
     private unsafe void ReadDirectoryFileListNative(ReadOnlySpan<char> directoryPath, TaskCompletionSource<string[]?> tcs)
     {
@@ -207,8 +186,6 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
         fixed (char* pDirectoryPath = directoryPath)
         {
-            Logger.LogPinned(pDirectoryPath);
-
             try
             {
                 using var result = SafeStructMallocHandle.Create(_readDirectoryFileList(_pOwner, (param_string*) pDirectoryPath, (param_ptr*) GCHandle.ToIntPtr(handle), &ReadDirectoryFileListNativeCallback), true);
@@ -226,35 +203,29 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void ReadDirectoryListNativeCallback(param_ptr* pOwner, param_json* pResult)
+    public static unsafe void ReadDirectoryListNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogInput(pOwner, pResult);
+        Logger.LogCallbackInput(pResult);
 
         if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
+        }
         
-        var handle = GCHandle.FromIntPtr((IntPtr) pOwner);
-        var tcs = default(TaskCompletionSource<string[]?>);
-        try
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string[]?> tcs } handle)
         {
-            var result = BUTR.NativeAOT.Shared.Utils.DeserializeJson(pResult, Bindings.CustomSourceGenerationContext.StringArray)?.Where(x => x is not null).ToArray();
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+        
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.StringArray);
+        handle.Free();
 
-            tcs = (TaskCompletionSource<string[]?>) handle.Target!;
-            tcs.TrySetResult(result);
-            
-            Logger.LogOutput();
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            tcs?.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
-        }
+        Logger.LogOutput();
     }
-    private unsafe void ReadDirectoryListNative(ReadOnlySpan<char> directoryPath, TaskCompletionSource<string[]?> tcs)
+    private unsafe void ReadDirectoryListNative(string directoryPath, TaskCompletionSource<string[]?> tcs)
     {
         Logger.LogInput();
 
@@ -262,8 +233,6 @@ internal sealed class FileSystemProvider : IFileSystemProvider
         
         fixed (char* pDirectoryPath = directoryPath)
         {
-            Logger.LogPinned(pDirectoryPath);
-
             try
             {
                 using var result = SafeStructMallocHandle.Create(_readDirectoryList(_pOwner, (param_string*) pDirectoryPath, (param_ptr*) GCHandle.ToIntPtr(handle), &ReadDirectoryListNativeCallback), true);
