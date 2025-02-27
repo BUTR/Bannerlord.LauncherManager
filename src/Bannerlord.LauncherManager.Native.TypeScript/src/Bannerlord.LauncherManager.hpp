@@ -385,8 +385,23 @@ namespace Bannerlord::LauncherManager
                     p_callback(p_callback_handler, Create(return_value_data{Copy(conv.from_bytes("Not an Buffer<uint8_t>"))}));
                 }
 
-                auto buffer = result.As<Buffer<uint8_t>>();
+                auto buffer = result.As<Uint8Array>();
+
+#ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
+                napi_value copyDataValue;
+                napi_status copyDataStatus = napi_get_named_property(env, buffer, "BannerlordSkipCopy", &copyDataValue);
+                const auto copyAsData = Value(env, copyDataValue);
+                if (copyDataStatus == napi_ok && copyAsData.IsBoolean() && copyAsData.As<Boolean>().Value())
+                {
+                    p_callback(p_callback_handler, Create(return_value_data{nullptr, buffer.Data(), static_cast<int>(buffer.ByteLength())}));
+                }
+                else
+                {
+                    p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
+                }
+#else
                 p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
+#endif
             };
             const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
             {
@@ -452,7 +467,7 @@ namespace Bannerlord::LauncherManager
             const auto callback = [p_file_path, p_data, length, onResolve, onReject](Napi::Env env, Napi::Function jsCallback, const Bannerlord::LauncherManager::LauncherManager *manager)
             {
                 const auto filePath = p_file_path == nullptr ? env.Null() : String::New(env, p_file_path);
-                const auto data = Buffer<uint8_t>::New(env, p_data, static_cast<size_t>(length));
+                const auto data = Buffer<uint8_t>::NewOrCopy(env, p_data, static_cast<size_t>(length));
                 const auto promise = manager->FWriteFileContent({filePath, data}).As<Napi::Promise>();
 
                 const auto onResolveCallback = Napi::Function::New(env, onResolve);
@@ -1115,7 +1130,7 @@ namespace Bannerlord::LauncherManager
         // LOGINPUT();
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
-        auto data = info[1].As<Buffer<uint8_t>>();
+        auto data = info[1].As<Uint8Array>();
 
         const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
         const auto dataCopy = CopyWithFree(data.Data(), data.ByteLength());

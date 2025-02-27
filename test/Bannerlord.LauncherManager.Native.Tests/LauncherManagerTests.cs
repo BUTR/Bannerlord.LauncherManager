@@ -2,6 +2,9 @@
 
 using BUTR.NativeAOT.Shared;
 
+using Microsoft.Win32.SafeHandles;
+
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -42,33 +45,36 @@ public sealed unsafe class LauncherManagerWrapper
 
     public static return_value_void* ReadFileContent(param_ptr* handler, param_string* pFilePath, param_int offset, param_int length, param_ptr* p_callback_handler, delegate* <param_ptr*, return_value_data*, void> p_callback)
     {
-        var path = new string(param_string.ToSpan(pFilePath));
-
-        if (!File.Exists(path))
+        SafeFileHandle? fileHandle = null;
+        try
         {
-            p_callback(p_callback_handler, null);
+            var filePath = new string(param_string.ToSpan(pFilePath));
+            
+            fileHandle = File.OpenHandle(filePath);
+            
+            if (length == -1)
+                length = (int) RandomAccess.GetLength(fileHandle);
+            
+            if (length == 0)
+            {
+                p_callback(p_callback_handler, return_value_data.AsValue(Copy([], false), 0, false));
+                return return_value_void.AsValue(false);
+            }
+            
+            var bufferPtr = (byte*) Allocator.Alloc(new UIntPtr(length));
+            var buffer = new Span<byte>(bufferPtr, length);
+            RandomAccess.Read(fileHandle, buffer, offset);
+            p_callback(p_callback_handler, return_value_data.AsValue(bufferPtr, length, false));
             return return_value_void.AsValue(false);
         }
-
-        if (offset == 0 && length == -1)
+        catch (Exception e)
         {
-            var data = File.ReadAllBytes(path);
-            p_callback(p_callback_handler, return_value_data.AsValue(Copy(data, false), data.Length, false));
-            return return_value_void.AsValue(false);
+            return return_value_void.AsException(e, false);
         }
-        
-        if (offset >= 0 && length > 0)
+        finally
         {
-            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var data = new byte[length];
-            fs.Seek(offset, SeekOrigin.Begin);
-            fs.ReadExactly(data, 0, length);
-            p_callback(p_callback_handler, return_value_data.AsValue(Copy(data, false), data.Length, false));
-            return return_value_void.AsValue(false);
+            fileHandle?.Dispose();
         }
-
-        p_callback(p_callback_handler, return_value_data.AsValue(null, 0, false));
-        return return_value_void.AsValue(false);
     }
 
     public static return_value_void* WriteFileContent(param_ptr* handler, param_string* filePath, param_data* data, param_int length, param_ptr* p_callback_handler, delegate* <param_ptr*, return_value_void*, void> p_callback)

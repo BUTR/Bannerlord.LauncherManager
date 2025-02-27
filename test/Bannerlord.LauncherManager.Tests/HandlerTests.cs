@@ -11,6 +11,8 @@ using System.IO;
 using System.Linq;
 using FetchBannerlordVersion;
 
+using Microsoft.Win32.SafeHandles;
+
 using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Tests;
@@ -47,31 +49,32 @@ public class HandlerTests
 
     private static void Read(string filePath, int offset, int length, Action<byte[]?> callback)
     {
-        if (!File.Exists(filePath))
+        SafeFileHandle? fileHandle = null;
+        try
+        {
+            fileHandle = File.OpenHandle(filePath);
+            
+            if (length == -1)
+                length = (int) RandomAccess.GetLength(fileHandle);
+            
+            if (length == 0)
+            {
+                callback([]);
+                return;
+            }
+            
+            var buffer = new byte[length];
+            RandomAccess.Read(fileHandle, buffer, offset);
+            callback(buffer);
+        }
+        catch
         {
             callback(null);
-            return;
         }
-
-        if (offset == 0 && length == -1)
+        finally
         {
-            callback(File.ReadAllBytes(filePath));
-            return;
+            fileHandle?.Dispose();
         }
-        
-        if (offset >= 0 && length > 0)
-        {
-            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var data = new byte[length];
-            fs.Seek(offset, SeekOrigin.Begin);
-            var readLength = fs.Read(data, 0, length);
-            if (readLength != length)
-                throw new Exception();
-            callback(data);
-            return;
-        }
-        
-        callback(null);
     }
 
     [Test]

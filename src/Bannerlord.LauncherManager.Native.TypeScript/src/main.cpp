@@ -1,3 +1,5 @@
+#define NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED // Thanks Electron
+
 #include "Bannerlord.Common.hpp"
 #include "Bannerlord.FetchVersion.hpp"
 #include "Bannerlord.ModuleManager.hpp"

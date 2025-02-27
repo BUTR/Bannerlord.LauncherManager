@@ -58,7 +58,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public getSaveFilesAsync = (): Promise<types.SaveMetadata[]> => {
     return this.manager.getSaveFilesAsync();
   }
-  public getSaveMetadataAsync = (saveFile: string, data: ArrayBuffer): Promise<types.SaveMetadata> => {
+  public getSaveMetadataAsync = (saveFile: string, data: Uint8Array): Promise<types.SaveMetadata> => {
     return this.manager.getSaveMetadataAsync(saveFile, data);
   }
   public installModule = (files: string[], moduleInfos: types.ModuleInfoExtendedWithMetadata[]): types.InstallResult => {
