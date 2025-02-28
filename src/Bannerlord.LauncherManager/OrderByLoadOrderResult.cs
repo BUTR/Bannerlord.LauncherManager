@@ -1,4 +1,4 @@
-using Bannerlord.LauncherManager.Models;
+﻿using Bannerlord.LauncherManager.Models;
 
 using System.Collections.Generic;
 

@@ -21,7 +21,7 @@ public sealed class CallbackFileSystemProvider : IFileSystemProvider
         _readDirectoryFileList = readDirectoryFileList;
         _readDirectoryList = readDirectoryList;
     }
-    
+
     public async Task<byte[]?> ReadFileContentAsync(string filePath, int offset, int length)
     {
         var tcs = new TaskCompletionSource<byte[]?>();
@@ -35,7 +35,7 @@ public sealed class CallbackFileSystemProvider : IFileSystemProvider
         }
         return await tcs.Task;
     }
-    
+
     public async Task WriteFileContentAsync(string filePath, byte[]? data)
     {
         var tcs = new TaskCompletionSource<object?>();
@@ -49,7 +49,7 @@ public sealed class CallbackFileSystemProvider : IFileSystemProvider
         }
         await tcs.Task;
     }
-    
+
     public async Task<string[]?> ReadDirectoryFileListAsync(string directoryPath)
     {
         var tcs = new TaskCompletionSource<string[]?>();
@@ -63,7 +63,7 @@ public sealed class CallbackFileSystemProvider : IFileSystemProvider
         }
         return await tcs.Task;
     }
-    
+
     public async Task<string[]?> ReadDirectoryListAsync(string directoryPath)
     {
         var tcs = new TaskCompletionSource<string[]?>();

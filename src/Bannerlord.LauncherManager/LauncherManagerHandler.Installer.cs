@@ -31,7 +31,7 @@ partial class LauncherManagerHandler
     }
 
     private sealed record FileWithModuleInfo(string File, string ModuleBasePath, ModuleInfoExtendedWithMetadata ModuleInfo);
-    
+
     /// <summary>
     /// External<br/>
     /// Two ways to handle installation:<br/>
@@ -59,11 +59,11 @@ partial class LauncherManagerHandler
             var moduleBasePath = file.Substring(0, subModuleFileIdx);
             return files.Where(y => y.StartsWith(moduleBasePath)).Select(y => new FileWithModuleInfo(y, moduleBasePath, moduleInfo));
         }).ToArray();
-        
+
         var moduleInfoInstructions = filesWithModuleInfos.Select(x => x.ModuleInfo).Distinct().Select(x => new ModuleInfoInstallInstruction(x)).ToArray();
         var copyInstructions = filesWithModuleInfos.SelectMany(GetCopyInstructions).ToArray();
         var copyStoreInstructions = filesWithModuleInfos.SelectMany(GetStoreCopyInstructions).ToArray();
-        
+
         return new InstallResult
         {
             Instructions = copyInstructions.Concat(copyStoreInstructions).Concat(moduleInfoInstructions).ToList()
@@ -78,7 +78,7 @@ partial class LauncherManagerHandler
 
         var modulePath = file.Substring(moduleBasePath.Length);
         if (modulePath.StartsWith(Constants.BinFolder, StringComparison.OrdinalIgnoreCase)) yield break;
-        
+
         var destination = Path.Combine(Constants.ModulesFolder, moduleInfo.Id, file.Substring(moduleBasePath.Length));
         yield return new CopyInstallInstruction
         {
@@ -87,7 +87,7 @@ partial class LauncherManagerHandler
             Destination = destination,
         };
     }
-    
+
     private IEnumerable<IInstallInstruction> GetStoreCopyInstructions(FileWithModuleInfo filesWithModuleInfo)
     {
         var file = filesWithModuleInfo.File;
@@ -97,7 +97,7 @@ partial class LauncherManagerHandler
         var modulePath = file.Substring(moduleBasePath.Length);
         if (!modulePath.StartsWith(Constants.BinFolder, StringComparison.OrdinalIgnoreCase)) yield break;
         var binPath = modulePath.Substring(4);
-        
+
         var destination = Path.Combine(Constants.ModulesFolder, moduleInfo.Id, file.Substring(moduleBasePath.Length));
         if (binPath.StartsWith(Constants.Win64Configuration, StringComparison.OrdinalIgnoreCase))
         {

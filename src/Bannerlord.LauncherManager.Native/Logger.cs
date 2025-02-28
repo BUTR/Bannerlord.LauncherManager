@@ -19,7 +19,7 @@ public static partial class Logger
             try
             {
                 if (!mutex.WaitOne(100)) continue;
-                
+
                 try
                 {
                     using var fs = new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.SequentialScan);

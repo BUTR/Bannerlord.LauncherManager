@@ -22,7 +22,7 @@ public static class SortHelper
 
         return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
     }
-    
+
     /// <summary>
     /// External<br/>
     /// </summary>

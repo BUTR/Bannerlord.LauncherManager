@@ -39,7 +39,7 @@ public class ModuleListHandler
     {
         var missing = new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}")
             .SetTextVariable("MODULES", "").ToString();
-        
+
         return await _launcherManager.ShowWarningAsync(
             new BUTRTextObject("Import Warning").ToString(),
             missing,
@@ -51,9 +51,9 @@ public class ModuleListHandler
         var mismatched = new BUTRTextObject("{=BuMom4Jt}Mismatched Module Versions:{NL}{MODULEVERSIONS}")
             .SetTextVariable("NL", Environment.NewLine)
             .SetTextVariable("MODULEVERSIONS", string.Join(Environment.NewLine, mismatchedVersions)).ToString();
-        
+
         var split = mismatched.Split('\n');
-        
+
         return await _launcherManager.ShowWarningAsync(
             new BUTRTextObject("Import Warning").ToString(),
             split[0],
@@ -262,7 +262,7 @@ public class ModuleListHandler
 
         return await ImportNovusInternal();
     }
-    
+
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -276,7 +276,7 @@ public class ModuleListHandler
                 new DialogFileFilter("Novus Preset", ["*.xml"]),
                 new DialogFileFilter("All files", ["*.*"]),
             ]);
-        
+
         if (string.IsNullOrEmpty(fileName) || await _launcherManager.ReadFileContentAsync(fileName, 0, -1) is not { } data)
             return false;
 
@@ -325,7 +325,7 @@ public class ModuleListHandler
         }); break;
     }
     */
-    
+
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -366,7 +366,7 @@ public class ModuleListHandler
             await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=HvvA78sZ}Load Order Issues:{NL}{LOADORDERISSUES}").SetTextVariable("LOADORDERISSUES", string.Join("\n", loadOrderValidationIssues))}");
             return;
         }
-        
+
         var moduleIds = modules.Select(x => x.Id).ToHashSet();
         var (result, orderIssues, orderedModules) = await _launcherManager.TryOrderByLoadOrderAsync(modules.Select(x => x.Id), x => moduleIds.Contains(x));
         if (!result)
@@ -377,7 +377,7 @@ public class ModuleListHandler
         await _launcherManager.SetModuleViewModelsAsync(orderedModules);
     }
 
-    
+
     private async Task<ModuleListEntry[]> ReadSaveFileModuleListAsync(byte[] data)
     {
         var moduleViewModels = (await _launcherManager.GetModuleViewModelsAsync())?.ToArray() ?? [];
@@ -477,7 +477,7 @@ public class ModuleListHandler
         });
         document.Save(writer);
     }
- 
+
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -490,7 +490,7 @@ public class ModuleListHandler
                 new DialogFileFilter("Bannerlord Module List", ["*.bmlist"]),
                 new DialogFileFilter("Novus Preset", ["*.xml"]),
             ]);
-        
+
         if (string.IsNullOrEmpty(fileName)) return;
 
         try
@@ -520,7 +520,7 @@ public class ModuleListHandler
         }
         await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
     }
-    
+
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -549,7 +549,7 @@ public class ModuleListHandler
                 new DialogFileFilter("Bannerlord Module List", ["*.bmlist"]),
                 new DialogFileFilter("Novus Preset", ["*.xml"]),
             ]);
-        
+
         if (string.IsNullOrEmpty(fileName)) return;
 
         try

@@ -62,7 +62,7 @@ public partial class LauncherManagerHandler
     {
         _modules = null;
         _allModules = null;
-        
+
         var modules = await GetModulesAsync();
         ExtendedModuleInfoCache = GetLauncherFeatures().Concat(modules).ToDictionary(x => x.Id, x => x);
     }
@@ -73,7 +73,7 @@ public partial class LauncherManagerHandler
     public async Task<IReadOnlyCollection<ModuleInfoExtended>> GetFromLoadOrderAsync(LoadOrder loadOrder)
     {
         var ids = loadOrder.Select(x => x.Key).ToHashSet();
-        
+
         var modules = await GetModulesAsync();
         return modules.Where(x => ids.Contains(x.Id)).ToList();
     }

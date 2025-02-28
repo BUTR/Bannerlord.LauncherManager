@@ -3,16 +3,16 @@ using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
 using Bannerlord.ModuleManager;
 
+using FetchBannerlordVersion;
+
+using Microsoft.Win32.SafeHandles;
+
 using NUnit.Framework;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FetchBannerlordVersion;
-
-using Microsoft.Win32.SafeHandles;
-
 using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Tests;
@@ -53,16 +53,16 @@ public class HandlerTests
         try
         {
             fileHandle = File.OpenHandle(filePath);
-            
+
             if (length == -1)
                 length = (int) RandomAccess.GetLength(fileHandle);
-            
+
             if (length == 0)
             {
                 callback([]);
                 return;
             }
-            
+
             var buffer = new byte[length];
             RandomAccess.Read(fileHandle, buffer, offset);
             callback(buffer);

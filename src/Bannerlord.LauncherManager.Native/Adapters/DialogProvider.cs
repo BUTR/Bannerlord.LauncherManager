@@ -28,7 +28,7 @@ internal sealed class DialogProvider : IDialogProvider
         SendDialogNative(type.ToStringFast().ToLowerInvariant(), title, message, filters, tcs);
         return await tcs.Task;
     }
-    
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void SendDialogNativeCallback(param_ptr* pOwner, return_value_string* pResult)
     {
@@ -39,20 +39,20 @@ internal sealed class DialogProvider : IDialogProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsString(tcs);
         handle.Free();
 
         Logger.LogOutput();
     }
-    
+
     private unsafe void SendDialogNative(ReadOnlySpan<char> type, ReadOnlySpan<char> title, ReadOnlySpan<char> message, IReadOnlyList<DialogFileFilter> filters, TaskCompletionSource<string> tcs)
     {
         Logger.LogInput();
@@ -68,7 +68,7 @@ internal sealed class DialogProvider : IDialogProvider
             {
                 using var result = SafeStructMallocHandle.Create(_sendDialog(_pOwner, (param_string*) pType, (param_string*) pTitle, (param_string*) pMessage, (param_json*) pFilters, (param_ptr*) GCHandle.ToIntPtr(handle), &SendDialogNativeCallback), true);
                 result.ValueAsVoid();
-                
+
                 Logger.LogOutput();
             }
             catch (Exception e)

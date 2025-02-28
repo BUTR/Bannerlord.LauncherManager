@@ -61,13 +61,13 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsVoid(tcs);
         handle.Free();
@@ -87,7 +87,7 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
             {
                 using var result = SafeStructMallocHandle.Create(_setGameParameters(_pOwner, (param_string*) pExecutable, (param_json*) pGameParameters, (param_ptr*) GCHandle.ToIntPtr(handle), &SetGameParametersNativeCallback), true);
                 result.ValueAsVoid();
-            
+
                 Logger.LogOutput();
             }
             catch (Exception e)
@@ -109,13 +109,13 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherOptions?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherOptions);
         handle.Free();
@@ -127,12 +127,12 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
         Logger.LogInput();
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         try
         {
             using var result = SafeStructMallocHandle.Create(_getOptions(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetOptionsNativeCallback), true);
             result.ValueAsVoid();
-            
+
             Logger.LogOutput();
         }
         catch (Exception e)
@@ -153,13 +153,13 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherState?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherState);
         handle.Free();
@@ -171,12 +171,12 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
         Logger.LogInput();
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         try
         {
             using var result = SafeStructMallocHandle.Create(_getState(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetStateNativeCallback), true);
             result.ValueAsVoid();
-            
+
             Logger.LogOutput();
         }
         catch (Exception e)

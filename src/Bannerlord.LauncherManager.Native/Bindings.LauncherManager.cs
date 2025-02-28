@@ -226,7 +226,7 @@ public static partial class Bindings
             handler.SortAsync().ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(SortAsync)}_{nameof(handler.SortAsync)}");
-               
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -262,7 +262,7 @@ public static partial class Bindings
             handler.RefreshModulesAsync().ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(RefreshModulesAsync)}_{nameof(handler.RefreshModulesAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -298,7 +298,7 @@ public static partial class Bindings
             handler.RefreshGameParametersAsync().ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(RefreshGameParametersAsync)}_{nameof(handler.RefreshGameParametersAsync)}");
-               
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -336,7 +336,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata),
                     $"{nameof(GetModulesAsync)}_{nameof(handler.GetModulesAsync)}");
-             
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
@@ -373,7 +373,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata),
                     $"{nameof(GetAllModulesAsync)}_{nameof(handler.GetAllModulesAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
@@ -409,7 +409,7 @@ public static partial class Bindings
             handler.CheckForRootHarmonyAsync().ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(CheckForRootHarmonyAsync)}_{nameof(IssuesChecker.CheckForRootHarmonyAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -446,7 +446,7 @@ public static partial class Bindings
             moduleListHandler.ExportAsync().ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(ModuleListHandlerExportAsync)}_{nameof(moduleListHandler.ExportAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -484,7 +484,7 @@ public static partial class Bindings
             moduleListHandler.ExportSaveFileAsync(saveFile).ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(ModuleListHandlerExportSaveFileAsync)}_{nameof(moduleListHandler.ExportSaveFileAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -525,7 +525,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     result.Result.ToString(),
                     $"{nameof(ModuleListHandlerImportAsync)}_{nameof(moduleListHandler.ImportAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
@@ -568,7 +568,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     result.Result.ToString(),
                     $"{nameof(ModuleListHandlerImportSaveFileAsync)}_{nameof(moduleListHandler.ImportSaveFileAsync)}");
-              
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
@@ -611,7 +611,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result?.OfType<ModuleViewModel>().ToArray(), CustomSourceGenerationContext.ModuleViewModelArray),
                     $"{nameof(SortHelperValidateModuleAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
-              
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
@@ -656,7 +656,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result?.OfType<ModuleViewModel>().ToArray(), CustomSourceGenerationContext.ModuleViewModelArray),
                     $"{nameof(SortHelperToggleModuleSelectionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
-              
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
@@ -728,7 +728,7 @@ public static partial class Bindings
     private static async Task AfterGetModuleViewModelsAsync(LauncherManagerHandlerNative handler, ModuleViewModel moduleViewModel, param_int insertIndex, Action<bool> onResult, Action<Exception> onException, Task<IEnumerable<IModuleViewModel>?> result)
     {
         Logger.LogInput();
-        
+
         if (result.Exception is not null)
         {
             onException(result.Exception);
@@ -738,7 +738,7 @@ public static partial class Bindings
             var modules = result.Result?.ToArray() ?? [];
             var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
             var (positionResult, issues) = SortHelper.ChangeModulePosition(modules, lookup, moduleViewModel, insertIndex);
-            if (issues is { Count: > 0})
+            if (issues is { Count: > 0 })
                 await handler.ShowHintAsync(new BUTRTextObject("{=sP1a61KE}Failed to place the module to the desired position! Placing to the nearest available!{NL}Reason:{NL}{REASONS}").SetTextVariable("REASONS", string.Join("\n", issues)).ToString());
             onResult(positionResult);
         }
@@ -799,7 +799,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.SaveMetadata),
                     $"{nameof(GetSaveMetadataAsync)}_{nameof(handler.GetSaveMetadataAsync)}");
-               
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
@@ -838,7 +838,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     result.Result ?? "null",
                     $"{nameof(GetSaveFilePathAsync)}_{nameof(handler.GetSaveFilePathAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
@@ -884,7 +884,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.OrderByLoadOrderResult),
                     $"{nameof(OrderByLoadOrderAsync)}_{nameof(handler.TryOrderByLoadOrderAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
@@ -929,8 +929,8 @@ public static partial class Bindings
             handler.SetGameParameterExecutableAsync(executable).ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(SetGameParameterExecutableAsync)}_{nameof(handler.SetGameParameterExecutableAsync)}");
-                
-                
+
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -970,7 +970,7 @@ public static partial class Bindings
             handler.SetGameParameterLoadOrderAsync(loadOrder).ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(SetGameParameterLoadOrderAsync)}_{nameof(handler.SetGameParameterLoadOrderAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -1007,7 +1007,7 @@ public static partial class Bindings
             handler.SetGameParameterSaveFileAsync(saveFile).ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(SetGameParameterSaveFileAsync)}_{nameof(handler.SetGameParameterSaveFileAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -1042,7 +1042,7 @@ public static partial class Bindings
             handler.SetGameParameterContinueLastSaveFileAsync(p_value).ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(SetGameParameterContinueLastSaveFileAsync)}_{nameof(handler.SetGameParameterContinueLastSaveFileAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
@@ -1104,7 +1104,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     result.Result.ToStringFast(),
                     $"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
@@ -1117,7 +1117,7 @@ public static partial class Bindings
                     Logger.LogOutput($"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
                 }
             });
-            
+
             Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
@@ -1146,7 +1146,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     result.Result,
                     $"{nameof(DialogTestWarningAsync)}_{nameof(handler.SendDialogAsync)}");
-                
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
@@ -1186,7 +1186,7 @@ public static partial class Bindings
                 Logger.LogAsyncInput(
                     result.Result,
                     $"{nameof(DialogTestFileOpenAsync)}_{nameof(handler.SendDialogAsync)}");
-              
+
                 if (result.Exception is not null)
                 {
                     p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));

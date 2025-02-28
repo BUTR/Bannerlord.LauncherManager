@@ -111,7 +111,7 @@ internal static partial class Utils2
         using var result = SafeStructMallocHandle.Create(ret, true);
         result.ValueAsAsync();
     }
-    
+
     public static unsafe void GetResult(return_value_void* ret, TaskCompletionSource tcs)
     {
         using var result = SafeStructMallocHandle.Create(ret, true);

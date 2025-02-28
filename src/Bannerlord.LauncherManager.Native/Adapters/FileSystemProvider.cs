@@ -58,7 +58,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
         ReadDirectoryListNative(directoryPath, tcs);
         return await tcs.Task;
     }
-    
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void ReadFileContentNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
@@ -69,13 +69,13 @@ internal sealed class FileSystemProvider : IFileSystemProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<byte[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var hResult = SafeStructMallocHandle.Create(pResult, true);
         hResult.SetAsData(tcs);
         handle.Free();
@@ -87,14 +87,14 @@ internal sealed class FileSystemProvider : IFileSystemProvider
         Logger.LogInput(offset, length);
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         fixed (char* pFilePath = filePath)
         {
             try
             {
                 using var result = SafeStructMallocHandle.Create(_readFileContent(_pOwner, (param_string*) pFilePath, offset, length, (param_ptr*) GCHandle.ToIntPtr(handle), &ReadFileContentNativeCallback), true);
                 result.ValueAsVoid();
-                
+
                 Logger.LogOutput();
             }
             catch (Exception e)
@@ -116,13 +116,13 @@ internal sealed class FileSystemProvider : IFileSystemProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsVoid(tcs);
         handle.Free();
@@ -142,7 +142,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
             {
                 using var result = SafeStructMallocHandle.Create(_writeFileContent(_pOwner, (param_string*) pFilePath, (param_data*) pData, length, (param_ptr*) GCHandle.ToIntPtr(handle), &WriteFileContentNativeCallback), true);
                 result.ValueAsVoid();
-                
+
                 Logger.LogOutput();
             }
             catch (Exception e)
@@ -165,13 +165,13 @@ internal sealed class FileSystemProvider : IFileSystemProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.StringArray);
         handle.Free();
@@ -190,7 +190,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
             {
                 using var result = SafeStructMallocHandle.Create(_readDirectoryFileList(_pOwner, (param_string*) pDirectoryPath, (param_ptr*) GCHandle.ToIntPtr(handle), &ReadDirectoryFileListNativeCallback), true);
                 result.ValueAsVoid();
-                
+
                 Logger.LogOutput();
             }
             catch (Exception e)
@@ -212,13 +212,13 @@ internal sealed class FileSystemProvider : IFileSystemProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.StringArray);
         handle.Free();
@@ -230,14 +230,14 @@ internal sealed class FileSystemProvider : IFileSystemProvider
         Logger.LogInput();
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         fixed (char* pDirectoryPath = directoryPath)
         {
             try
             {
                 using var result = SafeStructMallocHandle.Create(_readDirectoryList(_pOwner, (param_string*) pDirectoryPath, (param_ptr*) GCHandle.ToIntPtr(handle), &ReadDirectoryListNativeCallback), true);
                 result.ValueAsVoid();
-                
+
                 Logger.LogOutput();
             }
             catch (Exception e)

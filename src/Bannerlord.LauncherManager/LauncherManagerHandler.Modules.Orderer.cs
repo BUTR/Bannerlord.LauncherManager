@@ -24,7 +24,7 @@ partial class LauncherManagerHandler
         Func<string, bool> isModuleSelected)
     {
         var options = await GetOptionsAsync();
-        
+
         return options.BetaSorting
             ? await TryOrderByLoadOrderBetaAsync(loadOrder, isModuleSelected)
             : await TryOrderByLoadOrderTWAsync(loadOrder, isModuleSelected);
@@ -41,7 +41,7 @@ partial class LauncherManagerHandler
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
         var state = await GetStateAsync();
-        
+
         // Load the load order modules
         foreach (var id in loadOrder)
         {
@@ -110,7 +110,7 @@ partial class LauncherManagerHandler
         var moduleViewModelLookup = moduleViewModels.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
 
         var state = await GetStateAsync();
-        
+
         // Load all modules
         foreach (var moduleInfoExtended in ExtendedModuleInfoCache.Values)
         {

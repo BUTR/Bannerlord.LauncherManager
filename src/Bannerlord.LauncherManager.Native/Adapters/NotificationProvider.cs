@@ -38,13 +38,13 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsVoid(tcs);
         handle.Free();
@@ -61,12 +61,12 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
         fixed (char* pMessage = message)
         {
             var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
             try
             {
                 using var result = SafeStructMallocHandle.Create(_sendNotification(_pOwner, (param_string*) pId, (param_string*) pType, (param_string*) pMessage, displayMs, (param_ptr*) GCHandle.ToIntPtr(handle), &SendNotificationCallback), true);
                 result.ValueAsVoid();
-                
+
                 Logger.LogOutput();
             }
             catch (Exception e)

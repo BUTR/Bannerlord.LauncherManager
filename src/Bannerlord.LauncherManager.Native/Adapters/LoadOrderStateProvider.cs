@@ -64,13 +64,13 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<IModuleViewModel[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         try
         {
@@ -80,7 +80,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
                 .OrderBy(x => x.Index)
                 .ToArray();
             tcs.TrySetResult(moduleViewModels);
-            
+
             Logger.LogOutput();
         }
         catch (Exception e)
@@ -98,12 +98,12 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
         Logger.LogInput();
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         try
         {
             using var result = SafeStructMallocHandle.Create(_getAllModuleViewModels(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetAllModuleViewModelsNativeCallback), true);
             result.ValueAsVoid();
-            
+
             Logger.LogOutput();
         }
         catch (Exception e)
@@ -124,13 +124,13 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<IModuleViewModel[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         try
         {
@@ -140,7 +140,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
                 .OrderBy(x => x.Index)
                 .ToArray();
             tcs.TrySetResult(moduleViewModels);
-            
+
             Logger.LogOutput();
         }
         catch (Exception e)
@@ -156,14 +156,14 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     private unsafe void GetModuleViewModelsNative(TaskCompletionSource<IModuleViewModel[]?> tcs)
     {
         Logger.LogInput();
-        
+
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         try
         {
             using var result = SafeStructMallocHandle.Create(_getModuleViewModels(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetModuleViewModelsNativeCallback), true);
             result.ValueAsVoid();
-            
+
             Logger.LogOutput();
         }
         catch (Exception e)
@@ -184,13 +184,13 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsVoid(tcs);
         handle.Free();
@@ -202,7 +202,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
         Logger.LogInput();
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-        
+
         var moduleViewModelsCasted = moduleViewModels.OfType<ModuleViewModel>().ToList();
         fixed (char* pModuleViewModels = BUTR.NativeAOT.Shared.Utils.SerializeJson(moduleViewModelsCasted, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel))
         {
@@ -210,7 +210,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             {
                 using var result = SafeStructMallocHandle.Create(_setModuleViewModels(_pOwner, (param_json*) pModuleViewModels, (param_ptr*) GCHandle.ToIntPtr(handle), &SetModuleViewModelsNativeCallback), true);
                 result.ValueAsVoid();
-            
+
                 Logger.LogOutput();
             }
             catch (Exception e)
