@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Vortex ships with .NET 6 -->
     <TargetFramework>net9.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
+
+    <VersionOverride>0</VersionOverride>
+    <Version>2.0.$(VersionOverride)</Version>
   </PropertyGroup>
   
   <PropertyGroup>

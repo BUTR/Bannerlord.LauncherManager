@@ -7,7 +7,7 @@
     <DebugType>full</DebugType>
 
     <VersionOverride>0</VersionOverride>
-    <Version>1.0.$(VersionOverride)</Version>
+    <Version>2.0.$(VersionOverride)</Version>
     
     <DefineConstants>$(DefineConstants);BANNERLORDBUTRMODULEMANAGER_PUBLIC;BANNERLORDBUTRMODULEMANAGER_NULLABLE</DefineConstants>
   </PropertyGroup>
