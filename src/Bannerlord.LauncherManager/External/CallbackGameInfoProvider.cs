@@ -15,7 +15,14 @@ public sealed class CallbackGameInfoProvider : IGameInfoProvider
     public async Task<string> GetInstallPathAsync()
     {
         var tcs = new TaskCompletionSource<string>();
-        _getInstallPath((result) => tcs.TrySetResult(result));
+        try
+        {
+            _getInstallPath(result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
 }

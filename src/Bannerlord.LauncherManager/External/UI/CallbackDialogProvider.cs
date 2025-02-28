@@ -18,7 +18,14 @@ public sealed class CallbackDialogProvider : IDialogProvider
     public async Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters)
     {
         var tcs = new TaskCompletionSource<string>();
-        _sendDialog(type, title, message, filters, (result) => tcs.SetResult(result));
+        try
+        {
+            _sendDialog(type, title, message, filters, result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
 }

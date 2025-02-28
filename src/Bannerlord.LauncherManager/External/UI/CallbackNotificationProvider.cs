@@ -16,7 +16,14 @@ public sealed class CallbackNotificationProvider : INotificationProvider
 
     public Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
     {
-        _sendNotification(id, type, message, displayMs);
+        try
+        {
+            _sendNotification(id, type, message, displayMs);
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException(ex);
+        }
         return Task.CompletedTask;
     }
 }

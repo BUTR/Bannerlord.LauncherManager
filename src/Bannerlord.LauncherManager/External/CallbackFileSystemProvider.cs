@@ -25,28 +25,56 @@ public sealed class CallbackFileSystemProvider : IFileSystemProvider
     public async Task<byte[]?> ReadFileContentAsync(string filePath, int offset, int length)
     {
         var tcs = new TaskCompletionSource<byte[]?>();
-        _readFileContent(filePath, offset, length, (result) => tcs.TrySetResult(result));
+        try
+        {
+            _readFileContent(filePath, offset, length, result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
     
     public async Task WriteFileContentAsync(string filePath, byte[]? data)
     {
         var tcs = new TaskCompletionSource<object?>();
-        _writeFileContent(filePath, data, () => tcs.TrySetResult(null));
+        try
+        {
+            _writeFileContent(filePath, data, () => tcs.TrySetResult(null));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         await tcs.Task;
     }
     
     public async Task<string[]?> ReadDirectoryFileListAsync(string directoryPath)
     {
         var tcs = new TaskCompletionSource<string[]?>();
-        _readDirectoryFileList(directoryPath, (result) => tcs.TrySetResult(result));
+        try
+        {
+            _readDirectoryFileList(directoryPath, result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
     
     public async Task<string[]?> ReadDirectoryListAsync(string directoryPath)
     {
         var tcs = new TaskCompletionSource<string[]?>();
-        _readDirectoryList(directoryPath, (result) => tcs.TrySetResult(result));
+        try
+        {
+            _readDirectoryList(directoryPath, result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
 }

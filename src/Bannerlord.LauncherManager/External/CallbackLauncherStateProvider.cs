@@ -23,21 +23,42 @@ public sealed class CallbackLauncherStateProvider : ILauncherStateProvider
     public Task SetGameParametersAsync(string executable, IReadOnlyList<string> gameParameters)
     {
         var tcs = new TaskCompletionSource<object?>();
-        _setGameParameters(executable, gameParameters, () => tcs.TrySetResult(null));
+        try
+        {
+            _setGameParameters(executable, gameParameters, () => tcs.TrySetResult(null));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return tcs.Task;
     }
 
     public Task<LauncherOptions> GetOptionsAsync()
     {
         var tcs = new TaskCompletionSource<LauncherOptions>();
-        _getOptions((result) => tcs.TrySetResult(result));
+        try
+        {
+            _getOptions(result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return tcs.Task;
     }
 
     public Task<LauncherState> GetStateAsync()
     {
         var tcs = new TaskCompletionSource<LauncherState>();
-        _getState((result) => tcs.TrySetResult(result));
+        try
+        {
+            _getState(result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return tcs.Task;
     }
 }

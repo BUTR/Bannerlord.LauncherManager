@@ -22,21 +22,42 @@ public sealed class CallbackLoadOrderStateProvider : ILoadOrderStateProvider
     public async Task<IModuleViewModel[]?> GetAllModuleViewModelsAsync()
     {
         var tcs = new TaskCompletionSource<IModuleViewModel[]?>();
-        _getAllModuleViewModels((result) => tcs.TrySetResult(result));
+        try
+        {
+            _getAllModuleViewModels(result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
 
     public async Task<IModuleViewModel[]?> GetModuleViewModelsAsync()
     {
         var tcs = new TaskCompletionSource<IModuleViewModel[]?>();
-        _getModuleViewModels((result) => tcs.TrySetResult(result));
+        try
+        {
+            _getModuleViewModels(result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         return await tcs.Task;
     }
 
     public async Task SetModuleViewModelsAsync(IReadOnlyList<IModuleViewModel> moduleViewModels)
     {
         var tcs = new TaskCompletionSource<object?>();
-        _setModuleViewModels(moduleViewModels, () => tcs.TrySetResult(null));
+        try
+        {
+            _setModuleViewModels(moduleViewModels, () => tcs.TrySetResult(null));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
         await tcs.Task;
     }
 }
