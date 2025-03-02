@@ -32,7 +32,7 @@ public class InstallInstructionJsonConverter : JsonConverter<IInstallInstruction
 internal static partial class Utils2
 {
 #if DEBUG
-    public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net8.0/win-arm64/native/Bannerlord.LauncherManager.Native.dll";
+    public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net8.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
 #else
         public const string DllPath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Release/net8.0/win-x64/native/Bannerlord.LauncherManager.Native.dll";
 #endif
