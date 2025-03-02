@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-node@v3.4.1
         with:
           node-version: 16
-          cache: 'npm'
+          cache: ''
           cache-dependency-path: src/Bannerlord.LauncherManager.Native.TypeScript/yarn.lock
 
       - run: |
@@ -44,17 +44,17 @@ jobs:
           require('./package.json').version.split('.')[1]+'.' + `
           $(git rev-list --no-merges --count master)") --no-git-tag-version --allow-same-version;
 
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm ci
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn install --frozen-lockfile
 
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm run test -- Debug
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm run test -- Release
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Debug
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Release
 
       - uses: actions/setup-node@v3.4.1
         with:
           node-version: 18
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_NPM_TOKEN }}
 
@@ -63,7 +63,7 @@ jobs:
           node-version: 18
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
+      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
