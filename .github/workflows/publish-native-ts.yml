@@ -20,6 +20,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@master
+        with:
+          dotnet-version: 8.x.x
+
       - name: Setup .NET 9
         uses: actions/setup-dotnet@master
         with:

@@ -22,9 +22,9 @@ try {
             dotnet publish -r win-x64 --self-contained -c $Configuration ../Bannerlord.LauncherManager.Native;
         }
         
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net8.0/win-x64/native/Bannerlord.LauncherManager.Native.dll" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net8.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
-        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net8.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net9.0/win-x64/native/Bannerlord.LauncherManager.Native.dll" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net9.0/win-x64/native/Bannerlord.LauncherManager.Native.lib" -Destination $PWD | Out-Null;
+        Copy-Item2 -Path "../Bannerlord.LauncherManager.Native/bin/$Configuration/net9.0/win-x64/Bannerlord.LauncherManager.Native.h" -Destination $PWD | Out-Null;
     }
     # Build NAPI
     if ($type -eq "build" -or $type -eq "test" -or $type -eq "build-napi") {
