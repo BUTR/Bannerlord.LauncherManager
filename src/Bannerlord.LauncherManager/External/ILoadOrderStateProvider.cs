@@ -1,6 +1,7 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.External;
 
@@ -10,17 +11,17 @@ public interface ILoadOrderStateProvider
     /// Return all available ViewModels
     /// </summary>
     /// <returns></returns>
-    IModuleViewModel[]? GetAllModuleViewModels();
+    Task<IModuleViewModel[]?> GetAllModuleViewModelsAsync();
 
     /// <summary>
     /// Returns the displayed ViewModels
     /// </summary>
     /// <returns></returns>
-    IModuleViewModel[]? GetModuleViewModels();
+    Task<IModuleViewModel[]?> GetModuleViewModelsAsync();
 
     /// <summary>
     /// Sets the displayed ViewModels
     /// </summary>
     /// <param name="moduleViewModels"></param>
-    void SetModuleViewModels(IReadOnlyList<IModuleViewModel> moduleViewModels);
+    Task SetModuleViewModelsAsync(IReadOnlyList<IModuleViewModel> moduleViewModels);
 }

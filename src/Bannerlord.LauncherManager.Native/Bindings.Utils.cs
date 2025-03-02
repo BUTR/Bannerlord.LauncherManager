@@ -23,11 +23,11 @@ public static unsafe partial class Bindings
             //    return return_value_json.AsValue(["Invalid module list!"], CustomSourceGenerationContext.StringArray, false);
 
             var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x is not null).ToArray();
+                .Where(x => x != null!).ToArray();
 
             var result = LoadOrderChecker.IsLoadOrderCorrect(modules).ToArray();
 
-            Logger.LogOutput(result);
+            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.StringArray, false);
         }
         catch (Exception e)

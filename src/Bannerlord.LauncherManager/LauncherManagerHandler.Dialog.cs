@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -10,27 +11,25 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal void ShowWarning(string title, string contentPrimary, string contentSecondary, Action<bool> onResult)
+    protected internal async Task<bool> ShowWarningAsync(string title, string contentPrimary, string contentSecondary)
     {
-        SendDialog(DialogType.Warning, title, string.Join("--CONTENT-SPLIT--", contentPrimary, contentSecondary), Array.Empty<DialogFileFilter>(), resultRaw =>
-        {
-            onResult(bool.TryParse(resultRaw, out var result) && result);
-        });
+        var resultRaw = await SendDialogAsync(DialogType.Warning, title, string.Join("--CONTENT-SPLIT--", contentPrimary, contentSecondary), Array.Empty<DialogFileFilter>());
+        return bool.TryParse(resultRaw, out var result) && result;
     }
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal void ShowFileOpen(string title, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
+    protected internal async Task<string> ShowFileOpenAsync(string title, IReadOnlyList<DialogFileFilter> filters)
     {
-        SendDialog(DialogType.FileOpen, title, string.Empty, filters, onResult);
+        return await SendDialogAsync(DialogType.FileOpen, title, string.Empty, filters);
     }
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal void ShowFileSave(string title, string fileName, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult)
+    protected internal async Task<string> ShowFileSaveAsync(string title, string fileName, IReadOnlyList<DialogFileFilter> filters)
     {
-        SendDialog(DialogType.FileSave, title, fileName, filters, onResult);
+        return await SendDialogAsync(DialogType.FileSave, title, fileName, filters);
     }
 }

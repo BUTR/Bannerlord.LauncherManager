@@ -1,13 +1,14 @@
 ﻿using Bannerlord.LauncherManager.Models;
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.External;
 
 public interface ILauncherStateProvider
 {
-    void SetGameParameters(string executable, IReadOnlyList<string> gameParameters);
+    Task SetGameParametersAsync(string executable, IReadOnlyList<string> gameParameters);
 
-    LauncherOptions GetOptions();
-    LauncherState GetState();
+    Task<LauncherOptions> GetOptionsAsync();
+    Task<LauncherState> GetStateAsync();
 }

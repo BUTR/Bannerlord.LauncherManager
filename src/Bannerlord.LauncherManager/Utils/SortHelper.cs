@@ -22,7 +22,7 @@ public static class SortHelper
 
         return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
     }
-    
+
     /// <summary>
     /// External<br/>
     /// </summary>
@@ -74,7 +74,7 @@ public static class SortHelper
     /// <summary>
     /// External<br/>
     /// </summary>
-    public static bool ChangeModulePosition<TModuleViewModel>(IList<TModuleViewModel> moduleVMs, IDictionary<string, TModuleViewModel> lookup, TModuleViewModel targetModuleVM, int insertIndex, Action<IReadOnlyCollection<string>>? onIssues = null)
+    public static ChangeModulePositionResult ChangeModulePosition<TModuleViewModel>(IList<TModuleViewModel> moduleVMs, IDictionary<string, TModuleViewModel> lookup, TModuleViewModel targetModuleVM, int insertIndex)
         where TModuleViewModel : IModuleViewModel
     {
         static float Clamp(float value, float min, float max)
@@ -99,10 +99,11 @@ public static class SortHelper
         if (insertIndex >= moduleVMs.IndexOf(targetModuleVM)) insertIndex--;
         insertIndex = (int) Clamp(insertIndex, 0f, moduleVMs.Count - 1);
         var currentModuleIndex = moduleVMs.IndexOf(targetModuleVM);
-        if (insertIndex == -1 || currentModuleIndex == -1) return false;
+        if (insertIndex == -1 || currentModuleIndex == -1) return new(false, []);
 
         var modules = moduleVMs.Select(x => x.ModuleInfoExtended).ToList();
         var issuesReported = false;
+        var issues = new List<string>();
         while (insertIndex != currentModuleIndex)
         {
             modules.RemoveAt(currentModuleIndex);
@@ -112,16 +113,16 @@ public static class SortHelper
             {
                 moduleVMs.RemoveAt(currentModuleIndex);
                 moduleVMs.Insert(insertIndex, targetModuleVM);
-                return true;
+                return new(true, issues);
             }
 
             if (!issuesReported)
             {
                 issuesReported = true;
-                onIssues?.Invoke(loadOrderValidationIssues);
+                issues.AddRange(loadOrderValidationIssues);
             }
 
-            // Do it until we find the nearest acceptable index or stop if we failes
+            // Do it until we find the nearest acceptable index or stop if we fail
             modules.RemoveAt(insertIndex);
             modules.Insert(currentModuleIndex, targetModuleVM.ModuleInfoExtended);
 
@@ -129,6 +130,6 @@ public static class SortHelper
             if (currentModuleIndex > insertIndex) insertIndex++;
         }
 
-        return false;
+        return new(false, issues);
     }
 }

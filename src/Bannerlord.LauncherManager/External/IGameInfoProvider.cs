@@ -1,6 +1,8 @@
-﻿namespace Bannerlord.LauncherManager.External;
+﻿using System.Threading.Tasks;
+
+namespace Bannerlord.LauncherManager.External;
 
 public interface IGameInfoProvider
 {
-    string GetInstallPath();
+    Task<string> GetInstallPathAsync();
 }

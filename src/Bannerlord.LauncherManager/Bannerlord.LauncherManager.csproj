@@ -7,7 +7,7 @@
     <DebugType>full</DebugType>
 
     <VersionOverride>0</VersionOverride>
-    <Version>1.0.$(VersionOverride)</Version>
+    <Version>2.0.$(VersionOverride)</Version>
     
     <DefineConstants>$(DefineConstants);BANNERLORDBUTRMODULEMANAGER_PUBLIC;BANNERLORDBUTRMODULEMANAGER_NULLABLE</DefineConstants>
   </PropertyGroup>
@@ -24,7 +24,9 @@
   
   <ItemGroup>
     <PackageReference Include="Bannerlord.ModuleManager" Version="5.0.225" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
     <PackageReference Include="PolySharp" Version="1.13.2" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Condition="$(TargetFramework) == 'netstandard2.0'" Include="System.Memory" Version="4.5.0" />
   </ItemGroup>
 

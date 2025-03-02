@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 
 using ApplicationVersion = Bannerlord.ModuleManager.ApplicationVersion;
@@ -34,51 +35,52 @@ public class ModuleListHandler
         _launcherManager = launcherManager;
     }
 
-    private void ShowMissingWarning(IEnumerable<string> missingModuleIds, Action<bool> onResult)
+    private async Task<bool> ShowMissingWarningAsync(IEnumerable<string> missingModuleIds)
     {
         var missing = new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}")
             .SetTextVariable("MODULES", "").ToString();
-        _launcherManager.ShowWarning(
+
+        return await _launcherManager.ShowWarningAsync(
             new BUTRTextObject("Import Warning").ToString(),
             missing,
-            $"{string.Join("\n", missingModuleIds)}{Environment.NewLine}{Environment.NewLine}{new BUTRTextObject("{=hgew15HH}Continue import?")}",
-            onResult
+            $"{string.Join("\n", missingModuleIds)}{Environment.NewLine}{Environment.NewLine}{new BUTRTextObject("{=hgew15HH}Continue import?")}"
         );
     }
-    private void ShowVersionWarning(IEnumerable<string> mismatchedVersions, Action<bool> onResult)
+    private async Task<bool> ShowVersionWarningAsync(IEnumerable<string> mismatchedVersions)
     {
         var mismatched = new BUTRTextObject("{=BuMom4Jt}Mismatched Module Versions:{NL}{MODULEVERSIONS}")
             .SetTextVariable("NL", Environment.NewLine)
             .SetTextVariable("MODULEVERSIONS", string.Join(Environment.NewLine, mismatchedVersions)).ToString();
+
         var split = mismatched.Split('\n');
-        _launcherManager.ShowWarning(
+
+        return await _launcherManager.ShowWarningAsync(
             new BUTRTextObject("Import Warning").ToString(),
             split[0],
-            $"{split[1]}{Environment.NewLine}{Environment.NewLine}{new BUTRTextObject("{=hgew15HH}Continue import?")}",
-            onResult
+            $"{split[1]}{Environment.NewLine}{Environment.NewLine}{new BUTRTextObject("{=hgew15HH}Continue import?")}"
         );
     }
-    private void ReadImportList(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
+    private async Task<ModuleInfoExtendedWithMetadata[]> ReadImportListAsync(byte[] data)
     {
-        static IEnumerable<string> ReadAllLines(TextReader reader)
+        static async IAsyncEnumerable<string> ReadAllLinesAsync(TextReader reader)
         {
-            while (reader.ReadLine() is { } line)
+            while (await reader.ReadLineAsync() is { } line)
             {
                 yield return line;
             }
         }
-        IEnumerable<ModuleListEntry> Deserialize(IEnumerable<string> content)
+        async IAsyncEnumerable<ModuleListEntry> DeserializeAsync(IAsyncEnumerable<string> content)
         {
             var list = new List<ModuleListEntry>();
-            foreach (var line in content)
+            await foreach (var line in content)
             {
-                if (line.Split(new[] { ": " }, StringSplitOptions.RemoveEmptyEntries) is { Length: 2 } split)
+                if (line.Split([": "], StringSplitOptions.RemoveEmptyEntries) is { Length: 2 } split)
                 {
                     var version = ApplicationVersion.TryParse(split[1], out var versionVar) ? versionVar : ApplicationVersion.Empty;
                     list.Add(new ModuleListEntry(split[0], version));
                 }
             }
-            var nativeChangeset = list.Find(x => x.Id == Constants.NativeModule)?.Version.ChangeSet is var y and not 0 ? y : _launcherManager.GetChangeset();
+            var nativeChangeset = list.Find(x => x.Id == Constants.NativeModule)?.Version.ChangeSet is var y and not 0 ? y : await _launcherManager.GetChangesetAsync();
             foreach (var entry in list)
             {
                 var version = entry.Version;
@@ -88,21 +90,20 @@ public class ModuleListHandler
             }
         }
 
-        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
+        var moduleViewModels = (await _launcherManager.GetModuleViewModelsAsync())?.ToArray() ?? [];
 
         var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (idDuplicates.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
-            onResult([]);
-            return;
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
+            return [];
         }
 
         using var stream = new MemoryStream(data);
         using var reader = new StreamReader(stream);
-        var importedModules = Deserialize(ReadAllLines(reader)).ToArray();
+        var importedModules = await DeserializeAsync(ReadAllLinesAsync(reader)).ToArrayAsync();
 
-        void ImportListInternal()
+        async Task<ModuleInfoExtendedWithMetadata[]> ImportListInternalAsync()
         {
             var mismatchedVersions = new List<ModuleMismatch>();
             foreach (var (id, version, _) in importedModules)
@@ -115,23 +116,14 @@ public class ModuleListHandler
             }
 
 
-            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).Where(x => x is not null).Select(x => x!.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
-                ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
-                {
-                    if (!result)
-                    {
-                        onResult([]);
-                        return;
-                    }
-
-                    onResult(GetResult());
-                });
-                return;
+                if (!await ShowVersionWarningAsync(mismatchedVersions.Select(x => x.ToString())))
+                    return [];
             }
-            onResult(GetResult());
+            return GetResult();
         }
 
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
@@ -139,38 +131,27 @@ public class ModuleListHandler
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
         if (missingModuleIds.Count > 0)
         {
-            ShowMissingWarning(missingModuleIds, result =>
-            {
-                if (!result)
-                {
-                    onResult([]);
-                    return;
-                }
-
-                ImportListInternal();
-            });
-            return;
+            if (!await ShowVersionWarningAsync(missingModuleIds))
+                return [];
         }
 
-        ImportListInternal();
+        return await ImportListInternalAsync();
     }
-    private void ReadSaveFile(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
+    private async Task<ModuleInfoExtendedWithMetadata[]> ReadSaveFileAsync(byte[] data)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
+        var moduleViewModels = (await _launcherManager.GetModuleViewModelsAsync())?.ToArray() ?? [];
 
         var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (nameDuplicates.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
-            onResult([]);
-            return;
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
+            return [];
         }
 
-        if (_launcherManager.GetSaveMetadata(string.Empty, data) is not { } metadata)
+        if (await _launcherManager.GetSaveMetadataAsync(string.Empty, data) is not { } metadata)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to read the save file!")}");
-            onResult([]);
-            return;
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to read the save file!")}");
+            return [];
         }
 
         var changeset = metadata.GetChangeSet();
@@ -182,7 +163,7 @@ public class ModuleListHandler
             return new ModuleListEntry(x, version);
         }).ToArray();
 
-        void ImportSaveInternal()
+        async Task<ModuleInfoExtendedWithMetadata[]> ImportSaveInternalAsync()
         {
             var mismatchedVersions = new List<ModuleMismatch>();
             foreach (var (name, version, _) in importedModules)
@@ -195,23 +176,15 @@ public class ModuleListHandler
             }
 
 
-            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Name == x.Id)).Where(x => x is not null).Select(x => x!.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
-                ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
-                {
-                    if (!result)
-                    {
-                        onResult([]);
-                        return;
-                    }
-
-                    onResult(GetResult());
-                });
-                return;
+                if (!await ShowVersionWarningAsync(mismatchedVersions.Select(x => x.ToString())))
+                    return [];
             }
-            onResult(GetResult());
+
+            return GetResult();
         }
 
         var importedModuleNames = importedModules.Select(x => x.Id).ToHashSet();
@@ -219,31 +192,21 @@ public class ModuleListHandler
         var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
         if (missingModuleNames.Count > 0)
         {
-            ShowMissingWarning(missingModuleNames.Select(x => x.ToString()), result =>
-            {
-                if (!result)
-                {
-                    onResult([]);
-                    return;
-                }
-
-                ImportSaveInternal();
-            });
-            return;
+            if (!await ShowVersionWarningAsync(missingModuleNames.Select(x => x.ToString())))
+                return [];
         }
 
-        ImportSaveInternal();
+        return await ImportSaveInternalAsync();
     }
-    private void ReadNovusPreset(byte[] data, Action<ModuleInfoExtendedWithMetadata[]> onResult)
+    private async Task<ModuleInfoExtendedWithMetadata[]> ReadNovusPresetAsync(byte[] data)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
+        var moduleViewModels = (await _launcherManager.GetModuleViewModelsAsync())?.ToArray() ?? [];
 
         var idDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Id).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (idDuplicates.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
-            onResult([]);
-            return;
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=izSm5f85}Duplicate Module Ids:{NL}{MODULEIDS}").SetTextVariable("MODULEIDS", string.Join("\n", idDuplicates))}");
+            return [];
         }
 
         var document = ReaderUtils.Read(data);
@@ -265,7 +228,7 @@ public class ModuleListHandler
 
         }
 
-        void ImportNovusInternal()
+        async Task<ModuleInfoExtendedWithMetadata[]> ImportNovusInternal()
         {
             var mismatchedVersions = new List<ModuleMismatch>();
             foreach (var (id, version, _) in importedModules)
@@ -281,19 +244,11 @@ public class ModuleListHandler
 
             if (mismatchedVersions.Count > 0)
             {
-                ShowVersionWarning(mismatchedVersions.Select(x => x.ToString()), result =>
-                {
-                    if (!result)
-                    {
-                        onResult([]);
-                        return;
-                    }
-
-                    onResult(GetResult());
-                });
-                return;
+                if (!await ShowVersionWarningAsync(mismatchedVersions.Select(x => x.ToString())))
+                    return [];
             }
-            onResult(GetResult());
+
+            return GetResult();
         }
 
         var importedModuleIds = importedModules.Select(x => x.Id).ToHashSet();
@@ -301,105 +256,106 @@ public class ModuleListHandler
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
         if (missingModuleIds.Count > 0)
         {
-            ShowMissingWarning(missingModuleIds.Select(x => x.ToString()), result =>
-            {
-                if (!result)
-                {
-                    onResult([]);
-                    return;
-                }
-
-                ImportNovusInternal();
-            });
-            return;
+            if (!await ShowVersionWarningAsync(missingModuleIds.Select(x => x.ToString())))
+                return [];
         }
 
-        ImportNovusInternal();
+        return await ImportNovusInternal();
     }
+
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void Import(Action<bool> onResult)
+    public async Task<bool> ImportAsync()
     {
-        _launcherManager.ShowFileOpen(
+        var fileName = await _launcherManager.ShowFileOpenAsync(
             new BUTRTextObject("{=DKRNkst2}Open a File with a Load Order").ToString(),
-            new[]
-            {
-                    new DialogFileFilter("Bannerlord Module List", new []{ "*.bmlist" }),
-                    new DialogFileFilter("Bannerlord Save File", new []{ "*.sav" }),
-                    new DialogFileFilter("Novus Preset", new []{ "*.xml" }),
-                    new DialogFileFilter("All files", new []{ "*.*" }),
-            },
-            fileName =>
-            {
-                if (string.IsNullOrEmpty(fileName) || _launcherManager.ReadFileContent(fileName, 0, -1) is not { } data) return;
+            [
+                new DialogFileFilter("Bannerlord Module List", ["*.bmlist"]),
+                new DialogFileFilter("Bannerlord Save File", ["*.sav"]),
+                new DialogFileFilter("Novus Preset", ["*.xml"]),
+                new DialogFileFilter("All files", ["*.*"]),
+            ]);
 
-                try
+        if (string.IsNullOrEmpty(fileName) || await _launcherManager.ReadFileContentAsync(fileName, 0, -1) is not { } data)
+            return false;
+
+        try
+        {
+            switch (Path.GetExtension(fileName))
+            {
+                case ".bmlist":
                 {
-                    switch (Path.GetExtension(fileName))
-                    {
-                        case ".bmlist":
-                            ReadImportList(data, result =>
-                        {
-                            ImportInternal(result);
-                            onResult(true);
-                        }); break;
-                        case ".sav":
-                            ReadSaveFile(data, result =>
-                        {
-                            ImportInternal(result);
-                            onResult(true);
-                        }); break;
-                        case ".xml":
-                            ReadNovusPreset(data, result =>
-                        {
-                            ImportInternal(result);
-                            onResult(true);
-                        }); break;
-                    }
+                    var result = await ReadImportListAsync(data);
+                    await ImportInternalAsync(result);
+                    return true;
                 }
-                catch (Exception e)
+                case ".sav":
                 {
-                    _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\nException:\n{e}");
-                    onResult(false);
+                    var result = await ReadSaveFileAsync(data);
+                    await ImportInternalAsync(result);
+                    return true;
+                }
+                case ".xml":
+                {
+                    var result = await ReadNovusPresetAsync(data);
+                    await ImportInternalAsync(result);
+                    return true;
                 }
             }
-        );
+            return false;
+        }
+        catch (Exception e)
+        {
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\nException:\n{e}");
+            return false;
+        }
     }
+
+    /*
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void ImportSaveFile(string saveFile, Action<bool> onResult)
+    public void Import()
     {
-        if (_launcherManager.GetSaveFilePath(saveFile) is not { } saveFilePath)
+        ReadImportList(data, result =>
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
-            onResult(false);
-            return;
+            ImportInternal(result);
+            onResult(true);
+        }); break;
+    }
+    */
+
+    /// <summary>
+    /// External<br/>
+    /// </summary>
+    public async Task<bool> ImportSaveFileAsync(string saveFile)
+    {
+        if (await _launcherManager.GetSaveFilePathAsync(saveFile) is not { } saveFilePath)
+        {
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
+            return false;
         }
 
-        if (_launcherManager.ReadFileContent(saveFilePath, 0, -1) is not { } data)
+        if (await _launcherManager.ReadFileContentAsync(saveFilePath, 0, -1) is not { } data)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
-            onResult(false);
-            return;
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
+            return false;
         }
 
         try
         {
-            ReadSaveFile(data, result =>
-            {
-                ImportInternal(result);
-                onResult(true);
-            });
+            var result = await ReadSaveFileAsync(data);
+            await ImportInternalAsync(result);
+            return true;
         }
         catch (Exception e)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\nException:\n{e}");
-            onResult(false);
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\nException:\n{e}");
+            return false;
         }
     }
-    private void ImportInternal(ModuleInfoExtendedWithMetadata[] modules)
+    private async Task ImportInternalAsync(ModuleInfoExtendedWithMetadata[] modules)
     {
         if (modules.Length == 0)
             return;
@@ -407,33 +363,35 @@ public class ModuleListHandler
         var loadOrderValidationIssues = LoadOrderChecker.IsLoadOrderCorrect(modules).ToList();
         if (loadOrderValidationIssues.Count != 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=HvvA78sZ}Load Order Issues:{NL}{LOADORDERISSUES}").SetTextVariable("LOADORDERISSUES", string.Join("\n", loadOrderValidationIssues))}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=HvvA78sZ}Load Order Issues:{NL}{LOADORDERISSUES}").SetTextVariable("LOADORDERISSUES", string.Join("\n", loadOrderValidationIssues))}");
             return;
         }
 
         var moduleIds = modules.Select(x => x.Id).ToHashSet();
-        if (!_launcherManager.TryOrderByLoadOrder(modules.Select(x => x.Id), x => moduleIds.Contains(x), out var orderIssues, out var orderedModules))
+        var (result, orderIssues, orderedModules) = await _launcherManager.TryOrderByLoadOrderAsync(modules.Select(x => x.Id), x => moduleIds.Contains(x));
+        if (!result)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=HvvA78sZ}Load Order Issues:{NL}{LOADORDERISSUES}").SetTextVariable("LOADORDERISSUES", string.Join("\n", orderIssues))}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=HvvA78sZ}Load Order Issues:{NL}{LOADORDERISSUES}").SetTextVariable("LOADORDERISSUES", string.Join("\n", orderIssues))}");
             return;
         }
-        _launcherManager.SetModuleViewModels(orderedModules);
+        await _launcherManager.SetModuleViewModelsAsync(orderedModules);
     }
 
-    private ModuleListEntry[] ReadSaveFileModuleList(byte[] data)
+
+    private async Task<ModuleListEntry[]> ReadSaveFileModuleListAsync(byte[] data)
     {
-        var moduleViewModels = _launcherManager.GetModuleViewModels()?.ToArray() ?? [];
+        var moduleViewModels = (await _launcherManager.GetModuleViewModelsAsync())?.ToArray() ?? [];
 
         var nameDuplicates = moduleViewModels.Select(x => x.ModuleInfoExtended).Select(x => x.Name).GroupBy(i => i).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (nameDuplicates.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=vCwH9226}Duplicate Module Names:{NL}{MODULENAMES}").SetTextVariable("MODULENAMES", string.Join("\n", nameDuplicates))}");
             return [];
         }
 
-        if (_launcherManager.GetSaveMetadata(string.Empty, data) is not { } metadata)
+        if (await _launcherManager.GetSaveMetadataAsync(string.Empty, data) is not { } metadata)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to read the save file!")}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to read the save file!")}");
             return [];
         }
 
@@ -451,7 +409,7 @@ public class ModuleListHandler
         var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
         if (missingModuleNames.Count > 0)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", missingModuleNames))}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=GtDRbC3m}Missing Modules:{NL}{MODULES}").SetTextVariable("MODULES", string.Join("\n", missingModuleNames))}");
             return [];
         }
 
@@ -519,105 +477,99 @@ public class ModuleListHandler
         });
         document.Save(writer);
     }
+
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void Export()
+    public async Task ExportAsync()
     {
-        _launcherManager.ShowFileSave(
+        var fileName = await _launcherManager.ShowFileSaveAsync(
             new BUTRTextObject("{=XSxlKweM}Save a Bannerlord Module List File").ToString(),
             "MyList.bmlist",
-            new[]
+            [
+                new DialogFileFilter("Bannerlord Module List", ["*.bmlist"]),
+                new DialogFileFilter("Novus Preset", ["*.xml"]),
+            ]);
+
+        if (string.IsNullOrEmpty(fileName)) return;
+
+        try
+        {
+            var moduleViewModels = await _launcherManager.GetModuleViewModelsAsync() ?? [];
+
+            var modules = moduleViewModels
+                .Where(x => x.IsSelected)
+                .Select(x => x.ModuleInfoExtended)
+                .Select(x => new ModuleListEntry(x.Id, x.Version, x.Url));
+
+            using var fs = new MemoryStream();
+            switch (Path.GetExtension(fileName))
             {
-                    new DialogFileFilter("Bannerlord Module List", new []{ "*.bmlist" }),
-                    new DialogFileFilter("Novus Preset", new []{ "*.xml" }),
-            },
-            fileName =>
-            {
-                if (string.IsNullOrEmpty(fileName)) return;
-
-                try
-                {
-                    var moduleViewModels = _launcherManager.GetModuleViewModels() ?? [];
-
-                    var modules = moduleViewModels
-                        .Where(x => x.IsSelected)
-                        .Select(x => x.ModuleInfoExtended)
-                        .Select(x => new ModuleListEntry(x.Id, x.Version, x.Url));
-
-                    using var fs = new MemoryStream();
-                    switch (Path.GetExtension(fileName))
-                    {
-                        case ".bmlist":
-                            SaveBMList(fs, modules);
-                            break;
-                        case ".xml":
-                            SaveNovusPreset(fs, modules);
-                            break;
-                    }
-                    _launcherManager.WriteFileContent(fileName, fs.ToArray());
-                }
-                catch (Exception e)
-                {
-                    _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\nException:\n{e}");
-                }
-                _launcherManager.ShowHint(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
+                case ".bmlist":
+                    SaveBMList(fs, modules);
+                    break;
+                case ".xml":
+                    SaveNovusPreset(fs, modules);
+                    break;
             }
-        );
+            await _launcherManager.WriteFileContentAsync(fileName, fs.ToArray());
+        }
+        catch (Exception e)
+        {
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\nException:\n{e}");
+        }
+        await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
     }
+
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void ExportSaveFile(string saveFile)
+    public async Task ExportSaveFileAsync(string saveFile)
     {
-        if (_launcherManager.GetSaveFilePath(saveFile) is not { } saveFilePath)
+        if (await _launcherManager.GetSaveFilePathAsync(saveFile) is not { } saveFilePath)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
             return;
         }
 
-        if (_launcherManager.ReadFileContent(saveFilePath, 0, -1) is not { } data)
+        if (await _launcherManager.ReadFileContentAsync(saveFilePath, 0, -1) is not { } data)
         {
-            _launcherManager.ShowHint($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=WJnTxf3v}Cancelled Import!")}\n\n{new BUTRTextObject("{=B64DbmWp}Save File not found!")}");
             return;
         }
 
-        var modules = ReadSaveFileModuleList(data);
+        var modules = await ReadSaveFileModuleListAsync(data);
         if (modules.Length == 0)
             return;
 
-        _launcherManager.ShowFileSave(
+        var fileName = await _launcherManager.ShowFileSaveAsync(
             new BUTRTextObject("{=XSxlKweM}Save a Bannerlord Module List File").ToString(),
             $"{saveFile}.bmlist",
-            new[]
-            {
-                    new DialogFileFilter("Bannerlord Module List", new []{ "*.bmlist" }),
-                    new DialogFileFilter("Novus Preset", new []{ "*.xml" }),
-            },
-            fileName =>
-            {
-                if (string.IsNullOrEmpty(fileName)) return;
+            [
+                new DialogFileFilter("Bannerlord Module List", ["*.bmlist"]),
+                new DialogFileFilter("Novus Preset", ["*.xml"]),
+            ]);
 
-                try
-                {
-                    using var fs = new MemoryStream();
-                    switch (Path.GetExtension(fileName))
-                    {
-                        case ".bmlist":
-                            SaveBMList(fs, modules);
-                            break;
-                        case ".xml":
-                            SaveNovusPreset(fs, modules);
-                            break;
-                    }
-                    _launcherManager.WriteFileContent(fileName, fs.ToArray());
-                }
-                catch (Exception e)
-                {
-                    _launcherManager.ShowHint($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\nException:\n{e}");
-                }
-                _launcherManager.ShowHint(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
+        if (string.IsNullOrEmpty(fileName)) return;
+
+        try
+        {
+            using var fs = new MemoryStream();
+            switch (Path.GetExtension(fileName))
+            {
+                case ".bmlist":
+                    SaveBMList(fs, modules);
+                    break;
+                case ".xml":
+                    SaveNovusPreset(fs, modules);
+                    break;
             }
-        );
+            await _launcherManager.WriteFileContentAsync(fileName, fs.ToArray());
+        }
+        catch (Exception e)
+        {
+            await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\nException:\n{e}");
+        }
+        await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
     }
 }

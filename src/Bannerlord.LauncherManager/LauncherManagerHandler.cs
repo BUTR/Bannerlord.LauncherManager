@@ -10,6 +10,7 @@ using Bannerlord.ModuleManager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -57,20 +58,24 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public void RefreshModules()
+    public async Task RefreshModulesAsync()
     {
         _modules = null;
         _allModules = null;
-        ExtendedModuleInfoCache = GetLauncherFeatures().Concat(GetModules()).ToDictionary(x => x.Id, x => x);
+
+        var modules = await GetModulesAsync();
+        ExtendedModuleInfoCache = GetLauncherFeatures().Concat(modules).ToDictionary(x => x.Id, x => x);
     }
 
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    public IReadOnlyCollection<ModuleInfoExtended> GetFromLoadOrder(LoadOrder loadOrder)
+    public async Task<IReadOnlyCollection<ModuleInfoExtended>> GetFromLoadOrderAsync(LoadOrder loadOrder)
     {
         var ids = loadOrder.Select(x => x.Key).ToHashSet();
-        return GetModules().Where(x => ids.Contains(x.Id)).ToList();
+
+        var modules = await GetModulesAsync();
+        return modules.Where(x => ids.Contains(x.Id)).ToList();
     }
 
     /// <summary>
@@ -81,9 +86,9 @@ public partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    public IReadOnlyList<IModuleViewModel> GetViewModelsFromModules(IEnumerable<ModuleInfoExtended> modules)
+    public async Task<IReadOnlyList<IModuleViewModel>> GetViewModelsFromModulesAsync(IEnumerable<ModuleInfoExtended> modules)
     {
-        if (GetAllModuleViewModels() is not { } viewModels)
+        if (await GetAllModuleViewModelsAsync() is not { } viewModels)
             return Array.Empty<IModuleViewModel>();
 
         return modules.Select((moduleInfoExtended, i) =>

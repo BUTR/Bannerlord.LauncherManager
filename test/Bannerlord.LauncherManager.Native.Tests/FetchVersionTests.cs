@@ -9,13 +9,13 @@ namespace Bannerlord.LauncherManager.Native.Tests;
 
 public sealed partial class FetchVersionTests : BaseTests
 {
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial return_value_uint32* bfv_get_change_set(param_string* p_game_folder_path, param_string* p_lib_assembly);
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial return_value_string* bfv_get_version(param_string* p_game_folder_path, param_string* p_lib_assembly);
 
-    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
     private static unsafe partial return_value_uint32* bfv_get_version_type(param_string* p_game_folder_path, param_string* p_lib_assembly);
 
     [Test]

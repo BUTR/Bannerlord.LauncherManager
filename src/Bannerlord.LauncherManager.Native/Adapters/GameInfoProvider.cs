@@ -3,31 +3,72 @@
 using BUTR.NativeAOT.Shared;
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
-internal sealed unsafe class GameInfoProvider : IGameInfoProvider
+internal sealed class GameInfoProvider : IGameInfoProvider
 {
-    private readonly param_ptr* _pOwner;
+    private readonly unsafe param_ptr* _pOwner;
     private readonly N_GetInstallPathDelegate _getInstallPath;
 
-    public GameInfoProvider(param_ptr* pOwner, N_GetInstallPathDelegate getInstallPath)
+    public unsafe GameInfoProvider(param_ptr* pOwner, N_GetInstallPathDelegate getInstallPath)
     {
         _pOwner = pOwner;
         _getInstallPath = getInstallPath;
     }
 
-    public string GetInstallPath() => new(GetInstallPathNative());
+    public async Task<string> GetInstallPathAsync()
+    {
+        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        GetInstallPathNative(tcs);
+        return await tcs.Task;
+    }
 
-    private ReadOnlySpan<char> GetInstallPathNative()
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe void GetInstallPathNativeCallback(param_ptr* pOwner, return_value_string* pResult)
+    {
+        Logger.LogCallbackInput(pResult);
+
+        if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+            return;
+        }
+
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
+        {
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsString(tcs);
+        handle.Free();
+
+        Logger.LogOutput();
+    }
+
+    private unsafe void GetInstallPathNative(TaskCompletionSource<string> tcs)
     {
         Logger.LogInput();
 
-        using var result = SafeStructMallocHandle.Create(_getInstallPath(_pOwner), true);
-        using var installPath = result.ValueAsString();
+        var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
-        var returnResult = installPath.ToSpan();
-        Logger.LogOutput(returnResult, nameof(GetInstallPath));
-        return returnResult;
+        try
+        {
+            using var result = SafeStructMallocHandle.Create(_getInstallPath(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetInstallPathNativeCallback), true);
+            result.ValueAsVoid();
+
+            Logger.LogOutput();
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            tcs.TrySetException(e);
+            handle.Free();
+        }
     }
 }

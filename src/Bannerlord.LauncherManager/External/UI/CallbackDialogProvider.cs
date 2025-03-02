@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.External.UI;
 
@@ -14,5 +15,17 @@ public sealed class CallbackDialogProvider : IDialogProvider
         _sendDialog = sendDialog;
     }
 
-    public void SendDialog(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters, Action<string> onResult) => _sendDialog(type, title, message, filters, onResult);
+    public async Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters)
+    {
+        var tcs = new TaskCompletionSource<string>();
+        try
+        {
+            _sendDialog(type, title, message, filters, result => tcs.TrySetResult(result));
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
+        return await tcs.Task;
+    }
 }

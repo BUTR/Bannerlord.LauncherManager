@@ -20,10 +20,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 8
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@master
         with:
-          dotnet-version: 8.x.x
+          dotnet-version: 9.x.x
 
       - run: dotnet publish -r win-x64 --self-contained -c Debug src/Bannerlord.LauncherManager.Native
       - run: dotnet publish -r win-x64 --self-contained -c Release src/Bannerlord.LauncherManager.Native
@@ -51,7 +51,7 @@ jobs:
 
       - uses: actions/setup-node@v3.4.1
         with:
-          node-version: 16
+          node-version: 18
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
@@ -60,7 +60,7 @@ jobs:
 
       - uses: actions/setup-node@v3.4.1
         with:
-          node-version: 16
+          node-version: 18
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish

@@ -4,6 +4,9 @@ using Bannerlord.LauncherManager.Models;
 using BUTR.NativeAOT.Shared;
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Native.Adapters;
 
@@ -18,9 +21,38 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
         _sendNotification = sendNotification;
     }
 
-    public void SendNotification(string id, NotificationType type, string message, uint displayMs) => SendNotification(id, type.ToStringFast().ToLowerInvariant(), message, displayMs);
+    public Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
+    {
+        var tcs = new TaskCompletionSource();
+        SendNotificationNative(id, type.ToStringFast().ToLowerInvariant(), message, displayMs, tcs);
+        return tcs.Task;
+    }
 
-    private void SendNotification(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs)
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    public static void SendNotificationCallback(param_ptr* pOwner, return_value_void* pResult)
+    {
+        Logger.LogCallbackInput(pResult);
+
+        if (pOwner == null)
+        {
+            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+            return;
+        }
+
+        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+        {
+            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+            return;
+        }
+
+        using var result = SafeStructMallocHandle.Create(pResult, true);
+        result.SetAsVoid(tcs);
+        handle.Free();
+
+        Logger.LogOutput();
+    }
+
+    private void SendNotificationNative(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs, TaskCompletionSource tcs)
     {
         Logger.LogInput(displayMs);
 
@@ -28,12 +60,21 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
         fixed (char* pType = type)
         fixed (char* pMessage = message)
         {
-            Logger.LogPinned(pId, pType, pMessage);
+            var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
-            using var result = SafeStructMallocHandle.Create(_sendNotification(_pOwner, (param_string*) pId, (param_string*) pType, (param_string*) pMessage, displayMs), true);
-            result.ValueAsVoid();
+            try
+            {
+                using var result = SafeStructMallocHandle.Create(_sendNotification(_pOwner, (param_string*) pId, (param_string*) pType, (param_string*) pMessage, displayMs, (param_ptr*) GCHandle.ToIntPtr(handle), &SendNotificationCallback), true);
+                result.ValueAsVoid();
+
+                Logger.LogOutput();
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                tcs.TrySetException(e);
+                handle.Free();
+            }
         }
-
-        Logger.LogOutput();
     }
 }

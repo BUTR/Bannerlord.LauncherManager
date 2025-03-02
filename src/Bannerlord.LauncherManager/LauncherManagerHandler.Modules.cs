@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager;
 
@@ -29,11 +30,11 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetModules()
+    protected internal async Task<IReadOnlyList<ModuleInfoExtendedWithMetadata>> GetModulesAsync()
     {
         if (_allModules is null || _modules is null)
         {
-            _allModules = ReloadModules().ToList();
+            _allModules = await ReloadModulesAsync().ToListAsync();
             _modules = _allModules.GroupBy(x => x.Id).Select(x => x.First()).ToList();
         }
 
@@ -43,11 +44,11 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal IReadOnlyList<ModuleInfoExtendedWithMetadata> GetAllModules()
+    protected internal async Task<IReadOnlyList<ModuleInfoExtendedWithMetadata>> GetAllModulesAsync()
     {
         if (_allModules is null || _modules is null)
         {
-            _allModules = ReloadModules().ToList();
+            _allModules = await ReloadModulesAsync().ToListAsync();
             _modules = _allModules.GroupBy(x => x.Id).Select(x => x.First()).ToList();
         }
 
@@ -57,14 +58,14 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected virtual IEnumerable<ModuleInfoExtendedWithMetadata> ReloadModules()
+    protected virtual async IAsyncEnumerable<ModuleInfoExtendedWithMetadata> ReloadModulesAsync()
     {
         foreach (var modulePathProvider in _providers)
         {
-            foreach (var modulePath in modulePathProvider.GetModulePaths())
+            await foreach (var modulePath in modulePathProvider.GetModulePaths())
             {
                 var subModulePath = Path.Combine(modulePath, Constants.SubModuleName);
-                if (ReadFileContent(subModulePath, 0, -1) is { } data)
+                if (await ReadFileContentAsync(subModulePath, 0, -1) is { } data)
                 {
                     ModuleInfoExtended? moduleInfoExtended;
                     try
@@ -73,12 +74,12 @@ partial class LauncherManagerHandler
                     }
                     catch (Exception e)
                     {
-                        SendNotification("module-parsing-error-exception", NotificationType.Error, $"Failed to read SubModule.xml at path '{subModulePath}'!\n{e}", 3000);
+                        await SendNotificationAsync("module-parsing-error-exception", NotificationType.Error, $"Failed to read SubModule.xml at path '{subModulePath}'!\n{e}", 3000);
                         continue;
                     }
                     if (string.IsNullOrEmpty(moduleInfoExtended.Id))
                     {
-                        SendNotification("module-parsing-error-invalid-module-id", NotificationType.Error, $"SubModule.xml has an invalid Id at path '{subModulePath}'!", 3000);
+                        await SendNotificationAsync("module-parsing-error-invalid-module-id", NotificationType.Error, $"SubModule.xml has an invalid Id at path '{subModulePath}'!", 3000);
                         continue;
                     }
 
@@ -92,5 +93,5 @@ partial class LauncherManagerHandler
     /// <summary>
     /// Internal<br/>
     /// </summary>
-    protected internal IEnumerable<string> GetModulePaths() => _providers.SelectMany(provider => provider.GetModulePaths());
+    protected internal IAsyncEnumerable<string> GetModulePathsAsync() => _providers.ToAsyncEnumerable().SelectMany(provider => provider.GetModulePaths());
 }

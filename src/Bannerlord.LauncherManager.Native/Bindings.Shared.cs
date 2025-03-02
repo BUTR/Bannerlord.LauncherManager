@@ -27,14 +27,14 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "common_dealloc", CallConvs = [typeof(CallConvCdecl)])]
-    public static void Common_Dealloc([IsConst<IsPtrConst>] param_ptr* ptr)
+    public static void CommonDealloc([IsConst<IsPtrConst>] param_ptr* ptr)
     {
-        Logger.LogInput(ptr);
+        Logger.LogInput();
         try
         {
             Allocator.Free(ptr);
 
-            Logger.LogOutput();
+            Logger.LogOutput(new IntPtr(ptr).ToString("x16"), nameof(CommonDealloc));
         }
         catch (Exception e)
         {

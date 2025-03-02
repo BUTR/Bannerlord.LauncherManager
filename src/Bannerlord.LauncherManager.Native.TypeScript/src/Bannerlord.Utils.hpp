@@ -14,7 +14,7 @@ namespace Bannerlord::Utils
     Value IsLoadOrderCorrect(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto modules = JSONStringify(env, info[0].As<Object>());
+        const auto modules = JSONStringify(info[0].As<Object>());
 
         const auto modulesCopy = CopyWithFree(modules.Utf16Value());
 
@@ -25,7 +25,7 @@ namespace Bannerlord::Utils
     Value GetDependencyHint(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto module = JSONStringify(env, info[0].As<Object>());
+        const auto module = JSONStringify(info[0].As<Object>());
 
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
 
@@ -36,7 +36,7 @@ namespace Bannerlord::Utils
     Value RenderModuleIssue(const CallbackInfo &info)
     {
         const auto env = info.Env();
-        const auto moduleIssue = JSONStringify(env, info[0].As<Object>());
+        const auto moduleIssue = JSONStringify(info[0].As<Object>());
 
         const auto moduleIssueCopy = CopyWithFree(moduleIssue.Utf16Value());
 
@@ -70,7 +70,7 @@ namespace Bannerlord::Utils
     {
         const auto env = info.Env();
         const auto templateStr = info[0].As<String>();
-        const auto values = JSONStringify(env, info[1].As<Object>());
+        const auto values = JSONStringify(info[1].As<Object>());
 
         const auto templateStrCopy = CopyWithFree(templateStr.Utf16Value());
         const auto valuesCopy = CopyWithFree(values.Utf16Value());

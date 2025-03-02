@@ -1,31 +1,18 @@
 import test from 'ava';
-import fs from 'fs';
+import { Dirent } from 'node:fs';
+import { FileHandle, open, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'path';
 import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../lib/types';
-import { NativeLauncherManager, allocAliveCount, types } from '../lib';
+import { NativeLauncherManager, allocAliveCount, allocWithoutOwnership, types } from '../lib';
 
 const isDebug = process.argv[2] == "Debug";
 
 test('Main', async (t) => {
   const gamePath = __dirname;
-  let loadOrder: LoadOrder = {
-    'Bannerlord.UIExtenderEx': {
-      id: "Bannerlord.UIExtenderEx",
-      name: "UIExtenderEx",
-      isSelected: false,
-      isDisabled: false,
-      index: 0,
-    },
-    'Bannerlord.Harmony': {
-      id: "Bannerlord.Harmony",
-      name: "Harmony",
-      isSelected: false,
-      isDisabled: false,
-      index: 1,
-    },
-  };
 
-  const setGameParameters = (_executable: string, gameParameters: any): void => {
+  let moduleViewModels: ModuleViewModel[] = [];
+
+  const setGameParameters = (_executable: string, gameParameters: any): Promise<void> => {
     //t.deepEqual(executable, 'bin\\Win64_Shipping_Client\\Bannerlord.exe');
     t.deepEqual(gameParameters, [
       '/singleplayer',
@@ -33,80 +20,88 @@ test('Main', async (t) => {
       '',
       ''
     ]);
+    return Promise.resolve();
   };
-  const loadLoadOrder = (): LoadOrder => {
-    return loadOrder;
-  };
-  const saveLoadOrder = (loadOrderOverride: LoadOrder): void => {
-    loadOrder = loadOrderOverride;
-  };
-  const sendNotification = (_id: string, _type: NotificationType, _message: string, _delayMS: number): void => {
-
+  const sendNotification = (_id: string, _type: NotificationType, _message: string, _delayMS: number): Promise<void> => {
+    return Promise.resolve();
   };
   const sendDialog = (_type: DialogType, _title: string, _message: string, _filters: types.FileFilter[]): Promise<string> => {
     return new Promise((resolve) => setTimeout(() => {
       resolve("Testing");
     }, 100));
   };
-  const getInstallPath = (): string => {
-    return gamePath;
+  const getInstallPath = (): Promise<string> => {
+    return Promise.resolve(gamePath);
   };
-  const readFileContent = (filePath: string, offset: number, length: number): Uint8Array | null => {
-    if (fs.existsSync(filePath)) {
-      if (offset === 0 && length === -1) {
-        return fs.readFileSync(filePath);
-      } else if (offset >= 0 && length > 0) {
-        const fd = fs.openSync(filePath, 'r');
-        const buffer = Buffer.alloc(length);
-        fs.readSync(fd, buffer, offset, length, 0);
+  const readFileContent = async (filePath: string, offset: number, length: number): Promise<Uint8Array | null> => {
+    try {
+      let fileHandle: FileHandle | null = null;
+      try {
+        fileHandle = await open(filePath, 'r');
+        if (length === -1) {
+          const stats = await fileHandle.stat();
+          length = stats.size;
+        }
+        const buffer = allocWithoutOwnership(length) ?? new Uint8Array(length);
+        await fileHandle.read(buffer, 0, length, offset);
         return buffer;
-      } else {
-        return null;
+      } finally {
+        await fileHandle?.close();
       }
+    } catch (err) {
+      t.fail();
     }
     return null;
   };
-  const writeFileContent = (filePath: string, data: Uint8Array): void => {
-    fs.writeFileSync(filePath, data);
+  const writeFileContent = async (filePath: string, data: Uint8Array): Promise<void> => {
+    try {
+      await writeFile(filePath, data);
+    } catch (err) {
+      t.fail();
+    }
   };
-  const readDirectoryFileList = (directoryPath: string): string[] | null => {
-    if (fs.existsSync(directoryPath)) {
-      return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isFile()).map(x => path.join(directoryPath, x.name));
+  const readDirectoryFileList = async (directoryPath: string): Promise<string[] | null> => {
+    try {
+      const dirs: Dirent[] = await readdir(directoryPath, { withFileTypes: true });
+      return dirs.filter((x: Dirent) => x.isFile()).map<string>((x: Dirent) => path.join(directoryPath, x.name));
+    } catch (err) {
+      t.fail();
     }
     return null;
   };
-  const readDirectoryList = (directoryPath: string): string[] | null => {
-    if (fs.existsSync(directoryPath)) {
-      return fs.readdirSync(directoryPath, { withFileTypes: true }).filter(x => x.isDirectory()).map(x => path.join(directoryPath, x.name));
+  const readDirectoryList = async (directoryPath: string): Promise<string[] | null> => {
+    try {
+      const dirs: Dirent[] = await readdir(directoryPath, { withFileTypes: true });
+      return dirs.filter((x: Dirent) => x.isDirectory()).map<string>((x: Dirent) => path.join(directoryPath, x.name));
+    } catch (err) {
+      t.fail();
     }
     return null;
   };
-  const getAllModuleViewModels = (): ModuleViewModel[] | null => {
-    return moduleViewModels;
+  const getAllModuleViewModels = (): Promise<ModuleViewModel[] | null> => {
+    return Promise.resolve(moduleViewModels);
   };
-  const getModuleViewModels = (): ModuleViewModel[] | null => {
-    return moduleViewModels;
+  const getModuleViewModels = (): Promise<ModuleViewModel[] | null> => {
+    return Promise.resolve(moduleViewModels);
   };
-  const setModuleViewModels = (_moduleViewModels: ModuleViewModel[]): void => {
-    const tt = 0;
-    t.is(tt, 0);
+  const setModuleViewModels = (_moduleViewModels: ModuleViewModel[]): Promise<void> => {
+    moduleViewModels = _moduleViewModels;
+    return Promise.resolve();
   };
-  const getOptions = (): LauncherOptions => {
-    return {
+  const getOptions = (): Promise<LauncherOptions> => {
+    return Promise.resolve({
       language: "English",
       unblockFiles: true,
       fixCommonIssues: true,
       betaSorting: false,
-    }
+    });
   };
-  const getState = (): LauncherState => {
-    return { isSingleplayer: true };
+  const getState = (): Promise<LauncherState> => {
+    return Promise.resolve({ isSingleplayer: true });
   };
 
   var manager = new NativeLauncherManager(
     setGameParameters,
-    loadLoadOrder,
-    saveLoadOrder,
     sendNotification,
     sendDialog,
     getInstallPath,
@@ -120,12 +115,39 @@ test('Main', async (t) => {
     getOptions,
     getState);
 
-  await manager.dialogTestWarning();
-  await manager.dialogTestFileOpen();
+  await manager.dialogTestWarningAsync();
+  await manager.dialogTestFileOpenAsync();
 
 
-  const modules = manager.getModules();
-  const moduleViewModels: ModuleViewModel[] = [
+  const modules = await manager.getModulesAsync();
+  t.truthy(modules.length > 0);
+  moduleViewModels = [
+    {
+      moduleInfoExtended: modules.find(x => x.id === "Bannerlord.Harmony")!,
+      isValid: true,
+      isSelected: true,
+      isDisabled: false,
+      index: 1,
+    },
+    {
+      moduleInfoExtended: modules.find(x => x.id === "Bannerlord.UIExtenderEx")!,
+      isValid: true,
+      isSelected: true,
+      isDisabled: false,
+      index: 0,
+    }
+  ]
+
+  const version = await manager.getGameVersionAsync();
+  if (version === undefined) {
+    t.fail();
+    return;
+  }
+
+  //manager.setGameStore("Steam");
+
+  await manager.sortAsync();
+  let expectedModuleViewModels: ModuleViewModel[] = [
     {
       moduleInfoExtended: modules.find(x => x.id === "Bannerlord.Harmony")!,
       isValid: true,
@@ -139,35 +161,9 @@ test('Main', async (t) => {
       isSelected: true,
       isDisabled: false,
       index: 1,
-    }
-  ]
-
-  const version = manager.getGameVersion();
-  if (version === undefined) {
-    t.fail();
-    return;
-  }
-
-  //manager.setGameStore("Steam");
-
-  manager.sort();
-  let expectedLoadOrder: LoadOrder = {
-    'Bannerlord.Harmony': {
-      id: "Bannerlord.Harmony",
-      name: "Harmony",
-      isSelected: true,
-      isDisabled: false,
-      index: 0,
     },
-    'Bannerlord.UIExtenderEx': {
-      id: "Bannerlord.UIExtenderEx",
-      name: "UIExtenderEx",
-      isSelected: true,
-      isDisabled: false,
-      index: 1,
-    },
-  };
-  t.deepEqual(loadOrder, expectedLoadOrder);
+  ];
+  t.deepEqual(moduleViewModels, expectedModuleViewModels);
 
   if (isDebug)
     t.deepEqual(allocAliveCount(), 0); // manager is alive
