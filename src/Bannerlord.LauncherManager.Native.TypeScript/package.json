@@ -44,19 +44,13 @@
     "doc:json": "typedoc --entryPoints src/lib/index.ts --exclude **/*.spec.* --exclude **/_*.* --json dist/docs/typedoc.json"
   },
   "engines": {
-    "node": ">=18.17.1"
-  },
-  "cmake-js": {
-    "runtime": "node",
-    "runtimeVersion": "18.17.1",
-    "arch": "x64"
+    "node": ">=18"
   },
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/node": "^18.7.9",
     "ava": "^3.15.0",
-    "cmake-js": "^7.2.1",
     "codecov": "^3.8.2",
     "cspell": "^6.19.2",
     "node-addon-api": "^8.3.1",
