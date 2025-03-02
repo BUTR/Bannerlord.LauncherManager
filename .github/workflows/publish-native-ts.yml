@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-          cache-dependency-path: src/Bannerlord.LauncherManager.Native.TypeScript/package-lock.json
+          cache-dependency-path: src/Bannerlord.LauncherManager.Native.TypeScript/yarn.lock
 
       - run: |
           cd ./src/Bannerlord.LauncherManager.Native.TypeScript && `
