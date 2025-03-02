@@ -44,11 +44,11 @@
     "doc:json": "typedoc --entryPoints src/lib/index.ts --exclude **/*.spec.* --exclude **/_*.* --json dist/docs/typedoc.json"
   },
   "engines": {
-    "node": ">=16.19.0"
+    "node": ">=18.17.1"
   },
   "cmake-js": {
     "runtime": "node",
-    "runtimeVersion": "16.19.0",
+    "runtimeVersion": "18.17.1",
     "arch": "x64"
   },
   "devDependencies": {
