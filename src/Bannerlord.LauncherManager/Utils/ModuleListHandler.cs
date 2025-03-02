@@ -116,7 +116,7 @@ public class ModuleListHandler
             }
 
 
-            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Id == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Id == x.Id)).Where(x => x is not null).Select(x => x!.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
@@ -176,7 +176,7 @@ public class ModuleListHandler
             }
 
 
-            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.First(y => y.ModuleInfoExtended.Name == x.Id)).Select(x => x.ModuleInfoExtended).ToArray();
+            ModuleInfoExtendedWithMetadata[] GetResult() => importedModules.Select(x => moduleViewModels.FirstOrDefault(y => y.ModuleInfoExtended.Name == x.Id)).Where(x => x is not null).Select(x => x!.ModuleInfoExtended).ToArray();
 
             if (mismatchedVersions.Count > 0)
             {
