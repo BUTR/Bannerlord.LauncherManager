@@ -20,7 +20,7 @@ public static unsafe partial class Bindings
             var gameFolderPath = new string(param_string.ToSpan(p_game_folder_path));
             var libAssembly = new string(param_string.ToSpan(p_lib_assembly));
 
-            var result = (uint) Fetcher.GetChangeSet(Path.GetFullPath(gameFolderPath), libAssembly);
+            var result = (uint) Fetcher.GetChangeSet(gameFolderPath, libAssembly);
 
             Logger.LogOutput();
             return return_value_uint32.AsValue(result, false);
@@ -41,7 +41,7 @@ public static unsafe partial class Bindings
             var gameFolderPath = new string(param_string.ToSpan(p_game_folder_path));
             var libAssembly = new string(param_string.ToSpan(p_lib_assembly));
 
-            var result = Fetcher.GetVersion(Path.GetFullPath(gameFolderPath), libAssembly);
+            var result = Fetcher.GetVersion(gameFolderPath, libAssembly);
 
             Logger.LogOutput(result);
             return return_value_string.AsValue(BUTR.NativeAOT.Shared.Utils.Copy(result, false), false);
@@ -62,7 +62,7 @@ public static unsafe partial class Bindings
             var gameFolderPath = new string(param_string.ToSpan(p_game_folder_path));
             var libAssembly = new string(param_string.ToSpan(p_lib_assembly));
 
-            var result = (uint) Fetcher.GetVersionType(Path.GetFullPath(gameFolderPath), libAssembly);
+            var result = (uint) Fetcher.GetVersionType(gameFolderPath, libAssembly);
 
             Logger.LogOutput();
             return return_value_uint32.AsValue(result, false);

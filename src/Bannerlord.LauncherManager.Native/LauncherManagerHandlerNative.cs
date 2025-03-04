@@ -2,10 +2,14 @@
 using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Localization;
 using Bannerlord.LauncherManager.Models;
+using Bannerlord.ModuleManager;
 
 using BUTR.NativeAOT.Shared;
 
 using FetchBannerlordVersion;
+
+using Mono.Cecil;
+using Mono.Cecil.Rocks;
 
 using System;
 using System.Collections.Generic;
@@ -131,5 +135,75 @@ internal sealed class LauncherManagerHandlerNative : LauncherManagerHandler, IDi
     {
         var gamePath = await GetInstallPathAsync();
         return Fetcher.GetChangeSet(gamePath, Constants.TaleWorldsLibrary);
+    }
+
+    public async Task<bool> IsObfuscatedAsync(ModuleInfoExtendedWithMetadata moduleInfoExtended)
+    {
+        static bool CanBeLoaded(SubModuleInfoExtended x) =>
+            true;
+        //ModuleInfoHelper.CheckIfSubModuleCanBeLoaded(x, ApplicationPlatform.CurrentPlatform, ApplicationPlatform.CurrentRuntimeLibrary, TaleWorlds.MountAndBlade.DedicatedServerType.None, false);
+
+        bool IsObfuscatedInternal(byte[] data)
+        {
+            try
+            {
+                using var stream = new MemoryStream(data);
+                using var moduleDefinition = ModuleDefinition.ReadModule(stream, new ReaderParameters(ReadingMode.Deferred));
+
+                var hasObfuscationAttributeUsed = moduleDefinition.GetCustomAttributes().Any(x => x.Constructor.DeclaringType.Name switch
+                {
+                    "ConfusedByAttribute" => true,
+                    _ => false,
+                });
+                var hasObfuscationAttributeDeclared = moduleDefinition.Types.Any(x => x.Name switch
+                {
+                    "ConfusedByAttribute" => true,
+                    _ => false,
+                });
+                // Every module should have a module initializer. If it's missing, someone is hiding it
+                var hasModuleInitializer = moduleDefinition.GetAllTypes().Any(x => x.Name == "<Module>");
+
+                // The body will not be readable if the code is obfuscated
+                _ = moduleDefinition.GetAllTypes().SelectMany(x => x.Methods).Where(x => x.HasBody).Sum(x => x.Body.Instructions.Count);
+
+                return hasObfuscationAttributeUsed || hasObfuscationAttributeDeclared || !hasModuleInitializer;
+            }
+            // Failing to read the metadata is a direct sign of metadata manipulation
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return true;
+            }
+        }
+
+        var platform = await GetPlatformAsync();
+        var moduleDir = Path.GetDirectoryName(moduleInfoExtended.Path)!;
+        foreach (var subModule in moduleInfoExtended.SubModules.Where(CanBeLoaded))
+        {
+            var asmWin = Path.Combine(moduleDir, Constants.BinFolder, Constants.Win64Configuration, subModule.DLLName);
+            var asmXbox = Path.Combine(moduleDir, Constants.BinFolder, Constants.XboxConfiguration, subModule.DLLName);
+            switch (platform)
+            {
+                case GamePlatform.Win64:
+                {
+                    if (await FileSystemProvider.ReadFileContentAsync(asmWin, 0, -1) is { } dataWin && IsObfuscatedInternal(dataWin))
+                        return true;
+                    break;
+                }
+                case GamePlatform.Xbox:
+                {
+                    if (await FileSystemProvider.ReadFileContentAsync(asmXbox, 0, -1) is { } dataXbox && IsObfuscatedInternal(dataXbox))
+                        return true;
+
+                    // If we use Win64 binaries on Xbox
+                    if (await FileSystemProvider.ReadFileContentAsync(asmWin, 0, -1) is { } dataWin && IsObfuscatedInternal(dataWin))
+                        return true;
+
+                    break;
+                }
+            }
+        }
+
+        return false;
     }
 }

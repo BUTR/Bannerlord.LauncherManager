@@ -1128,6 +1128,46 @@ public static partial class Bindings
         }
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "ve_is_obfuscated_async", CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe return_value_async* IsObfuscatedAsync(param_ptr* p_handle, param_json* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
+    {
+        Logger.LogInput(p_module);
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_async.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+
+            var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata);
+
+            handler.IsObfuscatedAsync(module).ContinueWith(result =>
+            {
+                Logger.LogAsyncInput(
+                    result.Result ? "true" : "false",
+                    $"{nameof(IsObfuscatedAsync)}_{nameof(handler.IsObfuscatedAsync)}");
+
+                if (result.Exception is not null)
+                {
+                    p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
+                    Logger.LogException(result.Exception, $"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
+                }
+                else
+                {
+                    p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
+                    Logger.LogOutput($"{nameof(IsObfuscatedAsync)}_{nameof(handler.IsObfuscatedAsync)}");
+                }
+            });
+
+            Logger.LogOutput();
+            return return_value_async.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_async.AsException(e, false);
+        }
+    }
+
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* DialogTestWarningAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)

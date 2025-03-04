@@ -97,6 +97,7 @@ export type LauncherManager = {
   getSaveFilesAsync(): Promise<SaveMetadata[]>;
   getSaveMetadataAsync(saveFile: string, data: Uint8Array): Promise<SaveMetadata>;
   installModule(files: string[], moduleInfos: ModuleInfoExtendedWithMetadata[]): InstallResult;
+  isObfuscatedAsync(module: ModuleInfoExtendedWithMetadata): Promise<boolean>;
   isSorting(): boolean;
   moduleListHandlerExportAsync(): Promise<void>;
   moduleListHandlerExportSaveFileAsync(saveFile: string): Promise<void>;

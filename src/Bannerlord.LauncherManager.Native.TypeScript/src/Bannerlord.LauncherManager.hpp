@@ -69,6 +69,7 @@ namespace Bannerlord::LauncherManager
         Napi::Value GetSaveFilesAsync(const CallbackInfo &info);
         Napi::Value GetSaveMetadataAsync(const CallbackInfo &info);
         Napi::Value InstallModule(const CallbackInfo &info);
+        Napi::Value IsObfuscatedAsync(const CallbackInfo &info);
         Napi::Value IsSorting(const CallbackInfo &info);
         Napi::Value ModuleListHandlerExportAsync(const CallbackInfo &info);
         Napi::Value ModuleListHandlerExportSaveFileAsync(const CallbackInfo &info);
@@ -113,6 +114,7 @@ namespace Bannerlord::LauncherManager
                                           InstanceMethod<&LauncherManager::GetSaveFilesAsync>("getSaveFilesAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::GetSaveMetadataAsync>("getSaveMetadataAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::InstallModule>("installModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+                                          InstanceMethod<&LauncherManager::IsObfuscatedAsync>("isObfuscatedAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::IsSorting>("isSorting", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::ModuleListHandlerExportAsync>("moduleListHandlerExportAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&LauncherManager::ModuleListHandlerExportSaveFileAsync>("moduleListHandlerExportSaveFileAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -378,30 +380,31 @@ namespace Bannerlord::LauncherManager
                 {
                     p_callback(p_callback_handler, Create(return_value_data{}));
                 }
-
-                if (!result.IsBuffer())
+                else if (!result.IsBuffer())
                 {
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
                     p_callback(p_callback_handler, Create(return_value_data{Copy(conv.from_bytes("Not an Buffer<uint8_t>"))}));
                 }
-
-                auto buffer = result.As<Uint8Array>();
-
-#ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
-                napi_value copyDataValue;
-                napi_status copyDataStatus = napi_get_named_property(env, buffer, "BannerlordSkipCopy", &copyDataValue);
-                const auto copyAsData = Value(env, copyDataValue);
-                if (copyDataStatus == napi_ok && copyAsData.IsBoolean() && copyAsData.As<Boolean>().Value())
-                {
-                    p_callback(p_callback_handler, Create(return_value_data{nullptr, buffer.Data(), static_cast<int>(buffer.ByteLength())}));
-                }
                 else
                 {
-                    p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
-                }
+                    auto buffer = result.As<Uint8Array>();
+
+#ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
+                    napi_value copyDataValue;
+                    napi_status copyDataStatus = napi_get_named_property(env, buffer, "BannerlordSkipCopy", &copyDataValue);
+                    const auto copyAsData = Value(env, copyDataValue);
+                    if (copyDataStatus == napi_ok && copyAsData.IsBoolean() && copyAsData.As<Boolean>().Value())
+                    {
+                        p_callback(p_callback_handler, Create(return_value_data{nullptr, buffer.Data(), static_cast<int>(buffer.ByteLength())}));
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
+                    }
 #else
-                p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
+                    p_callback(p_callback_handler, Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())}));
 #endif
+                }
             };
             const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
             {
@@ -943,6 +946,20 @@ namespace Bannerlord::LauncherManager
         const auto result = ve_install_module(this->_pInstance, filesCopy.get(), destinationPathCopy.get());
         // LOGOUTPUT();
         return ThrowOrReturnJson(env, result);
+    }
+
+    Napi::Value LauncherManager::IsObfuscatedAsync(const CallbackInfo &info)
+    {
+        // LOGINPUT();
+        const auto env = info.Env();
+        const auto module = JSONStringify(info[0].As<Object>());
+
+        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+
+        auto cbData = CreateResultCallbackData(env, NAMEOF(HandleVoidResultCallback));
+        const auto result = ve_is_obfuscated_async(this->_pInstance, moduleCopy.get(), cbData, HandleBooleanResultCallback);
+        // LOGOUTPUT();
+        return ReturnAndHandleReject(env, result, cbData);
     }
 
     Napi::Value LauncherManager::IsSorting(const CallbackInfo &info)

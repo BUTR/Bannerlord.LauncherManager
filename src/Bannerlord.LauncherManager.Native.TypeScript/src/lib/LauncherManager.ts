@@ -64,6 +64,9 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public installModule = (files: string[], moduleInfos: types.ModuleInfoExtendedWithMetadata[]): types.InstallResult => {
     return this.manager.installModule(files, moduleInfos);
   }
+  public isObfuscatedAsync = (module: types.ModuleInfoExtendedWithMetadata): Promise<boolean> => {
+    return this.manager.isObfuscatedAsync(module);
+  }
   public isSorting = (): boolean => {
     return this.manager.isSorting();
   }
