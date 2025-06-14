@@ -57,7 +57,11 @@ internal class SteamModuleProvider : IModulePathProvider
         if (!installPath.ToLower().Contains("steamapps") || !installPath.ToLower().Contains("common"))
             yield break;
 
-        var steamApps = installPath.Substring(0, installPath.IndexOf("common", StringComparison.Ordinal));
+        var commonIndex = installPath.IndexOf("common", StringComparison.Ordinal);
+        if (commonIndex < 0)
+            yield break;
+        
+        var steamApps = installPath.Substring(0, commonIndex);
         var workshopDir = Path.Combine(steamApps, "workshop", "content", "261550");
 
         var directories = await _handler.ReadDirectoryListAsync(workshopDir);
