@@ -8,7 +8,7 @@ export class BannerlordModuleManager {
 
     private static initialize() {
         if (BannerlordModuleManager.addon === undefined) {
-            BannerlordModuleManager.addon = require('./../../launchermanager.node');
+            BannerlordModuleManager.addon = require('./../launchermanager.node');
         }
     }
 

@@ -2,8 +2,8 @@ import test from 'ava';
 import { Dirent } from 'node:fs';
 import { FileHandle, open, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'path';
-import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../lib/types';
-import { NativeLauncherManager, allocAliveCount, allocWithoutOwnership, types } from '../lib';
+import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../src/types';
+import { NativeLauncherManager, allocAliveCount, allocWithoutOwnership, types } from '../src';
 
 const isDebug = process.argv[2] == "Debug";
 

@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { FetchBannerlordVersion, allocAliveCount } from '../lib';
+import { FetchBannerlordVersion, allocAliveCount } from '../src';
 
 const isDebug = process.argv[2] == "Debug";
 

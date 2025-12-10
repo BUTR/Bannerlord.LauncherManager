@@ -1,9 +1,8 @@
 #ifndef VE_LIB_LOGGER_GUARD_HPP_
 #define VE_LIB_LOGGER_GUARD_HPP_
 
-#define LOGGING_
-
 #define NAMEOF(x) #x
+#define NAMEOFWITHCALLBACK(x, y) (std::string(x) + "_" + #y)
 
 // Don't even care anymore
 
@@ -83,20 +82,14 @@
     } while (0)
 
 #include <napi.h>
-#include <cstdint>
 #include <codecvt>
 #include <locale>
-
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <chrono>
-#include <windows.h>
-#include <ctime>
-#include <iomanip>
 #include <sstream>
+#include "Bannerlord.LauncherManager.Native.h"
 
 using namespace Napi;
+using namespace Bannerlord::LauncherManager::Native;
 
 class Logger
 {
@@ -124,48 +117,10 @@ private:
 public:
     static void Log(const std::string &message)
     {
-#ifdef LOGGING
-        HANDLE mutex = OpenMutexW(SYNCHRONIZE, FALSE, _mutexName.c_str());
-        if (!mutex)
-            mutex = CreateMutexW(NULL, FALSE, _mutexName.c_str());
-
-        if (mutex)
-        {
-            while (true)
-            {
-                DWORD waitResult = WaitForSingleObject(mutex, 100); // 100 ms timeout
-                if (waitResult == WAIT_OBJECT_0)
-                {
-                    try
-                    {
-                        std::ofstream fs(_logFilePath, std::ios::app);
-                        if (fs.is_open())
-                        {
-                            auto now = std::chrono::system_clock::now();
-                            auto in_time_t = std::chrono::system_clock::to_time_t(now);
-
-                            std::tm buf;
-                            gmtime_s(&buf, &in_time_t);
-
-                            char timeStr[100];
-                            strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &buf);
-
-                            auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
-
-                            fs << "[C++][" << timeStr << "." << std::setfill('0') << std::setw(3) << milliseconds << "] " << message << std::endl;
-                        }
-                    }
-                    catch (const std::exception &)
-                    {
-                        // Ignore exceptions and retry
-                    }
-                    ReleaseMutex(mutex);
-                    break;
-                }
-            }
-            CloseHandle(mutex);
-        }
-#endif
+        // Convert UTF-8 string to UTF-16 for the log function
+        //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+        //std::u16string utf16_message = convert.from_bytes(message);
+        //ModInstaller::Native::log_message(2, const_cast<char16_t *>(utf16_message.c_str()));
     }
 
     static void Log(const std::string &caller, const std::string &message)
@@ -174,12 +129,12 @@ public:
         Log(caller + " - " + message);
     }
 
-    static void LogInput(const std::string &caller)
+    static void LogStarted(const std::string &caller)
     {
-        Log(caller, "Starting");
+        Log(caller, "Started");
     }
 
-    static void LogOutput(const std::string &caller)
+    static void LogFinished(const std::string &caller)
     {
         Log(caller, "Finished");
     }
@@ -187,19 +142,19 @@ public:
     static void LogInput(const std::string &caller, char16_t *val)
     {
         std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + convert.to_bytes(val));
+        Log(caller, "Parameter: " + convert.to_bytes(val));
     }
     static void LogInput(const std::string &caller, uint8_t val)
     {
-        Log(caller, "Starting: " + val ? "true" : "false");
+        Log(caller, std::string("Parameter: ") + (val ? "true" : "false"));
     }
     static void LogInput(const std::string &caller, int32_t val)
     {
-        Log(caller, "Starting: " + std::to_string(val));
+        Log(caller, std::string("Parameter: ") + std::to_string(val));
     }
     static void LogInput(const std::string &caller, param_uint val)
     {
-        Log(caller, "Starting: " + std::to_string(val));
+        Log(caller, "Parameter: " + std::to_string(val));
     }
 
     template <typename T, typename... Args>
@@ -276,22 +231,35 @@ public:
 
 class LoggerScope
 {
-    const std::string &caller_;
+    const std::string caller_;
 
 public:
-    template <typename T, typename... Args>
-    LoggerScope(const std::string &caller, const T &first, const Args &...args) : caller_(caller)
+    template <typename... Args>
+    LoggerScope(const std::string &caller, const Args &...args) : caller_(caller)
     {
-        Logger::LogInput(caller_, first);
+        Logger::LogStarted(caller_);
+
+#if DEBUG
         if constexpr (sizeof...(args) > 0)
         {
             Logger::LogInput(caller_, args...);
         }
+#endif
     }
 
     LoggerScope(const std::string &caller) : caller_(caller)
     {
-        Logger::LogInput(caller_);
+        Logger::LogStarted(caller_);
+    }
+
+    void LogError(const Napi::Error &e)
+    {
+        Logger::Log(caller_, "Error: " + std::string(e.Message()));
+    }
+
+    void LogException(const std::exception &e)
+    {
+        Logger::Log(caller_, "Exception: " + std::string(e.what()));
     }
 
     void Log(const std::string &message)
@@ -299,13 +267,15 @@ public:
         Logger::Log(caller_, message);
     }
 
+    void LogResult(const std::string &message)
+    {
+        Logger::Log(caller_, message);
+    }
+
     ~LoggerScope()
     {
-        Logger::LogOutput(caller_);
+        Logger::LogFinished(caller_);
     }
 };
 
-const std::string Logger::_logFilePath = "Bannerlord.LauncherManager.Native.log";
-const std::wstring Logger::_mutexName = L"Global\\BannerlordLoggerMutex";
-
-#endif
+#endif // VE_LIB_LOGGER_GUARD_HPP_

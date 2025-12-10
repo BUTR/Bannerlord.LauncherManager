@@ -40,17 +40,17 @@
     "cov:send": "run-s cov:lcov && codecov",
     "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
     "doc": "run-s doc:html && open-cli dist/docs/index.html",
-    "doc:html": "typedoc --entryPoints src/lib/index.ts --exclude **/*.spec.* --exclude **/_*.* --out dist/docs",
-    "doc:json": "typedoc --entryPoints src/lib/index.ts --exclude **/*.spec.* --exclude **/_*.* --json dist/docs/typedoc.json"
+    "doc:html": "typedoc --entryPoints src/index.ts --exclude **/*.spec.* --exclude **/_*.* --out dist/docs",
+    "doc:json": "typedoc --entryPoints src/index.ts --exclude **/*.spec.* --exclude **/_*.* --json dist/docs/typedoc.json"
   },
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
-    "@ava/typescript": "^1.1.1",
+    "@ava/typescript": "^5.0.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/node": "^18.7.9",
-    "ava": "^3.15.0",
+    "ava": "^6.4.1",
     "codecov": "^3.8.2",
     "cspell": "^6.19.2",
     "node-addon-api": "^8.3.1",
@@ -82,10 +82,12 @@
     "timeout": "60s",
     "typescript": {
       "rewritePaths": {
-        "src/": "dist/main/"
-      }
+        "test/": "dist/test/"
+      },
+      "compile": false
     },
     "files": [
+      "test/**/*.spec.ts",
       "!dist/module/**"
     ]
   },

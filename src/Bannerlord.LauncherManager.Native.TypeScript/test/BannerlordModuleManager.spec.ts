@@ -1,8 +1,8 @@
 import test from 'ava';
 
 import { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml } from './_data';
-import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType } from '../lib/types';
-import { BannerlordModuleManager, allocAliveCount } from '../lib';
+import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType } from '../src/types';
+import { BannerlordModuleManager, allocAliveCount } from '../src';
 
 const isDebug = process.argv[2] == "Debug";
 

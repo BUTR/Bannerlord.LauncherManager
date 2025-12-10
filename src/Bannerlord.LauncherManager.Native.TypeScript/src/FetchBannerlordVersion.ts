@@ -8,7 +8,7 @@ export class FetchBannerlordVersion {
 
   private static initialize() {
     if (FetchBannerlordVersion.addon === undefined) {
-      FetchBannerlordVersion.addon = require('./../../launchermanager.node');
+      FetchBannerlordVersion.addon = require('./../launchermanager.node');
     }
   }
 

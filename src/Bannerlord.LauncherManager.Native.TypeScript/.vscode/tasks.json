@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-ts",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "./commands.ps1",
+                "build-ts"
+            ],
+            "group": "build",
+            "problemMatcher": ["$tsc"]
+        }
+    ]
+}

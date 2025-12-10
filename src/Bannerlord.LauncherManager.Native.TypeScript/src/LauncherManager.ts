@@ -20,7 +20,7 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
     getOptionsAsync: () => Promise<types.LauncherOptions>,
     getStateAsync: () => Promise<types.LauncherState>) {
 
-    const addon: types.INativeExtension = require('./../../launchermanager.node');
+    const addon: types.INativeExtension = require('./../launchermanager.node');
     this.manager = new addon.LauncherManager(
       setGameParametersAsync,
       sendNotificationAsync,

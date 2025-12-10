@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "composite": false,
+    "outDir": "dist/test",
+    "rootDir": "test",
+    "declaration": false,
+    "declarationMap": false,
+    "noUnusedParameters": false,
+    "baseUrl": ".",
+    "paths": {
+      "../src": ["./dist/main"],
+      "../src/*": ["./dist/main/*"]
+    }
+  },
+  "include": [
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules/**"
+  ],
+  "references": [
+    { "path": "./tsconfig.json" }
+  ]
+}

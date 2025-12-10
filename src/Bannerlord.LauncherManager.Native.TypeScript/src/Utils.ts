@@ -8,7 +8,7 @@ export class Utils {
 
   private static initialize() {
     if (Utils.addon === undefined) {
-      Utils.addon = require('./../../launchermanager.node');
+      Utils.addon = require('./../launchermanager.node');
     }
   }
 

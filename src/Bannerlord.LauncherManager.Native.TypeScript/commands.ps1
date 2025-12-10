@@ -43,8 +43,15 @@ try {
         Write-Host "Building @butr/vortexextensionnative";
 
         Invoke-Command -ScriptBlock {
+            # Build main library first
             npx tsc -p tsconfig.json;
             npx tsc -p tsconfig.module.json;
+            # Build tests
+            npx tsc -p tsconfig.test.json;
+        }
+        # Rewrite test imports: ../src -> ../main (tests import from src, but runtime needs dist/main)
+        Get-ChildItem -Path "dist/test" -Filter "*.js" -Recurse | ForEach-Object {
+            (Get-Content $_.FullName) -replace '\.\./src', '../main' | Set-Content $_.FullName
         }
     }
     if ($type -eq "build" -or $type -eq "test" -or $type -eq "test-build" -or $type -eq "build-content") {
@@ -52,14 +59,10 @@ try {
 
         Copy-Item2 -Path "Bannerlord.LauncherManager.Native.dll" -Destination "dist" | Out-Null;
         Copy-Item2 -Path "build/$Configuration/launchermanager.node" -Destination "dist" | Out-Null;
-        
-        Copy-Item2 -Path "src/test/Version.xml" -Destination "dist/main/test/bin/Win64_Shipping_Client/" | Out-Null;
-        Copy-Item2 -Path "src/test/Harmony.xml" -Destination "dist/main/test/Modules/Bannerlord.Harmony/SubModule.xml" | Out-Null;
-        Copy-Item2 -Path "src/test/UIExtenderEx.xml" -Destination "dist/main/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml" | Out-Null;
-        
-        Copy-Item2 -Path "src/test/Version.xml" -Destination "dist/module/test/bin/Win64_Shipping_Client/" | Out-Null;
-        Copy-Item2 -Path "src/test/Harmony.xml" -Destination "dist/module/test/Modules/Bannerlord.Harmony/SubModule.xml" | Out-Null;
-        Copy-Item2 -Path "src/test/UIExtenderEx.xml" -Destination "dist/module/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml" | Out-Null;
+
+        Copy-Item2 -Path "test/Version.xml" -Destination "dist/test/bin/Win64_Shipping_Client/" | Out-Null;
+        Copy-Item2 -Path "test/Harmony.xml" -Destination "dist/test/Modules/Bannerlord.Harmony/SubModule.xml" | Out-Null;
+        Copy-Item2 -Path "test/UIExtenderEx.xml" -Destination "dist/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml" | Out-Null;
     }
     if ($type -eq "test" -or $type -eq "test-build" -or $type -eq "test-no-build") {
         Write-Host "Testing with Configuration $Configuration";
