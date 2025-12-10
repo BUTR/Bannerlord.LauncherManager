@@ -108,7 +108,6 @@ namespace Utils
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
         }
         catch (...)
         {
@@ -178,7 +177,6 @@ namespace Utils
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
         }
         catch (...)
         {
@@ -248,7 +246,6 @@ namespace Utils
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
         }
         catch (...)
         {
@@ -307,7 +304,6 @@ namespace Utils
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
         }
         catch (...)
         {
@@ -328,15 +324,6 @@ namespace Utils
         return conv.from_bytes(e.Message());
     }
 
-    // Helper to check if a Napi::Value is a Promise
-    inline bool IsPromise(const Napi::Value &value)
-    {
-        if (!value.IsObject())
-            return false;
-        const auto obj = value.As<Napi::Object>();
-        return obj.Has("then") && obj.Get("then").IsFunction();
-    }
-
     // Helper to handle Promise results for string-returning callbacks
     // If jsResult is a Promise, attaches then/catch handlers that will call the callback
     // If jsResult is not a Promise, calls the callback immediately with the result
@@ -350,7 +337,7 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (IsPromise(jsResult))
+        if (jsResult.IsPromise())
         {
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
@@ -412,7 +399,7 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (IsPromise(jsResult))
+        if (jsResult.IsPromise())
         {
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
@@ -474,7 +461,7 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (IsPromise(jsResult))
+        if (jsResult.IsPromise())
         {
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
@@ -536,7 +523,7 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (IsPromise(jsResult))
+        if (jsResult.IsPromise())
         {
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();

@@ -181,6 +181,7 @@ namespace Bindings::LauncherManager
         this->FWriteFileContent.Unref();
         this->FReadDirectoryFileList.Unref();
         this->FReadDirectoryList.Unref();
+        this->FGetAllModuleViewModels.Unref();
         this->FGetModuleViewModels.Unref();
         this->FSetModuleViewModels.Unref();
         this->FGetOptions.Unref();
