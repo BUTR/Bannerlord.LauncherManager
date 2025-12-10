@@ -45,6 +45,7 @@ namespace Bindings::LauncherManager
         Napi::ThreadSafeFunction TSFNSetModuleViewModels;
         Napi::ThreadSafeFunction TSFNGetOptions;
         Napi::ThreadSafeFunction TSFNGetState;
+        Napi::ThreadSafeFunction TSFN; // Promise-handling trampoline
 
         std::thread::id MainThreadId;
         
