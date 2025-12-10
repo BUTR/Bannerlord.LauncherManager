@@ -354,7 +354,6 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[SortAsync] invoked" << std::endl;
 
         try
         {
@@ -364,9 +363,7 @@ namespace Bindings::LauncherManager
             const auto deferred = cbData->deferred;
             const auto tsfn = cbData->tsfn;
 
-            std::cout << "[SortAsync] Calling ve_sort_async" << std::endl;
             const auto result = ve_sort_async(this->_pInstance, cbData, HandleVoidResultCallback);
-            std::cout << "[SortAsync] ve_sort_async returned" << std::endl;
             return ReturnAndHandleReject(env, result, deferred, tsfn);
         }
         catch (const Napi::Error &e)

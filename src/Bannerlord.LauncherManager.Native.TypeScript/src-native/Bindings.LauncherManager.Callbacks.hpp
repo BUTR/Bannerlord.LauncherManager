@@ -4,7 +4,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include <iostream>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
 #include "Utils.Callbacks.hpp"
@@ -21,14 +20,12 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[setGameParameters] invoked" << std::endl;
         try
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[setGameParameters] On main thread" << std::endl;
                 const auto env = manager->FSetGameParameters.Env();
 
                 const auto executable = p_executable == nullptr ? env.Null() : String::New(env, p_executable);
@@ -36,15 +33,12 @@ namespace Bindings::LauncherManager
                 const auto jsResult = manager->FSetGameParameters.Call({executable, gameParameters});
 
                 HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
-                std::cout << "[setGameParameters] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
-                std::cout << "[setGameParameters] Not on main thread, using TSFN" << std::endl;
                 const auto callback = [functionName, manager, p_executable, p_game_parameters, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
                 {
-                    std::cout << "[setGameParameters] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
@@ -59,7 +53,6 @@ namespace Bindings::LauncherManager
                         callbackLogger.LogError(e);
                         p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                     }
-                    std::cout << "[setGameParameters] TSFN callback done" << std::endl;
                 };
 
                 const auto status = manager->TSFN.NonBlockingCall(callback);
@@ -68,7 +61,6 @@ namespace Bindings::LauncherManager
                     logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
-                std::cout << "[setGameParameters] NonBlockingCall queued, returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
         }
@@ -93,14 +85,12 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[sendNotification] invoked" << std::endl;
         try
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[sendNotification] On main thread" << std::endl;
                 const auto env = manager->FSendNotification.Env();
 
                 const auto id = p_id == nullptr ? env.Null() : String::New(env, p_id);
@@ -110,15 +100,12 @@ namespace Bindings::LauncherManager
                 const auto jsResult = manager->FSendNotification.Call({id, type, message, displayMs_});
 
                 HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
-                std::cout << "[sendNotification] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
-                std::cout << "[sendNotification] Not on main thread, using TSFN" << std::endl;
                 const auto callback = [functionName, manager, p_id, p_type, p_message, displayMs, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
                 {
-                    std::cout << "[sendNotification] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
@@ -135,7 +122,6 @@ namespace Bindings::LauncherManager
                         callbackLogger.LogError(e);
                         p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                     }
-                    std::cout << "[sendNotification] TSFN callback done" << std::endl;
                 };
 
                 const auto status = manager->TSFN.NonBlockingCall(callback);
@@ -144,7 +130,6 @@ namespace Bindings::LauncherManager
                     logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
-                std::cout << "[sendNotification] NonBlockingCall queued, returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
         }
@@ -176,25 +161,20 @@ namespace Bindings::LauncherManager
             // Create resolve/reject handlers that will invoke the callback
             const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
             {
-                std::cout << "[sendDialog onResolve] Handler invoked" << std::endl;
                 const auto env = info.Env();
                 const auto result = info[0];
                 if (result.IsNull() || result.IsUndefined())
                 {
-                    std::cout << "[sendDialog onResolve] Result is null/undefined" << std::endl;
                     p_callback(p_callback_handler, Create(return_value_string{nullptr, nullptr}));
                 }
                 else
                 {
                     const auto resultStr = result.As<Napi::String>();
-                    std::cout << "[sendDialog onResolve] Result: " << resultStr.Utf8Value() << std::endl;
                     p_callback(p_callback_handler, Create(return_value_string{nullptr, Copy(resultStr.Utf16Value())}));
                 }
-                std::cout << "[sendDialog onResolve] Handler completed" << std::endl;
             };
             const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
             {
-                std::cout << "[sendDialog onReject] Handler invoked" << std::endl;
                 const auto env = info.Env();
                 if (info.Length() == 0)
                 {
@@ -205,7 +185,6 @@ namespace Bindings::LauncherManager
                     const auto error = info[0].As<Napi::Error>();
                     p_callback(p_callback_handler, Create(return_value_string{Copy(GetErrorMessage(error)), nullptr}));
                 }
-                std::cout << "[sendDialog onReject] Handler completed" << std::endl;
             };
 
             // Use the TSFN trampoline pattern - queue the work and let the promise resolve asynchronously
@@ -228,7 +207,6 @@ namespace Bindings::LauncherManager
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[sendDialog] On main thread, calling FSendDialog directly" << std::endl;
                 // On main thread, call directly without blocking (since blocking would deadlock)
                 const auto env = manager->FSendDialog.Env();
                 const auto type = p_type == nullptr ? env.Null() : String::New(env, p_type);
@@ -236,16 +214,13 @@ namespace Bindings::LauncherManager
                 const auto message = p_message == nullptr ? env.Null() : String::New(env, p_message);
                 const auto filters = p_filters == nullptr ? env.Null() : JSONParse(String::New(env, p_filters));
 
-                std::cout << "[sendDialog] Calling FSendDialog.Call()" << std::endl;
                 const auto promise = manager->FSendDialog.Call({type, title, message, filters}).As<Napi::Promise>();
-                std::cout << "[sendDialog] Got promise, attaching .then() handlers" << std::endl;
 
                 // Attach .then() handlers directly
                 const auto onResolveCallback = Napi::Function::New(env, onResolve);
                 const auto onRejectCallback = Napi::Function::New(env, onReject);
                 const auto then = promise.Get("then").As<Napi::Function>();
                 then.Call(promise, {onResolveCallback, onRejectCallback});
-                std::cout << "[sendDialog] .then() handlers attached, returning" << std::endl;
             }
             else
             {
@@ -282,21 +257,17 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[getInstallPath] invoked" << std::endl;
         try
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[getInstallPath] On main thread" << std::endl;
                 const auto env = manager->FGetInstallPath.Env();
 
                 const auto jsResult = manager->FGetInstallPath.Call({});
-                std::cout << "[getInstallPath] FGetInstallPath.Call() returned" << std::endl;
 
                 HandleStringPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
-                std::cout << "[getInstallPath] HandleStringPromiseOrValue done, returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
@@ -684,25 +655,21 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[getAllModuleViewModels] invoked" << std::endl;
         try
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[getAllModuleViewModels] On main thread" << std::endl;
                 const auto env = manager->FGetAllModuleViewModels.Env();
 
                 const auto jsResult = manager->FGetAllModuleViewModels.Call({});
 
                 HandleJsonPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
-                std::cout << "[getAllModuleViewModels] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
-                std::cout << "[getAllModuleViewModels] Not on main thread, using BlockingCall" << std::endl;
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
@@ -710,7 +677,6 @@ namespace Bindings::LauncherManager
 
                 const auto callback = [functionName, manager, p_callback_handler, p_callback, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
-                    std::cout << "[getAllModuleViewModels] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
@@ -727,24 +693,19 @@ namespace Bindings::LauncherManager
                         completed = true;
                         cv.notify_one();
                     }
-                    std::cout << "[getAllModuleViewModels] TSFN callback done" << std::endl;
                 };
 
-                std::cout << "[getAllModuleViewModels] Calling TSFNGetAllModuleViewModels.BlockingCall" << std::endl;
                 const auto status = manager->TSFNGetAllModuleViewModels.BlockingCall(callback);
-                std::cout << "[getAllModuleViewModels] BlockingCall returned, status=" << status << std::endl;
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
 
-                std::cout << "[getAllModuleViewModels] Waiting on cv" << std::endl;
                 std::unique_lock<std::mutex> lock(mtx);
                 cv.wait(lock, [&completed]
                         { return completed; });
 
-                std::cout << "[getAllModuleViewModels] cv.wait completed" << std::endl;
                 logger.Log("Blocking call completed");
                 return result;
             }
@@ -846,29 +807,24 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[setModuleViewModels] invoked" << std::endl;
         try
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[setModuleViewModels] On main thread" << std::endl;
                 const auto env = manager->FSetModuleViewModels.Env();
 
                 const auto moduleViewModels = p_module_view_models == nullptr ? env.Null() : JSONParse(Napi::String::New(env, p_module_view_models));
                 const auto jsResult = manager->FSetModuleViewModels.Call({moduleViewModels});
 
                 HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
-                std::cout << "[setModuleViewModels] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
-                std::cout << "[setModuleViewModels] Not on main thread, using TSFN" << std::endl;
                 const auto callback = [functionName, manager, p_module_view_models, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
                 {
-                    std::cout << "[setModuleViewModels] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
@@ -882,7 +838,6 @@ namespace Bindings::LauncherManager
                         callbackLogger.LogError(e);
                         p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                     }
-                    std::cout << "[setModuleViewModels] TSFN callback done" << std::endl;
                 };
 
                 const auto status = manager->TSFN.NonBlockingCall(callback);
@@ -891,7 +846,6 @@ namespace Bindings::LauncherManager
                     logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
-                std::cout << "[setModuleViewModels] NonBlockingCall queued, returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
         }
@@ -916,14 +870,12 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[getOptions] invoked" << std::endl;
         try
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
-                std::cout << "[getOptions] On main thread" << std::endl;
                 const auto env = manager->FGetOptions.Env();
 
                 const auto jsResult = manager->FGetOptions.Call({});
@@ -933,7 +885,6 @@ namespace Bindings::LauncherManager
             }
             else
             {
-                std::cout << "[getOptions] Not on main thread, using BlockingCall" << std::endl;
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
@@ -941,7 +892,6 @@ namespace Bindings::LauncherManager
 
                 const auto callback = [functionName, manager, p_callback_handler, p_callback, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
-                    std::cout << "[getOptions] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
@@ -958,10 +908,8 @@ namespace Bindings::LauncherManager
                         completed = true;
                         cv.notify_one();
                     }
-                    std::cout << "[getOptions] TSFN callback done" << std::endl;
                 };
 
-                std::cout << "[getOptions] Calling TSFNGetOptions.BlockingCall" << std::endl;
                 const auto status = manager->TSFNGetOptions.BlockingCall(callback);
                 if (status != napi_ok)
                 {

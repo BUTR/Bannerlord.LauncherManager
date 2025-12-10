@@ -3,7 +3,6 @@
 
 #include <napi.h>
 #include <codecvt>
-#include <iostream>
 #include "Logger.hpp"
 #include "Utils.Generic.hpp"
 #include "Utils.JS.hpp"
@@ -64,7 +63,6 @@ namespace Utils
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[HandleVoidResultCallback] invoked" << std::endl;
         try
         {
             auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
@@ -72,14 +70,12 @@ namespace Utils
 
             const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
             {
-                std::cout << "[HandleVoidResultCallback] TSFN callback invoked" << std::endl;
                 LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
 
                 del_void del{returnData};
 
                 if (returnData == nullptr)
                 {
-                    std::cout << "[HandleVoidResultCallback] Null return data" << std::endl;
                     callbackLogger.Log("Null return data");
                     const auto isError = Napi::Boolean::New(env, true);
                     const auto error = Napi::Error::New(env, "Return value was null!").Value();
@@ -89,7 +85,6 @@ namespace Utils
 
                 if (returnData->error != nullptr)
                 {
-                    std::cout << "[HandleVoidResultCallback] Error" << std::endl;
                     callbackLogger.Log("Error");
                     const auto isError = Napi::Boolean::New(env, true);
                     const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
@@ -98,18 +93,13 @@ namespace Utils
                 }
                 else
                 {
-                    std::cout << "[HandleVoidResultCallback] Resolving" << std::endl;
                     callbackLogger.Log("Resolving");
                     jsCallback.Call({});
                 }
-                std::cout << "[HandleVoidResultCallback] TSFN callback completed" << std::endl;
             };
 
-            std::cout << "[HandleVoidResultCallback] Calling NonBlockingCall" << std::endl;
             manager->tsfn.NonBlockingCall(callback);
-            std::cout << "[HandleVoidResultCallback] Calling Release" << std::endl;
             manager->tsfn.Release();
-            std::cout << "[HandleVoidResultCallback] Done" << std::endl;
         }
         catch (const Napi::Error &e)
         {
@@ -130,7 +120,6 @@ namespace Utils
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[HandleJsonResultCallback] invoked" << std::endl;
         try
         {
             auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
@@ -138,14 +127,12 @@ namespace Utils
 
             const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
             {
-                std::cout << "[HandleJsonResultCallback] TSFN callback invoked" << std::endl;
                 LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
 
                 del_json del{returnData};
 
                 if (returnData == nullptr)
                 {
-                    std::cout << "[HandleJsonResultCallback] Null return data" << std::endl;
                     callbackLogger.Log("Null return data");
                     const auto isError = Napi::Boolean::New(env, true);
                     const auto error = Napi::Error::New(env, "Return value was null!").Value();
@@ -155,7 +142,6 @@ namespace Utils
 
                 if (returnData->error != nullptr)
                 {
-                    std::cout << "[HandleJsonResultCallback] Error" << std::endl;
                     callbackLogger.Log("Error");
                     const auto isError = Napi::Boolean::New(env, true);
                     const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
@@ -164,33 +150,26 @@ namespace Utils
                 }
                 else
                 {
-                    std::cout << "[HandleJsonResultCallback] Resolving" << std::endl;
                     callbackLogger.Log("Resolving");
                     const auto isError = Napi::Boolean::New(env, false);
                     if (returnData->value == nullptr)
                     {
-                        std::cout << "[HandleJsonResultCallback] Result is null" << std::endl;
                         callbackLogger.Log("Result is null");
                         const auto result = env.Null();
                         jsCallback.Call({isError, result});
                     }
                     else
                     {
-                        std::cout << "[HandleJsonResultCallback] Result is not null" << std::endl;
                         callbackLogger.Log("Result is not null");
                         const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
                         const auto result = JSONParse(Napi::String::New(env, resultStr.get()));
                         jsCallback.Call({isError, result});
                     }
                 }
-                std::cout << "[HandleJsonResultCallback] TSFN callback completed" << std::endl;
             };
 
-            std::cout << "[HandleJsonResultCallback] Calling NonBlockingCall" << std::endl;
             manager->tsfn.NonBlockingCall(callback);
-            std::cout << "[HandleJsonResultCallback] Calling Release" << std::endl;
             manager->tsfn.Release();
-            std::cout << "[HandleJsonResultCallback] Done" << std::endl;
         }
         catch (const Napi::Error &e)
         {
@@ -211,7 +190,6 @@ namespace Utils
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        std::cout << "[HandleStringResultCallback] invoked" << std::endl;
         try
         {
             auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
@@ -219,14 +197,12 @@ namespace Utils
 
             const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
             {
-                std::cout << "[HandleStringResultCallback] TSFN callback invoked" << std::endl;
                 LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
 
                 del_string del{returnData};
 
                 if (returnData == nullptr)
                 {
-                    std::cout << "[HandleStringResultCallback] Null return data" << std::endl;
                     callbackLogger.Log("Null return data");
                     const auto isError = Napi::Boolean::New(env, true);
                     const auto error = Napi::Error::New(env, "Return value was null!").Value();
@@ -236,7 +212,6 @@ namespace Utils
 
                 if (returnData->error != nullptr)
                 {
-                    std::cout << "[HandleStringResultCallback] Error" << std::endl;
                     callbackLogger.Log("Error");
                     const auto isError = Napi::Boolean::New(env, true);
                     const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
@@ -245,33 +220,26 @@ namespace Utils
                 }
                 else
                 {
-                    std::cout << "[HandleStringResultCallback] Resolving" << std::endl;
                     callbackLogger.Log("Resolving");
                     const auto isError = Napi::Boolean::New(env, false);
                     if (returnData->value == nullptr)
                     {
-                        std::cout << "[HandleStringResultCallback] Result is null" << std::endl;
                         callbackLogger.Log("Result is null");
                         const auto result = env.Null();
                         jsCallback.Call({isError, result});
                     }
                     else
                     {
-                        std::cout << "[HandleStringResultCallback] Result is not null" << std::endl;
                         callbackLogger.Log("Result is not null");
                         const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
                         const auto result = Napi::String::New(env, resultStr.get());
                         jsCallback.Call({isError, result});
                     }
                 }
-                std::cout << "[HandleStringResultCallback] TSFN callback completed" << std::endl;
             };
 
-            std::cout << "[HandleStringResultCallback] Calling NonBlockingCall" << std::endl;
             manager->tsfn.NonBlockingCall(callback);
-            std::cout << "[HandleStringResultCallback] Calling Release" << std::endl;
             manager->tsfn.Release();
-            std::cout << "[HandleStringResultCallback] Done" << std::endl;
         }
         catch (const Napi::Error &e)
         {
@@ -382,33 +350,26 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        std::cout << "[HandleStringPromiseOrValue] invoked, mtx=" << (mtx ? "yes" : "no") << std::endl;
         if (IsPromise(jsResult))
         {
-            std::cout << "[HandleStringPromiseOrValue] jsResult is Promise" << std::endl;
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
 
             // Create resolve handler
             auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                  {
-                std::cout << "[HandleStringPromiseOrValue onResolve] handler invoked" << std::endl;
                 const auto resolvedValue = info[0];
                 p_callback(p_callback_handler, ConvertToStringResult(resolvedValue));
-                std::cout << "[HandleStringPromiseOrValue onResolve] p_callback done" << std::endl;
                 if (mtx && cv && completed && result) {
-                    std::cout << "[HandleStringPromiseOrValue onResolve] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
                     cv->notify_one();
-                    std::cout << "[HandleStringPromiseOrValue onResolve] cv signaled" << std::endl;
                 } });
 
             // Create reject handler
             auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                 {
-                std::cout << "[HandleStringPromiseOrValue onReject] handler invoked" << std::endl;
                 const auto error = info[0];
                 std::u16string errorMsg = u"Promise rejected";
                 if (error.IsObject()) {
@@ -419,7 +380,6 @@ namespace Utils
                 }
                 p_callback(p_callback_handler, Create(return_value_string{Copy(errorMsg), nullptr}));
                 if (mtx && cv && completed && result) {
-                    std::cout << "[HandleStringPromiseOrValue onReject] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
@@ -427,22 +387,18 @@ namespace Utils
                 } });
 
             then.Call(promise, {onResolve, onReject});
-            std::cout << "[HandleStringPromiseOrValue] .then() attached" << std::endl;
         }
         else
         {
-            std::cout << "[HandleStringPromiseOrValue] jsResult is not Promise" << std::endl;
             p_callback(p_callback_handler, ConvertToStringResult(jsResult));
             if (mtx && cv && completed && result)
             {
-                std::cout << "[HandleStringPromiseOrValue] signaling cv (non-Promise)" << std::endl;
                 std::lock_guard<std::mutex> lock(*mtx);
                 *result = Create(return_value_void{nullptr});
                 *completed = true;
                 cv->notify_one();
             }
         }
-        std::cout << "[HandleStringPromiseOrValue] done" << std::endl;
     }
 
     // Helper to handle Promise results for JSON-returning callbacks
@@ -456,33 +412,26 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        std::cout << "[HandleJsonPromiseOrValue] invoked, mtx=" << (mtx ? "yes" : "no") << std::endl;
         if (IsPromise(jsResult))
         {
-            std::cout << "[HandleJsonPromiseOrValue] jsResult is Promise" << std::endl;
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
 
             // Create resolve handler
             auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                  {
-                std::cout << "[HandleJsonPromiseOrValue onResolve] handler invoked" << std::endl;
                 const auto resolvedValue = info[0];
                 p_callback(p_callback_handler, ConvertToJsonResult(resolvedValue));
-                std::cout << "[HandleJsonPromiseOrValue onResolve] p_callback done" << std::endl;
                 if (mtx && cv && completed && result) {
-                    std::cout << "[HandleJsonPromiseOrValue onResolve] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
                     cv->notify_one();
-                    std::cout << "[HandleJsonPromiseOrValue onResolve] cv signaled" << std::endl;
                 } });
 
             // Create reject handler
             auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                 {
-                std::cout << "[HandleJsonPromiseOrValue onReject] handler invoked" << std::endl;
                 const auto error = info[0];
                 std::u16string errorMsg = u"Promise rejected";
                 if (error.IsObject()) {
@@ -493,7 +442,6 @@ namespace Utils
                 }
                 p_callback(p_callback_handler, Create(return_value_json{Copy(errorMsg), nullptr}));
                 if (mtx && cv && completed && result) {
-                    std::cout << "[HandleJsonPromiseOrValue onReject] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
@@ -501,22 +449,18 @@ namespace Utils
                 } });
 
             then.Call(promise, {onResolve, onReject});
-            std::cout << "[HandleJsonPromiseOrValue] .then() attached" << std::endl;
         }
         else
         {
-            std::cout << "[HandleJsonPromiseOrValue] jsResult is not Promise" << std::endl;
             p_callback(p_callback_handler, ConvertToJsonResult(jsResult));
             if (mtx && cv && completed && result)
             {
-                std::cout << "[HandleJsonPromiseOrValue] signaling cv (non-Promise)" << std::endl;
                 std::lock_guard<std::mutex> lock(*mtx);
                 *result = Create(return_value_void{nullptr});
                 *completed = true;
                 cv->notify_one();
             }
         }
-        std::cout << "[HandleJsonPromiseOrValue] done" << std::endl;
     }
 
     // Helper to handle Promise results for data-returning callbacks
@@ -592,32 +536,25 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        std::cout << "[HandleVoidPromiseOrValue] invoked, mtx=" << (mtx ? "yes" : "no") << std::endl;
         if (IsPromise(jsResult))
         {
-            std::cout << "[HandleVoidPromiseOrValue] jsResult is Promise" << std::endl;
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
 
             // Create resolve handler
             auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                  {
-                std::cout << "[HandleVoidPromiseOrValue onResolve] handler invoked" << std::endl;
                 p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-                std::cout << "[HandleVoidPromiseOrValue onResolve] p_callback done" << std::endl;
                 if (mtx && cv && completed && result) {
-                    std::cout << "[HandleVoidPromiseOrValue onResolve] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
                     cv->notify_one();
-                    std::cout << "[HandleVoidPromiseOrValue onResolve] cv signaled" << std::endl;
                 } });
 
             // Create reject handler
             auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                 {
-                std::cout << "[HandleVoidPromiseOrValue onReject] handler invoked" << std::endl;
                 const auto error = info[0];
                 std::u16string errorMsg = u"Promise rejected";
                 if (error.IsObject()) {
@@ -628,7 +565,6 @@ namespace Utils
                 }
                 p_callback(p_callback_handler, Create(return_value_void{Copy(errorMsg)}));
                 if (mtx && cv && completed && result) {
-                    std::cout << "[HandleVoidPromiseOrValue onReject] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
@@ -636,22 +572,18 @@ namespace Utils
                 } });
 
             then.Call(promise, {onResolve, onReject});
-            std::cout << "[HandleVoidPromiseOrValue] .then() attached" << std::endl;
         }
         else
         {
-            std::cout << "[HandleVoidPromiseOrValue] jsResult is not Promise" << std::endl;
             p_callback(p_callback_handler, Create(return_value_void{nullptr}));
             if (mtx && cv && completed && result)
             {
-                std::cout << "[HandleVoidPromiseOrValue] signaling cv (non-Promise)" << std::endl;
                 std::lock_guard<std::mutex> lock(*mtx);
                 *result = Create(return_value_void{nullptr});
                 *completed = true;
                 cv->notify_one();
             }
         }
-        std::cout << "[HandleVoidPromiseOrValue] done" << std::endl;
     }
 }
 
