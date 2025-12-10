@@ -324,9 +324,94 @@ namespace Utils
         return conv.from_bytes(e.Message());
     }
 
-    // Helper to handle Promise results for string-returning callbacks
-    // If jsResult is a Promise, attaches then/catch handlers that will call the callback
-    // If jsResult is not a Promise, calls the callback immediately with the result
+    // Template specializations to create error results for each return type
+    template <typename T>
+    T *CreateErrorResult(const std::u16string &errorMsg);
+
+    template <>
+    inline return_value_string *CreateErrorResult(const std::u16string &errorMsg)
+    {
+        return Create(return_value_string{Copy(errorMsg), nullptr});
+    }
+
+    template <>
+    inline return_value_json *CreateErrorResult(const std::u16string &errorMsg)
+    {
+        return Create(return_value_json{Copy(errorMsg), nullptr});
+    }
+
+    template <>
+    inline return_value_data *CreateErrorResult(const std::u16string &errorMsg)
+    {
+        return Create(return_value_data{Copy(errorMsg), nullptr, 0});
+    }
+
+    template <>
+    inline return_value_void *CreateErrorResult(const std::u16string &errorMsg)
+    {
+        return Create(return_value_void{Copy(errorMsg)});
+    }
+
+    // Generic template for handling Promise or immediate value results
+    // TReturnValue: the return value type (e.g., return_value_string, return_value_json)
+    // TConverter: callable that converts Napi::Value to TReturnValue*
+    template <typename TReturnValue, typename TConverter>
+    inline void HandlePromiseOrValue(
+        const Napi::Env &env,
+        const Napi::Value &jsResult,
+        param_ptr *p_callback_handler,
+        void (*p_callback)(param_ptr *, TReturnValue *),
+        TConverter converter,
+        std::mutex *mtx = nullptr,
+        std::condition_variable *cv = nullptr,
+        bool *completed = nullptr,
+        return_value_void **result = nullptr)
+    {
+        auto signalCompletion = [mtx, cv, completed, result]()
+        {
+            if (mtx && cv && completed && result)
+            {
+                std::lock_guard<std::mutex> lock(*mtx);
+                *result = Create(return_value_void{nullptr});
+                *completed = true;
+                cv->notify_one();
+            }
+        };
+
+        if (jsResult.IsPromise())
+        {
+            const auto promise = jsResult.As<Napi::Object>();
+            const auto then = promise.Get("then").As<Napi::Function>();
+
+            auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, converter, signalCompletion](const Napi::CallbackInfo &info)
+                                                 {
+                const auto resolvedValue = info[0];
+                p_callback(p_callback_handler, converter(resolvedValue));
+                signalCompletion(); });
+
+            auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, signalCompletion](const Napi::CallbackInfo &info)
+                                                {
+                const auto error = info[0];
+                std::u16string errorMsg = u"Promise rejected";
+                if (error.IsObject()) {
+                    const auto errorObj = error.As<Napi::Object>();
+                    if (errorObj.Has("message")) {
+                        errorMsg = errorObj.Get("message").As<Napi::String>().Utf16Value();
+                    }
+                }
+                p_callback(p_callback_handler, CreateErrorResult<TReturnValue>(errorMsg));
+                signalCompletion(); });
+
+            then.Call(promise, {onResolve, onReject});
+        }
+        else
+        {
+            p_callback(p_callback_handler, converter(jsResult));
+            signalCompletion();
+        }
+    }
+
+    // Convenience wrappers for backward compatibility
     inline void HandleStringPromiseOrValue(
         const Napi::Env &env,
         const Napi::Value &jsResult,
@@ -337,58 +422,9 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (jsResult.IsPromise())
-        {
-            const auto promise = jsResult.As<Napi::Object>();
-            const auto then = promise.Get("then").As<Napi::Function>();
-
-            // Create resolve handler
-            auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                 {
-                const auto resolvedValue = info[0];
-                p_callback(p_callback_handler, ConvertToStringResult(resolvedValue));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            // Create reject handler
-            auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                {
-                const auto error = info[0];
-                std::u16string errorMsg = u"Promise rejected";
-                if (error.IsObject()) {
-                    const auto errorObj = error.As<Napi::Object>();
-                    if (errorObj.Has("message")) {
-                        errorMsg = errorObj.Get("message").As<Napi::String>().Utf16Value();
-                    }
-                }
-                p_callback(p_callback_handler, Create(return_value_string{Copy(errorMsg), nullptr}));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            then.Call(promise, {onResolve, onReject});
-        }
-        else
-        {
-            p_callback(p_callback_handler, ConvertToStringResult(jsResult));
-            if (mtx && cv && completed && result)
-            {
-                std::lock_guard<std::mutex> lock(*mtx);
-                *result = Create(return_value_void{nullptr});
-                *completed = true;
-                cv->notify_one();
-            }
-        }
+        HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback, ConvertToStringResult, mtx, cv, completed, result);
     }
 
-    // Helper to handle Promise results for JSON-returning callbacks
     inline void HandleJsonPromiseOrValue(
         const Napi::Env &env,
         const Napi::Value &jsResult,
@@ -399,58 +435,9 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (jsResult.IsPromise())
-        {
-            const auto promise = jsResult.As<Napi::Object>();
-            const auto then = promise.Get("then").As<Napi::Function>();
-
-            // Create resolve handler
-            auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                 {
-                const auto resolvedValue = info[0];
-                p_callback(p_callback_handler, ConvertToJsonResult(resolvedValue));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            // Create reject handler
-            auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                {
-                const auto error = info[0];
-                std::u16string errorMsg = u"Promise rejected";
-                if (error.IsObject()) {
-                    const auto errorObj = error.As<Napi::Object>();
-                    if (errorObj.Has("message")) {
-                        errorMsg = errorObj.Get("message").As<Napi::String>().Utf16Value();
-                    }
-                }
-                p_callback(p_callback_handler, Create(return_value_json{Copy(errorMsg), nullptr}));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            then.Call(promise, {onResolve, onReject});
-        }
-        else
-        {
-            p_callback(p_callback_handler, ConvertToJsonResult(jsResult));
-            if (mtx && cv && completed && result)
-            {
-                std::lock_guard<std::mutex> lock(*mtx);
-                *result = Create(return_value_void{nullptr});
-                *completed = true;
-                cv->notify_one();
-            }
-        }
+        HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback, ConvertToJsonResult, mtx, cv, completed, result);
     }
 
-    // Helper to handle Promise results for data-returning callbacks
     inline void HandleDataPromiseOrValue(
         const Napi::Env &env,
         const Napi::Value &jsResult,
@@ -461,58 +448,9 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (jsResult.IsPromise())
-        {
-            const auto promise = jsResult.As<Napi::Object>();
-            const auto then = promise.Get("then").As<Napi::Function>();
-
-            // Create resolve handler
-            auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                 {
-                const auto resolvedValue = info[0];
-                p_callback(p_callback_handler, ConvertToDataResult(resolvedValue));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            // Create reject handler
-            auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                {
-                const auto error = info[0];
-                std::u16string errorMsg = u"Promise rejected";
-                if (error.IsObject()) {
-                    const auto errorObj = error.As<Napi::Object>();
-                    if (errorObj.Has("message")) {
-                        errorMsg = errorObj.Get("message").As<Napi::String>().Utf16Value();
-                    }
-                }
-                p_callback(p_callback_handler, Create(return_value_data{Copy(errorMsg), nullptr, 0}));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            then.Call(promise, {onResolve, onReject});
-        }
-        else
-        {
-            p_callback(p_callback_handler, ConvertToDataResult(jsResult));
-            if (mtx && cv && completed && result)
-            {
-                std::lock_guard<std::mutex> lock(*mtx);
-                *result = Create(return_value_void{nullptr});
-                *completed = true;
-                cv->notify_one();
-            }
-        }
+        HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback, ConvertToDataResult, mtx, cv, completed, result);
     }
 
-    // Helper to handle Promise results for void-returning callbacks
     inline void HandleVoidPromiseOrValue(
         const Napi::Env &env,
         const Napi::Value &jsResult,
@@ -523,54 +461,9 @@ namespace Utils
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
-        if (jsResult.IsPromise())
-        {
-            const auto promise = jsResult.As<Napi::Object>();
-            const auto then = promise.Get("then").As<Napi::Function>();
-
-            // Create resolve handler
-            auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                 {
-                p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            // Create reject handler
-            auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
-                                                {
-                const auto error = info[0];
-                std::u16string errorMsg = u"Promise rejected";
-                if (error.IsObject()) {
-                    const auto errorObj = error.As<Napi::Object>();
-                    if (errorObj.Has("message")) {
-                        errorMsg = errorObj.Get("message").As<Napi::String>().Utf16Value();
-                    }
-                }
-                p_callback(p_callback_handler, Create(return_value_void{Copy(errorMsg)}));
-                if (mtx && cv && completed && result) {
-                    std::lock_guard<std::mutex> lock(*mtx);
-                    *result = Create(return_value_void{nullptr});
-                    *completed = true;
-                    cv->notify_one();
-                } });
-
-            then.Call(promise, {onResolve, onReject});
-        }
-        else
-        {
-            p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-            if (mtx && cv && completed && result)
-            {
-                std::lock_guard<std::mutex> lock(*mtx);
-                *result = Create(return_value_void{nullptr});
-                *completed = true;
-                cv->notify_one();
-            }
-        }
+        HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback,
+                             [](const Napi::Value &) -> return_value_void * { return Create(return_value_void{nullptr}); },
+                             mtx, cv, completed, result);
     }
 }
 
