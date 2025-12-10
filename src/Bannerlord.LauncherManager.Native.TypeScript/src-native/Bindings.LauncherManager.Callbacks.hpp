@@ -26,27 +26,6 @@ namespace Bindings::LauncherManager
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
-            // Create resolve/reject handlers that will invoke the callback
-            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                std::cout << "[setGameParameters onResolve] handler invoked" << std::endl;
-                p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-            };
-            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                std::cout << "[setGameParameters onReject] handler invoked" << std::endl;
-                const auto env = info.Env();
-                if (info.Length() == 0)
-                {
-                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
-                }
-                else
-                {
-                    const auto error = info[0].As<Napi::Error>();
-                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
-                }
-            };
-
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
                 std::cout << "[setGameParameters] On main thread" << std::endl;
@@ -56,27 +35,14 @@ namespace Bindings::LauncherManager
                 const auto gameParameters = p_game_parameters == nullptr ? env.Null() : JSONParse(String::New(env, p_game_parameters));
                 const auto jsResult = manager->FSetGameParameters.Call({executable, gameParameters});
 
-                if (IsPromise(jsResult))
-                {
-                    std::cout << "[setGameParameters] jsResult is Promise, attaching .then() handlers" << std::endl;
-                    const auto promise = jsResult.As<Napi::Object>();
-                    const auto onResolveCallback = Napi::Function::New(env, onResolve);
-                    const auto onRejectCallback = Napi::Function::New(env, onReject);
-                    const auto then = promise.Get("then").As<Napi::Function>();
-                    then.Call(promise, {onResolveCallback, onRejectCallback});
-                }
-                else
-                {
-                    std::cout << "[setGameParameters] jsResult is not Promise, calling p_callback directly" << std::endl;
-                    p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-                }
+                HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                 std::cout << "[setGameParameters] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
                 std::cout << "[setGameParameters] Not on main thread, using TSFN" << std::endl;
-                const auto callback = [functionName, manager, p_executable, p_game_parameters, onResolve, onReject](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, manager, p_executable, p_game_parameters, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
                 {
                     std::cout << "[setGameParameters] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
@@ -84,16 +50,14 @@ namespace Bindings::LauncherManager
                     {
                         const auto executable = p_executable == nullptr ? env.Null() : String::New(env, p_executable);
                         const auto gameParameters = p_game_parameters == nullptr ? env.Null() : JSONParse(String::New(env, p_game_parameters));
-                        const auto promise = manager->FSetGameParameters.Call({executable, gameParameters});
+                        const auto jsResult = manager->FSetGameParameters.Call({executable, gameParameters});
 
-                        // Pass the promise and handlers to the TSFN trampoline which will attach .then()
-                        const auto onResolveCallback = Napi::Function::New(env, onResolve);
-                        const auto onRejectCallback = Napi::Function::New(env, onReject);
-                        jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+                        HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                     }
                     catch (const Napi::Error &e)
                     {
                         callbackLogger.LogError(e);
+                        p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                     }
                     std::cout << "[setGameParameters] TSFN callback done" << std::endl;
                 };
@@ -134,27 +98,6 @@ namespace Bindings::LauncherManager
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
-            // Create resolve/reject handlers that will invoke the callback
-            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                std::cout << "[sendNotification onResolve] handler invoked" << std::endl;
-                p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-            };
-            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                std::cout << "[sendNotification onReject] handler invoked" << std::endl;
-                const auto env = info.Env();
-                if (info.Length() == 0)
-                {
-                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
-                }
-                else
-                {
-                    const auto error = info[0].As<Napi::Error>();
-                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
-                }
-            };
-
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
                 std::cout << "[sendNotification] On main thread" << std::endl;
@@ -166,27 +109,14 @@ namespace Bindings::LauncherManager
                 const auto displayMs_ = Number::New(env, displayMs);
                 const auto jsResult = manager->FSendNotification.Call({id, type, message, displayMs_});
 
-                if (IsPromise(jsResult))
-                {
-                    std::cout << "[sendNotification] jsResult is Promise, attaching .then() handlers" << std::endl;
-                    const auto promise = jsResult.As<Napi::Object>();
-                    const auto onResolveCallback = Napi::Function::New(env, onResolve);
-                    const auto onRejectCallback = Napi::Function::New(env, onReject);
-                    const auto then = promise.Get("then").As<Napi::Function>();
-                    then.Call(promise, {onResolveCallback, onRejectCallback});
-                }
-                else
-                {
-                    std::cout << "[sendNotification] jsResult is not Promise, calling p_callback directly" << std::endl;
-                    p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-                }
+                HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                 std::cout << "[sendNotification] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
                 std::cout << "[sendNotification] Not on main thread, using TSFN" << std::endl;
-                const auto callback = [functionName, manager, p_id, p_type, p_message, displayMs, onResolve, onReject](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, manager, p_id, p_type, p_message, displayMs, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
                 {
                     std::cout << "[sendNotification] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
@@ -196,16 +126,14 @@ namespace Bindings::LauncherManager
                         const auto type = p_type == nullptr ? env.Null() : String::New(env, p_type);
                         const auto message = p_message == nullptr ? env.Null() : String::New(env, p_message);
                         const auto displayMs_ = Number::New(env, displayMs);
-                        const auto promise = manager->FSendNotification.Call({id, type, message, displayMs_});
+                        const auto jsResult = manager->FSendNotification.Call({id, type, message, displayMs_});
 
-                        // Pass the promise and handlers to the TSFN trampoline which will attach .then()
-                        const auto onResolveCallback = Napi::Function::New(env, onResolve);
-                        const auto onRejectCallback = Napi::Function::New(env, onReject);
-                        jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+                        HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                     }
                     catch (const Napi::Error &e)
                     {
                         callbackLogger.LogError(e);
+                        p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                     }
                     std::cout << "[sendNotification] TSFN callback done" << std::endl;
                 };
@@ -529,7 +457,7 @@ namespace Bindings::LauncherManager
                 const auto data = Buffer<uint8_t>::NewOrCopy(env, p_data, static_cast<size_t>(length));
                 const auto jsResult = manager->FWriteFileContent.Call({filePath, data});
 
-                HandleVoidPromiseOrValue(env, jsResult);
+                HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                 return Create(return_value_void{nullptr});
             }
             else
@@ -539,7 +467,7 @@ namespace Bindings::LauncherManager
                 bool completed = false;
                 return_value_void *result = nullptr;
 
-                const auto callback = [functionName, manager, p_file_path, p_data, length, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, manager, p_file_path, p_data, length, p_callback_handler, p_callback, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -549,13 +477,14 @@ namespace Bindings::LauncherManager
 
                         const auto jsResult = jsCallback.Call({filePath, data});
 
-                        HandleVoidPromiseOrValue(env, jsResult, &mtx, &cv, &completed, &result);
+                        HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback, &mtx, &cv, &completed, &result);
                     }
                     catch (const Napi::Error &e)
                     {
                         callbackLogger.LogError(e);
+                        p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_void{Copy(GetErrorMessage(e))});
+                        result = Create(return_value_void{nullptr});
                         completed = true;
                         cv.notify_one();
                     }
@@ -922,29 +851,6 @@ namespace Bindings::LauncherManager
         {
             auto manager = const_cast<Bindings::LauncherManager::LauncherManager *>(static_cast<const Bindings::LauncherManager::LauncherManager *>(p_owner));
 
-            // Create resolve/reject handlers that will invoke the callback
-            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                std::cout << "[setModuleViewModels onResolve] handler invoked" << std::endl;
-                p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-                std::cout << "[setModuleViewModels onResolve] p_callback done" << std::endl;
-            };
-            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                std::cout << "[setModuleViewModels onReject] handler invoked" << std::endl;
-                const auto env = info.Env();
-                if (info.Length() == 0)
-                {
-                    p_callback(p_callback_handler, Create(return_value_void{Copy(u"Unknown error")}));
-                }
-                else
-                {
-                    const auto error = info[0].As<Napi::Error>();
-                    p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(error))}));
-                }
-                std::cout << "[setModuleViewModels onReject] p_callback done" << std::endl;
-            };
-
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
                 std::cout << "[setModuleViewModels] On main thread" << std::endl;
@@ -953,44 +859,28 @@ namespace Bindings::LauncherManager
                 const auto moduleViewModels = p_module_view_models == nullptr ? env.Null() : JSONParse(Napi::String::New(env, p_module_view_models));
                 const auto jsResult = manager->FSetModuleViewModels.Call({moduleViewModels});
 
-                if (IsPromise(jsResult))
-                {
-                    std::cout << "[setModuleViewModels] jsResult is Promise, attaching .then() handlers" << std::endl;
-                    const auto promise = jsResult.As<Napi::Object>();
-                    const auto onResolveCallback = Napi::Function::New(env, onResolve);
-                    const auto onRejectCallback = Napi::Function::New(env, onReject);
-                    const auto then = promise.Get("then").As<Napi::Function>();
-                    then.Call(promise, {onResolveCallback, onRejectCallback});
-                }
-                else
-                {
-                    std::cout << "[setModuleViewModels] jsResult is not Promise, calling p_callback directly" << std::endl;
-                    p_callback(p_callback_handler, Create(return_value_void{nullptr}));
-                }
+                HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                 std::cout << "[setModuleViewModels] returning" << std::endl;
                 return Create(return_value_void{nullptr});
             }
             else
             {
                 std::cout << "[setModuleViewModels] Not on main thread, using TSFN" << std::endl;
-                const auto callback = [functionName, manager, p_module_view_models, onResolve, onReject](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, manager, p_module_view_models, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
                 {
                     std::cout << "[setModuleViewModels] TSFN callback invoked" << std::endl;
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
                         const auto moduleViewModels = p_module_view_models == nullptr ? env.Null() : JSONParse(Napi::String::New(env, p_module_view_models));
-                        const auto promise = manager->FSetModuleViewModels.Call({moduleViewModels});
+                        const auto jsResult = manager->FSetModuleViewModels.Call({moduleViewModels});
 
-                        // Pass the promise and handlers to the TSFN trampoline which will attach .then()
-                        const auto onResolveCallback = Napi::Function::New(env, onResolve);
-                        const auto onRejectCallback = Napi::Function::New(env, onReject);
-                        jsCallback.Call({promise, onResolveCallback, onRejectCallback});
+                        HandleVoidPromiseOrValue(env, jsResult, p_callback_handler, p_callback);
                     }
                     catch (const Napi::Error &e)
                     {
                         callbackLogger.LogError(e);
-                        // Error already captured, let onReject handle it
+                        p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
                     }
                     std::cout << "[setModuleViewModels] TSFN callback done" << std::endl;
                 };

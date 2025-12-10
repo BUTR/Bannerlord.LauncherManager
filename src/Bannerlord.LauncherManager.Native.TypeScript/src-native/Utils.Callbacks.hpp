@@ -581,34 +581,54 @@ namespace Utils
         }
     }
 
-    // Helper to handle Promise results for void-returning callbacks (fire-and-forget)
+    // Helper to handle Promise results for void-returning callbacks
     inline void HandleVoidPromiseOrValue(
         const Napi::Env &env,
         const Napi::Value &jsResult,
+        param_ptr *p_callback_handler,
+        void (*p_callback)(param_ptr *, return_value_void *),
         std::mutex *mtx = nullptr,
         std::condition_variable *cv = nullptr,
         bool *completed = nullptr,
         return_value_void **result = nullptr)
     {
+        std::cout << "[HandleVoidPromiseOrValue] invoked, mtx=" << (mtx ? "yes" : "no") << std::endl;
         if (IsPromise(jsResult))
         {
+            std::cout << "[HandleVoidPromiseOrValue] jsResult is Promise" << std::endl;
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
 
             // Create resolve handler
-            auto onResolve = Napi::Function::New(env, [mtx, cv, completed, result](const Napi::CallbackInfo &info)
+            auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                  {
+                std::cout << "[HandleVoidPromiseOrValue onResolve] handler invoked" << std::endl;
+                p_callback(p_callback_handler, Create(return_value_void{nullptr}));
+                std::cout << "[HandleVoidPromiseOrValue onResolve] p_callback done" << std::endl;
                 if (mtx && cv && completed && result) {
+                    std::cout << "[HandleVoidPromiseOrValue onResolve] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
                     cv->notify_one();
+                    std::cout << "[HandleVoidPromiseOrValue onResolve] cv signaled" << std::endl;
                 } });
 
-            // Create reject handler - for void returns we just log/ignore
-            auto onReject = Napi::Function::New(env, [mtx, cv, completed, result](const Napi::CallbackInfo &info)
+            // Create reject handler
+            auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, mtx, cv, completed, result](const Napi::CallbackInfo &info)
                                                 {
+                std::cout << "[HandleVoidPromiseOrValue onReject] handler invoked" << std::endl;
+                const auto error = info[0];
+                std::u16string errorMsg = u"Promise rejected";
+                if (error.IsObject()) {
+                    const auto errorObj = error.As<Napi::Object>();
+                    if (errorObj.Has("message")) {
+                        errorMsg = errorObj.Get("message").As<Napi::String>().Utf16Value();
+                    }
+                }
+                p_callback(p_callback_handler, Create(return_value_void{Copy(errorMsg)}));
                 if (mtx && cv && completed && result) {
+                    std::cout << "[HandleVoidPromiseOrValue onReject] signaling cv" << std::endl;
                     std::lock_guard<std::mutex> lock(*mtx);
                     *result = Create(return_value_void{nullptr});
                     *completed = true;
@@ -616,17 +636,22 @@ namespace Utils
                 } });
 
             then.Call(promise, {onResolve, onReject});
+            std::cout << "[HandleVoidPromiseOrValue] .then() attached" << std::endl;
         }
         else
         {
+            std::cout << "[HandleVoidPromiseOrValue] jsResult is not Promise" << std::endl;
+            p_callback(p_callback_handler, Create(return_value_void{nullptr}));
             if (mtx && cv && completed && result)
             {
+                std::cout << "[HandleVoidPromiseOrValue] signaling cv (non-Promise)" << std::endl;
                 std::lock_guard<std::mutex> lock(*mtx);
                 *result = Create(return_value_void{nullptr});
                 *completed = true;
                 cv->notify_one();
             }
         }
+        std::cout << "[HandleVoidPromiseOrValue] done" << std::endl;
     }
 }
 
