@@ -415,11 +415,12 @@ namespace Utils
         return data.result;
     }
 
-    // Non-blocking void callback helper with error handling
+    // Non-awaitable void callback helper with error handling
+    // Queues work on main thread but doesn't wait for completion
     // TManager: manager type with MainThreadId field
     // TCallable: callable that receives manager pointer
     template <typename TManager, typename TCallable>
-    inline return_value_void *NonBlockingVoidCallback(
+    inline return_value_void *NonAwaitableVoidCallback(
         const char *functionName,
         TManager *manager,
         Napi::ThreadSafeFunction &tsfn,
@@ -451,20 +452,20 @@ namespace Utils
                     }
                 };
 
-                const auto status = tsfn.NonBlockingCall(callback);
+                const auto status = tsfn.BlockingCall(callback);
                 if (status != napi_ok)
                 {
-                    logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
+                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
                 return Create(return_value_void{nullptr});
             } });
     }
 
-    // Non-blocking async string callback helper (for dialog-style callbacks)
+    // Non-awaitable async string callback helper (for dialog-style callbacks)
     // Used for callbacks that return a string asynchronously via promise resolution
     template <typename TManager, typename TCallable>
-    inline return_value_void *NonBlockingStringPromiseCallback(
+    inline return_value_void *NonAwaitableStringPromiseCallback(
         const char *functionName,
         TManager *manager,
         Napi::ThreadSafeFunction &tsfn,
@@ -520,10 +521,10 @@ namespace Utils
                     jsCallback.Call({promise, Napi::Function::New(env, onResolve), Napi::Function::New(env, onReject)});
                 };
 
-                const auto status = tsfn.NonBlockingCall(callback);
+                const auto status = tsfn.BlockingCall(callback);
                 if (status != napi_ok)
                 {
-                    logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
+                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
             }
@@ -531,14 +532,15 @@ namespace Utils
             return Create(return_value_void{nullptr}); });
     }
 
-    // Blocking callback helper with synchronization
+    // Awaitable callback helper with synchronization
+    // Queues work on main thread and waits for completion
     // TReturnValue: the return value type for the callback
     // TManager: manager type with MainThreadId field
     // TThreadSafeFunction: thread-safe function type
     // TMainThreadCall: callable for main thread execution (receives manager)
     // TBackgroundCall: callable for background execution (receives env, jsCallback, synchronization params)
     template <typename TReturnValue, typename TManager, typename TThreadSafeFunction, typename TMainThreadCall, typename TBackgroundCall>
-    inline return_value_void *BlockingCallback(
+    inline return_value_void *AwaitableCallback(
         const char *functionName,
         TManager *manager,
         TThreadSafeFunction &tsfn,
@@ -585,10 +587,10 @@ namespace Utils
             } });
     }
 
-    // Non-blocking callback pattern helper (void return type)
+    // Non-awaitable callback pattern helper (void return type)
     // Used for callbacks that don't need to return a value synchronously
     template <typename TManager, typename TThreadSafeFunction, typename TMainThreadCall, typename TBackgroundCall>
-    inline return_value_void *ExecuteNonBlockingCallback(
+    inline return_value_void *ExecuteNonAwaitableCallback(
         const char *functionName,
         TManager *manager,
         TThreadSafeFunction &tsfn,
@@ -619,20 +621,20 @@ namespace Utils
                     }
                 };
 
-                const auto status = tsfn.NonBlockingCall(callback);
+                const auto status = tsfn.BlockingCall(callback);
                 if (status != napi_ok)
                 {
-                    logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
+                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
                 return Create(return_value_void{nullptr});
             } });
     }
 
-    // Blocking callback pattern helper
+    // Awaitable callback pattern helper
     // Used for callbacks that need to return a value synchronously from another thread
     template <typename TManager, typename TThreadSafeFunction, typename TReturnValue, typename TMainThreadCall, typename TBackgroundCall, typename TErrorResultCreator>
-    inline return_value_void *ExecuteBlockingCallback(
+    inline return_value_void *ExecuteAwaitableCallback(
         const char *functionName,
         TManager *manager,
         TThreadSafeFunction &tsfn,
