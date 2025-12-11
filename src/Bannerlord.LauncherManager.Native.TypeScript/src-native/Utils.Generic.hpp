@@ -99,6 +99,32 @@ namespace Utils
         std::memcpy(dst, &val, sizeof(T));
         return dst;
     }
+
+    // Exception handling wrapper to reduce code duplication
+    // Wraps a callable and handles Napi::Error, std::exception, and unknown exceptions
+    template <typename Func>
+    inline decltype(auto) WithExceptionHandling(LoggerScope &logger, Func &&func)
+    {
+        try
+        {
+            return func();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
+        }
+    }
 }
 
 #endif

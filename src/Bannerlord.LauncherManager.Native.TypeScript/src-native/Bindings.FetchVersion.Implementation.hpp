@@ -15,100 +15,40 @@ namespace Bindings::FetchVersion
     Value GetChangeSetWrapped(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto gameFolderPath = info[0].As<String>();
             const auto libAssembly = info[1].As<String>();
-
             const auto gameFolderPathCopy = CopyWithFree(gameFolderPath.Utf16Value());
             const auto libAssemblyCopy = CopyWithFree(libAssembly.Utf16Value());
-
-            const auto result = bfv_get_change_set(gameFolderPathCopy.get(), libAssemblyCopy.get());
-            return ThrowOrReturnUInt32(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnUInt32(env, bfv_get_change_set(gameFolderPathCopy.get(), libAssemblyCopy.get()));
+        });
     }
 
     Value GetVersionWrapped(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto gameFolderPath = info[0].As<String>();
             const auto libAssembly = info[1].As<String>();
-
             const auto gameFolderPathCopy = CopyWithFree(gameFolderPath.Utf16Value());
             const auto libAssemblyCopy = CopyWithFree(libAssembly.Utf16Value());
-
-            const auto result = bfv_get_version(gameFolderPathCopy.get(), libAssemblyCopy.get());
-            return ThrowOrReturnString(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnString(env, bfv_get_version(gameFolderPathCopy.get(), libAssemblyCopy.get()));
+        });
     }
 
     Value GetVersionTypeWrapped(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto gameFolderPath = info[0].As<String>();
             const auto libAssembly = info[1].As<String>();
-
             const auto gameFolderPathCopy = CopyWithFree(gameFolderPath.Utf16Value());
             const auto libAssemblyCopy = CopyWithFree(libAssembly.Utf16Value());
-
-            const auto result = bfv_get_version_type(gameFolderPathCopy.get(), libAssemblyCopy.get());
-            return ThrowOrReturnUInt32(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnUInt32(env, bfv_get_version_type(gameFolderPathCopy.get(), libAssemblyCopy.get()));
+        });
     }
 
     Object Init(const Env env, const Object exports)

@@ -194,1020 +194,384 @@ namespace Bindings::LauncherManager
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_game_version_async(this->_pInstance, cbData, HandleStringResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::TestModule(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto files = JSONStringify(info[0].As<Object>());
-
             const auto filesCopy = CopyWithFree(files.Utf16Value());
-
-            const auto result = ve_test_module(this->_pInstance, filesCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, ve_test_module(this->_pInstance, filesCopy.get()));
+        });
     }
 
     Napi::Value LauncherManager::InstallModule(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto files = JSONStringify(info[0].As<Object>());
             const auto destinationPath = JSONStringify(info[1].As<Object>());
-
             const auto filesCopy = CopyWithFree(files.Utf16Value());
             const auto destinationPathCopy = CopyWithFree(destinationPath.Utf16Value());
-
-            const auto result = ve_install_module(this->_pInstance, filesCopy.get(), destinationPathCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, ve_install_module(this->_pInstance, filesCopy.get(), destinationPathCopy.get()));
+        });
     }
 
     Napi::Value LauncherManager::IsObfuscatedAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto module = JSONStringify(info[0].As<Object>());
-
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_is_obfuscated_async(this->_pInstance, moduleCopy.get(), cbData, HandleBooleanResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::IsSorting(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
-            const auto result = ve_is_sorting(this->_pInstance);
-            return ThrowOrReturnBoolean(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnBoolean(env, ve_is_sorting(this->_pInstance));
+        });
     }
 
     Napi::Value LauncherManager::SortAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_sort_async(this->_pInstance, cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::GetModulesAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_modules_async(this->_pInstance, cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::GetAllModulesAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_all_modules_async(this->_pInstance, cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::RefreshGameParametersAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_refresh_game_parameters_async(this->_pInstance, cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::CheckForRootHarmonyAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_check_for_root_harmony_async(this->_pInstance, cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::ModuleListHandlerExportAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_module_list_handler_export_async(this->_pInstance, cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::ModuleListHandlerExportSaveFileAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto saveFile = info[0].As<String>();
-
             const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_module_list_handler_export_save_file_async(this->_pInstance, saveFileCopy.get(), cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::ModuleListHandlerImportAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_module_list_handler_import_async(this->_pInstance, cbData, HandleBooleanResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::ModuleListHandlerImportSaveFileAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto saveFile = info[0].As<String>();
-
             const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_module_list_handler_import_save_file_async(this->_pInstance, saveFileCopy.get(), cbData, HandleBooleanResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::RefreshModulesAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_refresh_modules_async(this->_pInstance, cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SortHelperChangeModulePositionAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto moduleViewModel = JSONStringify(info[0].As<Object>());
             const auto insertIndex = info[1].As<Number>();
-
             const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_sort_helper_change_module_position_async(this->_pInstance, moduleViewModelCopy.get(), insertIndex.Int32Value(), cbData, HandleBooleanResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SortHelperToggleModuleSelectionAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto moduleViewModel = JSONStringify(info[0].As<Object>());
-
             const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_sort_helper_toggle_module_selection_async(this->_pInstance, moduleViewModelCopy.get(), cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SortHelperValidateModuleAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto moduleViewModel = JSONStringify(info[0].As<Object>());
-
             const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_sort_helper_validate_module_async(this->_pInstance, moduleViewModelCopy.get(), cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::GetSaveFilesAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_save_files_async(this->_pInstance, cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::GetSaveMetadataAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto saveFile = info[0].As<String>();
             auto data = info[1].As<Uint8Array>();
-
             const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
             const auto dataCopy = CopyWithFree(data.Data(), data.ByteLength());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_save_metadata_async(this->_pInstance, saveFileCopy.get(), dataCopy.get(), static_cast<int32_t>(data.ByteLength()), cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::GetSaveFilePathAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto saveFile = info[0].As<String>();
-
             const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_save_file_path_async(this->_pInstance, saveFileCopy.get(), cbData, HandleStringResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::OrderByLoadOrderAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto loadOrder = JSONStringify(info[0].As<Object>());
-
             const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_order_by_load_order_async(this->_pInstance, loadOrderCopy.get(), cbData, HandleJsonResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SetGameParameterExecutableAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto executable = info[0].As<String>();
-
             const auto executableCopy = CopyWithFree(executable.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_set_game_parameter_executable_async(this->_pInstance, executableCopy.get(), cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SetGameParameterSaveFileAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto saveName = info[0].As<String>();
-
             const auto saveNameCopy = CopyWithFree(saveName.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_set_game_parameter_save_file_async(this->_pInstance, saveNameCopy.get(), cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::DialogTestWarningAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_dialog_test_warning_async(this->_pInstance, cbData, HandleStringResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::DialogTestFileOpenAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_dialog_test_file_open_async(this->_pInstance, cbData, HandleStringResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     void LauncherManager::SetGameStore(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto gameStore = info[0].As<String>();
-
             const auto gameStoreCopy = CopyWithFree(gameStore.Utf16Value());
-
-            const auto result = ve_set_game_store(this->_pInstance, gameStoreCopy.get());
-            ThrowOrReturn(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            ThrowOrReturn(env, ve_set_game_store(this->_pInstance, gameStoreCopy.get()));
+        });
     }
 
     Napi::Value LauncherManager::GetGamePlatformAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_get_game_platform_async(this->_pInstance, cbData, HandleStringResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SetGameParameterContinueLastSaveFileAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto value = info[0].As<Boolean>();
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_set_game_parameter_continue_last_save_file_async(this->_pInstance, value == true ? 1 : 0, cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 
     Napi::Value LauncherManager::SetGameParameterLoadOrderAsync(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto loadOrder = JSONStringify(info[0].As<Object>());
             const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
-
             auto cbData = CreateResultCallbackData(env, functionName);
-            const auto deferred = cbData->deferred;
-            const auto tsfn = cbData->tsfn;
-
             const auto result = ve_set_game_parameter_load_order_async(this->_pInstance, loadOrderCopy.get(), cbData, HandleVoidResultCallback);
-            return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+        });
     }
 }
 #endif

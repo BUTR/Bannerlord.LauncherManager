@@ -16,189 +16,69 @@ namespace Bindings::Utils
     Value IsLoadOrderCorrect(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto modules = JSONStringify(info[0].As<Object>());
-
             const auto modulesCopy = CopyWithFree(modules.Utf16Value());
-
-            const auto result = utils_is_load_order_correct(modulesCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, utils_is_load_order_correct(modulesCopy.get()));
+        });
     }
 
     Value GetDependencyHint(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto module = JSONStringify(info[0].As<Object>());
-
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = utils_get_dependency_hint(moduleCopy.get());
-            return ThrowOrReturnString(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnString(env, utils_get_dependency_hint(moduleCopy.get()));
+        });
     }
 
     Value RenderModuleIssue(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto moduleIssue = JSONStringify(info[0].As<Object>());
-
             const auto moduleIssueCopy = CopyWithFree(moduleIssue.Utf16Value());
-
-            const auto result = utils_render_module_issue(moduleIssueCopy.get());
-            return ThrowOrReturnString(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnString(env, utils_render_module_issue(moduleIssueCopy.get()));
+        });
     }
 
     void LoadLocalization(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto xml = info[0].As<String>();
-
             const auto xmlCopy = CopyWithFree(xml.Utf16Value());
-
-            const auto result = utils_load_localization(xmlCopy.get());
-            ThrowOrReturn(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            ThrowOrReturn(env, utils_load_localization(xmlCopy.get()));
+        });
     }
 
     void SetLanguage(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto language = info[0].As<String>();
-
             const auto languageCopy = CopyWithFree(language.Utf16Value());
-
-            const auto result = utils_set_language(languageCopy.get());
-            ThrowOrReturn(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            ThrowOrReturn(env, utils_set_language(languageCopy.get()));
+        });
     }
 
     Value LocalizeString(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto templateStr = info[0].As<String>();
             const auto values = JSONStringify(info[1].As<Object>());
-
             const auto templateStrCopy = CopyWithFree(templateStr.Utf16Value());
             const auto valuesCopy = CopyWithFree(values.Utf16Value());
-
-            const auto result = utils_localize_string(templateStrCopy.get(), valuesCopy.get());
-            return ThrowOrReturnString(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnString(env, utils_localize_string(templateStrCopy.get(), valuesCopy.get()));
+        });
     }
 
     Object Init(const Env env, const Object exports)

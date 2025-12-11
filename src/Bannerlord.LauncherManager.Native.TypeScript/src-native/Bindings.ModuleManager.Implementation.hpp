@@ -17,627 +17,251 @@ namespace Bindings::ModuleManager
     Value Sort(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
-
-            const auto result = bmm_sort(sourceCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_sort(sourceCopy.get()));
+        });
     }
+
     Value SortWithOptions(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto options = JSONStringify(info[1].As<Object>());
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto optionsCopy = CopyWithFree(options.Utf16Value());
-
-            const auto result = bmm_sort_with_options(sourceCopy.get(), optionsCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_sort_with_options(sourceCopy.get(), optionsCopy.get()));
+        });
     }
 
     Value AreAllDependenciesOfModulePresent(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto module = JSONStringify(info[1].As<Object>());
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = bmm_are_all_dependencies_of_module_present(sourceCopy.get(), moduleCopy.get());
-            return ThrowOrReturnBoolean(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnBoolean(env, bmm_are_all_dependencies_of_module_present(sourceCopy.get(), moduleCopy.get()));
+        });
     }
 
     Value GetDependentModulesOf(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto module = JSONStringify(info[1].As<Object>());
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = bmm_get_dependent_modules_of(sourceCopy.get(), moduleCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_dependent_modules_of(sourceCopy.get(), moduleCopy.get()));
+        });
     }
+
     Value GetDependentModulesOfWithOptions(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto module = JSONStringify(info[1].As<Object>());
             const auto options = JSONStringify(info[2].As<Object>());
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
             const auto optionsCopy = CopyWithFree(options.Utf16Value());
-
-            const auto result = bmm_get_dependent_modules_of_with_options(sourceCopy.get(), moduleCopy.get(), optionsCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_dependent_modules_of_with_options(sourceCopy.get(), moduleCopy.get(), optionsCopy.get()));
+        });
     }
 
     Value ValidateLoadOrder(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto targetModule = JSONStringify(info[1].As<Object>());
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
-
-            const auto result = bmm_validate_load_order(sourceCopy.get(), targetModuleCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_validate_load_order(sourceCopy.get(), targetModuleCopy.get()));
+        });
     }
 
     Value ValidateModule(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto targetModule = JSONStringify(info[1].As<Object>());
             const auto manager = info[2].As<Object>();
-
             const auto fIsSelected = manager.Get("isSelected").As<Function>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
-
             auto data = ValidationData{env, fIsSelected};
-
-            const auto result = bmm_validate_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), isSelected);
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_validate_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), isSelected));
+        });
     }
 
     void EnableModule(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto targetModule = JSONStringify(info[1].As<Object>());
             const auto manager = info[2].As<Object>();
-
             const auto fGetSelected = manager.Get("getSelected").As<Function>();
             const auto fSetSelected = manager.Get("setSelected").As<Function>();
             const auto fGetDisabled = manager.Get("getDisabled").As<Function>();
             const auto fSetDisabled = manager.Get("setDisabled").As<Function>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
-
             auto data = EnableDisableData{env, fGetSelected, fSetSelected, fGetDisabled, fSetDisabled};
-
-            const auto result = bmm_enable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled);
-            ThrowOrReturn(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            ThrowOrReturn(env, bmm_enable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled));
+        });
     }
+
     void DisableModule(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = JSONStringify(info[0].As<Object>());
             const auto targetModule = JSONStringify(info[1].As<Object>());
             const auto manager = info[2].As<Object>();
-
             const auto fGetSelected = manager.Get("getSelected").As<Function>();
             const auto fSetSelected = manager.Get("setSelected").As<Function>();
             const auto fGetDisabled = manager.Get("getDisabled").As<Function>();
             const auto fSetDisabled = manager.Get("setDisabled").As<Function>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
-
             auto data = EnableDisableData{env, fGetSelected, fSetSelected, fGetDisabled, fSetDisabled};
-
-            const auto result = bmm_disable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled);
-            ThrowOrReturn(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            ThrowOrReturn(env, bmm_disable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled));
+        });
     }
 
     Value GetModuleInfo(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = info[0].As<String>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
-
-            const auto result = bmm_get_module_info(sourceCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_module_info(sourceCopy.get()));
+        });
     }
+
     Value GetModuleInfoWithPath(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = info[0].As<String>();
             const auto path = info[1].As<String>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto pathCopy = CopyWithFree(path.Utf16Value());
-
-            const auto result = bmm_get_module_info_with_path(sourceCopy.get(), pathCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_module_info_with_path(sourceCopy.get(), pathCopy.get()));
+        });
     }
+
     Value GetModuleInfoWithMetadata(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = info[0].As<String>();
             const auto moduleProvider = info[1].As<String>();
             const auto path = info[2].As<String>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto moduleProviderCopy = CopyWithFree(moduleProvider.Utf16Value());
             const auto pathCopy = CopyWithFree(path.Utf16Value());
-
-            const auto result = bmm_get_module_info_with_metadata(sourceCopy.get(), moduleProviderCopy.get(), pathCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_module_info_with_metadata(sourceCopy.get(), moduleProviderCopy.get(), pathCopy.get()));
+        });
     }
+
     Value GetSubModuleInfo(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto source = info[0].As<String>();
-
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
-
-            const auto result = bmm_get_sub_module_info(sourceCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_sub_module_info(sourceCopy.get()));
+        });
     }
 
     Value ParseApplicationVersion(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto content = info[0].As<String>();
-
             const auto contentCopy = CopyWithFree(content.Utf16Value());
-
-            const auto result = bmm_parse_application_version(contentCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_parse_application_version(contentCopy.get()));
+        });
     }
+
     Value CompareVersions(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto x = JSONStringify(info[0].As<Object>());
             const auto y = JSONStringify(info[1].As<Object>());
-
             const auto xCopy = CopyWithFree(x.Utf16Value());
             const auto yCopy = CopyWithFree(y.Utf16Value());
-
-            const auto result = bmm_compare_versions(xCopy.get(), yCopy.get());
-            return ThrowOrReturnInt32(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnInt32(env, bmm_compare_versions(xCopy.get(), yCopy.get()));
+        });
     }
 
     Value GetDependenciesAll(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto module = JSONStringify(info[0].As<Object>());
-
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = bmm_get_dependencies_all(moduleCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_dependencies_all(moduleCopy.get()));
+        });
     }
+
     Value GetDependenciesToLoadBeforeThis(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto module = JSONStringify(info[0].As<Object>());
-
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = bmm_get_dependencies_load_before_this(moduleCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_dependencies_load_before_this(moduleCopy.get()));
+        });
     }
+
     Value GetDependenciesToLoadAfterThis(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto module = JSONStringify(info[0].As<Object>());
-
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = bmm_get_dependencies_load_after_this(moduleCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_dependencies_load_after_this(moduleCopy.get()));
+        });
     }
+
     Value GetDependenciesIncompatibles(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
-
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto module = JSONStringify(info[0].As<Object>());
-
             const auto moduleCopy = CopyWithFree(module.Utf16Value());
-
-            const auto result = bmm_get_dependencies_incompatibles(moduleCopy.get());
-            return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+            return ThrowOrReturnJson(env, bmm_get_dependencies_incompatibles(moduleCopy.get()));
+        });
     }
 
     Object Init(const Env env, const Object exports)
