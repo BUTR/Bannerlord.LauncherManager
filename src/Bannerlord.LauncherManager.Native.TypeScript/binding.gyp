@@ -3,14 +3,27 @@
         {
             "target_name": "launchermanager",
             "sources": [
-                "<(module_root_dir)/src-native/main.cpp"
+                "src-native/main.cpp"
             ],
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")",
                 "<(module_root_dir)"
             ],
-            "libraries": [
-                "<(module_root_dir)/Bannerlord.LauncherManager.Native.lib"
+            "conditions": [
+                ["OS=='win'", {
+                    "libraries": [
+                        "<(module_root_dir)/Bannerlord.LauncherManager.Native.lib"
+                    ]
+                }],
+                ["OS=='linux'", {
+                    "libraries": [
+                        "-L<(module_root_dir)",
+                        "-l:Bannerlord.LauncherManager.Native.so"
+                    ],
+                    "ldflags": [
+                        "-Wl,-rpath,<(module_root_dir)"
+                    ]
+                }]
             ],
             "dependencies": [
                 "<!(node -p \"require('node-addon-api').gyp\")"
@@ -21,6 +34,7 @@
             ],
             "cflags!": [ "-fno-exceptions" ],
             "cflags_cc!": [ "-fno-exceptions" ],
+            "cflags_cc": [ "-std=c++20", "-fexceptions" ],
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "AdditionalOptions": [
