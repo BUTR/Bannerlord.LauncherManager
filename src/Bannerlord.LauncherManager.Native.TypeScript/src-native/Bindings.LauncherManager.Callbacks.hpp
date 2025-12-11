@@ -92,26 +92,20 @@ namespace Bindings::LauncherManager
             }
             else
             {
-                std::mutex mtx;
-                std::condition_variable cv;
-                bool completed = false;
-                return_value_void *result = nullptr;
+                BlockingCallData blockingData;
 
-                const auto callback = [functionName, p_callback_handler, p_callback, &backgroundCall, &mtx, &cv, &completed, &result](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_callback_handler, p_callback, &backgroundCall, &blockingData](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
-                        backgroundCall(env, jsCallback, &mtx, &cv, &completed, &result);
+                        backgroundCall(env, jsCallback, &blockingData.mtx, &blockingData.cv, &blockingData.completed, &blockingData.result);
                     }
                     catch (const Napi::Error &e)
                     {
                         callbackLogger.LogError(e);
                         p_callback(p_callback_handler, CreateErrorResult<TReturnValue>(GetErrorMessage(e)));
-                        std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_void{nullptr});
-                        completed = true;
-                        cv.notify_one();
+                        SignalBlockingCallComplete(blockingData);
                     }
                 };
 
@@ -122,10 +116,7 @@ namespace Bindings::LauncherManager
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
 
-                std::unique_lock<std::mutex> lock(mtx);
-                cv.wait(lock, [&completed] { return completed; });
-                logger.Log("Blocking call completed");
-                return result;
+                return WaitForBlockingCall(logger, blockingData);
             } });
     }
 
