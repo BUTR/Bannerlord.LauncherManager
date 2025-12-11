@@ -9,6 +9,7 @@
 #include "Utils.Generic.hpp"
 #include "Utils.JS.hpp"
 #include "Utils.Utf.hpp"
+#include "Utils.Converters.hpp"
 
 using namespace Napi;
 
@@ -62,42 +63,110 @@ namespace Utils
         return new ResultCallbackData{deferred, tsfn};
     }
 
-    void HandleVoidResultCallback(param_ptr *p_owner, return_value_void *returnData)
+    // Type traits for result callback handling
+    template <typename T>
+    struct ResultCallbackTraits;
+
+    template <>
+    struct ResultCallbackTraits<return_value_void>
     {
-        const auto functionName = __FUNCTION__;
+        using deleter_type = del_void;
+        static constexpr bool has_value = false;
+        static void resolve(LoggerScope &, const Napi::Env &, Napi::Function &jsCallback, return_value_void *)
+        {
+            jsCallback.Call({});
+        }
+    };
+
+    template <>
+    struct ResultCallbackTraits<return_value_json>
+    {
+        using deleter_type = del_json;
+        static constexpr bool has_value = true;
+        static void resolve(LoggerScope &callbackLogger, const Napi::Env &env, Napi::Function &jsCallback, return_value_json *returnData)
+        {
+            const auto isError = Napi::Boolean::New(env, false);
+            if (returnData->value == nullptr)
+            {
+                callbackLogger.Log("Result is null");
+                jsCallback.Call({isError, env.Null()});
+            }
+            else
+            {
+                callbackLogger.Log("Result is not null");
+                const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
+                jsCallback.Call({isError, JSONParse(Napi::String::New(env, resultStr.get()))});
+            }
+        }
+    };
+
+    template <>
+    struct ResultCallbackTraits<return_value_string>
+    {
+        using deleter_type = del_string;
+        static constexpr bool has_value = true;
+        static void resolve(LoggerScope &callbackLogger, const Napi::Env &env, Napi::Function &jsCallback, return_value_string *returnData)
+        {
+            const auto isError = Napi::Boolean::New(env, false);
+            if (returnData->value == nullptr)
+            {
+                callbackLogger.Log("Result is null");
+                jsCallback.Call({isError, env.Null()});
+            }
+            else
+            {
+                callbackLogger.Log("Result is not null");
+                const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
+                jsCallback.Call({isError, Napi::String::New(env, resultStr.get())});
+            }
+        }
+    };
+
+    template <>
+    struct ResultCallbackTraits<return_value_bool>
+    {
+        using deleter_type = del_bool;
+        static constexpr bool has_value = true;
+        static void resolve(LoggerScope &, const Napi::Env &env, Napi::Function &jsCallback, return_value_bool *returnData)
+        {
+            const auto isError = Napi::Boolean::New(env, false);
+            jsCallback.Call({isError, Boolean::New(env, returnData->value == 1)});
+        }
+    };
+
+    // Generic result callback handler template
+    template <typename TReturnValue>
+    void HandleResultCallback(const char *functionName, param_ptr *p_owner, TReturnValue *returnData)
+    {
+        using Traits = ResultCallbackTraits<TReturnValue>;
         LoggerScope logger(functionName);
         try
         {
             auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
             del_rcbd del{manager};
 
-            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
+            const auto callback = [functionName, returnData](Napi::Env env, Napi::Function jsCallback)
             {
                 LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-
-                del_void del{returnData};
+                typename Traits::deleter_type del{returnData};
 
                 if (returnData == nullptr)
                 {
                     callbackLogger.Log("Null return data");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
-                    jsCallback.Call({isError, error});
+                    jsCallback.Call({Napi::Boolean::New(env, true), Napi::Error::New(env, "Return value was null!").Value()});
                     return;
                 }
 
                 if (returnData->error != nullptr)
                 {
                     callbackLogger.Log("Error");
-                    const auto isError = Napi::Boolean::New(env, true);
                     const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                    jsCallback.Call({isError, error});
+                    jsCallback.Call({Napi::Boolean::New(env, true), Napi::Error::New(env, String::New(env, errorStr.get())).Value()});
                 }
                 else
                 {
                     callbackLogger.Log("Resolving");
-                    jsCallback.Call({});
+                    Traits::resolve(callbackLogger, env, jsCallback, returnData);
                 }
             };
 
@@ -118,200 +187,25 @@ namespace Utils
         }
     }
 
-    void HandleJsonResultCallback(param_ptr *p_owner, return_value_json *returnData)
+    // Convenience wrappers for backward compatibility
+    inline void HandleVoidResultCallback(param_ptr *p_owner, return_value_void *returnData)
     {
-        const auto functionName = __FUNCTION__;
-        LoggerScope logger(functionName);
-        try
-        {
-            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
-            del_rcbd del{manager};
-
-            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
-            {
-                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-
-                del_json del{returnData};
-
-                if (returnData == nullptr)
-                {
-                    callbackLogger.Log("Null return data");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
-                    jsCallback.Call({isError, error});
-                    return;
-                }
-
-                if (returnData->error != nullptr)
-                {
-                    callbackLogger.Log("Error");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                    jsCallback.Call({isError, error});
-                }
-                else
-                {
-                    callbackLogger.Log("Resolving");
-                    const auto isError = Napi::Boolean::New(env, false);
-                    if (returnData->value == nullptr)
-                    {
-                        callbackLogger.Log("Result is null");
-                        const auto result = env.Null();
-                        jsCallback.Call({isError, result});
-                    }
-                    else
-                    {
-                        callbackLogger.Log("Result is not null");
-                        const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
-                        const auto result = JSONParse(Napi::String::New(env, resultStr.get()));
-                        jsCallback.Call({isError, result});
-                    }
-                }
-            };
-
-            manager->tsfn.NonBlockingCall(callback);
-            manager->tsfn.Release();
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-        }
+        HandleResultCallback(__FUNCTION__, p_owner, returnData);
     }
 
-    void HandleStringResultCallback(param_ptr *p_owner, return_value_string *returnData)
+    inline void HandleJsonResultCallback(param_ptr *p_owner, return_value_json *returnData)
     {
-        const auto functionName = __FUNCTION__;
-        LoggerScope logger(functionName);
-        try
-        {
-            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
-            del_rcbd del{manager};
-
-            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
-            {
-                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-
-                del_string del{returnData};
-
-                if (returnData == nullptr)
-                {
-                    callbackLogger.Log("Null return data");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
-                    jsCallback.Call({isError, error});
-                    return;
-                }
-
-                if (returnData->error != nullptr)
-                {
-                    callbackLogger.Log("Error");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                    jsCallback.Call({isError, error});
-                }
-                else
-                {
-                    callbackLogger.Log("Resolving");
-                    const auto isError = Napi::Boolean::New(env, false);
-                    if (returnData->value == nullptr)
-                    {
-                        callbackLogger.Log("Result is null");
-                        const auto result = env.Null();
-                        jsCallback.Call({isError, result});
-                    }
-                    else
-                    {
-                        callbackLogger.Log("Result is not null");
-                        const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
-                        const auto result = Napi::String::New(env, resultStr.get());
-                        jsCallback.Call({isError, result});
-                    }
-                }
-            };
-
-            manager->tsfn.NonBlockingCall(callback);
-            manager->tsfn.Release();
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-        }
+        HandleResultCallback(__FUNCTION__, p_owner, returnData);
     }
 
-    void HandleBooleanResultCallback(param_ptr *p_owner, return_value_bool *returnData)
+    inline void HandleStringResultCallback(param_ptr *p_owner, return_value_string *returnData)
     {
-        const auto functionName = __FUNCTION__;
-        LoggerScope logger(functionName);
-        try
-        {
-            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
-            del_rcbd del{manager};
+        HandleResultCallback(__FUNCTION__, p_owner, returnData);
+    }
 
-            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
-            {
-                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-
-                del_bool del{returnData};
-
-                if (returnData == nullptr)
-                {
-                    callbackLogger.Log("Null return data");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
-                    jsCallback.Call({isError, error});
-                    return;
-                }
-
-                if (returnData->error != nullptr)
-                {
-                    callbackLogger.Log("Error");
-                    const auto isError = Napi::Boolean::New(env, true);
-                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                    jsCallback.Call({isError, error});
-                }
-                else
-                {
-                    callbackLogger.Log("Resolving");
-                    const auto isError = Napi::Boolean::New(env, false);
-                    const auto result = Boolean::New(env, returnData->value == 1);
-                    jsCallback.Call({isError, result});
-                }
-            };
-
-            manager->tsfn.NonBlockingCall(callback);
-            manager->tsfn.Release();
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-        }
+    inline void HandleBooleanResultCallback(param_ptr *p_owner, return_value_bool *returnData)
+    {
+        HandleResultCallback(__FUNCTION__, p_owner, returnData);
     }
 
     std::u16string GetErrorMessage(const Napi::Error e)
@@ -519,6 +413,176 @@ namespace Utils
                      { return data.completed; });
         logger.Log("Blocking call completed");
         return data.result;
+    }
+
+    // Non-blocking void callback helper with error handling
+    // TManager: manager type with MainThreadId field
+    // TCallable: callable that receives manager pointer
+    template <typename TManager, typename TCallable>
+    inline return_value_void *NonBlockingVoidCallback(
+        const char *functionName,
+        TManager *manager,
+        Napi::ThreadSafeFunction &tsfn,
+        param_ptr *p_callback_handler,
+        void (*p_callback)(param_ptr *, return_value_void *),
+        TCallable &&jsCallLogic) noexcept
+    {
+        LoggerScope logger(functionName);
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
+                                                                {
+            if (std::this_thread::get_id() == manager->MainThreadId)
+            {
+                jsCallLogic(manager);
+                return Create(return_value_void{nullptr});
+            }
+            else
+            {
+                const auto callback = [functionName, &jsCallLogic, manager, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
+                {
+                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+                    try
+                    {
+                        jsCallLogic(manager);
+                    }
+                    catch (const Napi::Error &e)
+                    {
+                        callbackLogger.LogError(e);
+                        p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
+                    }
+                };
+
+                const auto status = tsfn.NonBlockingCall(callback);
+                if (status != napi_ok)
+                {
+                    logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
+                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                }
+                return Create(return_value_void{nullptr});
+            } });
+    }
+
+    // Non-blocking async string callback helper (for dialog-style callbacks)
+    // Used for callbacks that return a string asynchronously via promise resolution
+    template <typename TManager, typename TCallable>
+    inline return_value_void *NonBlockingStringPromiseCallback(
+        const char *functionName,
+        TManager *manager,
+        Napi::ThreadSafeFunction &tsfn,
+        param_ptr *p_callback_handler,
+        void (*p_callback)(param_ptr *, return_value_string *),
+        TCallable &&createArgsAndCall) noexcept
+    {
+        LoggerScope logger(functionName);
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
+                                                                {
+            // Create resolve/reject handlers that will invoke the callback
+            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                const auto result = info[0];
+                if (result.IsNull() || result.IsUndefined())
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{nullptr, nullptr}));
+                }
+                else
+                {
+                    const auto resultStr = result.As<Napi::String>();
+                    p_callback(p_callback_handler, Create(return_value_string{nullptr, Copy(resultStr.Utf16Value())}));
+                }
+            };
+            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
+            {
+                if (info.Length() == 0)
+                {
+                    p_callback(p_callback_handler, Create(return_value_string{Copy(u"Unknown error"), nullptr}));
+                }
+                else
+                {
+                    const auto error = info[0].As<Napi::Error>();
+                    p_callback(p_callback_handler, Create(return_value_string{Copy(GetErrorMessage(error)), nullptr}));
+                }
+            };
+
+            if (std::this_thread::get_id() == manager->MainThreadId)
+            {
+                // On main thread, call directly without blocking
+                const auto promise = createArgsAndCall(manager).template As<Napi::Promise>();
+                const auto env = promise.Env();
+                const auto then = promise.Get("then").template As<Napi::Function>();
+                then.Call(promise, {Napi::Function::New(env, onResolve), Napi::Function::New(env, onReject)});
+            }
+            else
+            {
+                // Use the TSFN trampoline
+                const auto callback = [functionName, manager, onResolve, onReject, &createArgsAndCall](Napi::Env env, Napi::Function jsCallback)
+                {
+                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+                    const auto promise = createArgsAndCall(manager);
+                    jsCallback.Call({promise, Napi::Function::New(env, onResolve), Napi::Function::New(env, onReject)});
+                };
+
+                const auto status = tsfn.NonBlockingCall(callback);
+                if (status != napi_ok)
+                {
+                    logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
+                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                }
+            }
+
+            return Create(return_value_void{nullptr}); });
+    }
+
+    // Blocking callback helper with synchronization
+    // TReturnValue: the return value type for the callback
+    // TManager: manager type with MainThreadId field
+    // TThreadSafeFunction: thread-safe function type
+    // TMainThreadCall: callable for main thread execution (receives manager)
+    // TBackgroundCall: callable for background execution (receives env, jsCallback, synchronization params)
+    template <typename TReturnValue, typename TManager, typename TThreadSafeFunction, typename TMainThreadCall, typename TBackgroundCall>
+    inline return_value_void *BlockingCallback(
+        const char *functionName,
+        TManager *manager,
+        TThreadSafeFunction &tsfn,
+        param_ptr *p_callback_handler,
+        void (*p_callback)(param_ptr *, TReturnValue *),
+        TMainThreadCall &&mainThreadCall,
+        TBackgroundCall &&backgroundCall) noexcept
+    {
+        LoggerScope logger(functionName);
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
+                                                                {
+            if (std::this_thread::get_id() == manager->MainThreadId)
+            {
+                mainThreadCall(manager);
+                return Create(return_value_void{nullptr});
+            }
+            else
+            {
+                BlockingCallData blockingData;
+
+                const auto callback = [functionName, p_callback_handler, p_callback, &backgroundCall, &blockingData](Napi::Env env, Napi::Function jsCallback)
+                {
+                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+                    try
+                    {
+                        backgroundCall(env, jsCallback, &blockingData.mtx, &blockingData.cv, &blockingData.completed, &blockingData.result);
+                    }
+                    catch (const Napi::Error &e)
+                    {
+                        callbackLogger.LogError(e);
+                        p_callback(p_callback_handler, CreateErrorResult<TReturnValue>(GetErrorMessage(e)));
+                        SignalBlockingCallComplete(blockingData);
+                    }
+                };
+
+                const auto status = tsfn.BlockingCall(callback);
+                if (status != napi_ok)
+                {
+                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
+                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                }
+
+                return WaitForBlockingCall(logger, blockingData);
+            } });
     }
 
     // Non-blocking callback pattern helper (void return type)

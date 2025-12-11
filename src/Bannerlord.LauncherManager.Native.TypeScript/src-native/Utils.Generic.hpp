@@ -125,6 +125,31 @@ namespace Utils
             throw;
         }
     }
+
+    // Exception handling wrapper for NAPI functions - returns Napi::Value (null on error)
+    template <typename Func>
+    inline Napi::Value WithExceptionHandlingReturningNull(LoggerScope &logger, const Napi::Env &env, Func &&func) noexcept
+    {
+        try
+        {
+            return func();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            return env.Null();
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            return env.Null();
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            return env.Null();
+        }
+    }
 }
 
 #endif

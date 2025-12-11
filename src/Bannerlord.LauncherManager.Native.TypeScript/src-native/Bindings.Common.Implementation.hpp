@@ -4,19 +4,21 @@
 #include <napi.h>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
+#include "Utils.Callbacks.hpp"
 #include "Bindings.Common.hpp"
 
 using namespace Napi;
+using namespace Utils;
 using namespace Bannerlord::LauncherManager::Native;
 namespace Bindings::Common
 {
     Value AllocWithOwnership(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
+        const auto env = info.Env();
 
-        try
-        {
-            const auto env = info.Env();
+        return WithExceptionHandlingReturningNull(logger, env, [&]()
+                                                  {
             const auto length = info[0].As<Number>();
 
 #ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
@@ -27,34 +29,16 @@ namespace Bindings::Common
 #else
             return env.Null();
 #endif
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            const auto env = info.Env();
-            return env.Null();
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            const auto env = info.Env();
-            return env.Null();
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            const auto env = info.Env();
-            return env.Null();
-        }
+        });
     }
 
     Value AllocWithoutOwnership(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
+        const auto env = info.Env();
 
-        try
-        {
-            const auto env = info.Env();
+        return WithExceptionHandlingReturningNull(logger, env, [&]()
+                                                  {
             const auto length = info[0].As<Number>();
 
 #ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
@@ -65,56 +49,19 @@ namespace Bindings::Common
 #else
             return env.Null();
 #endif
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            const auto env = info.Env();
-            return env.Null();
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            const auto env = info.Env();
-            return env.Null();
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            const auto env = info.Env();
-            return env.Null();
-        }
+        });
     }
 
     Value AllocAliveCount(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
+        const auto env = info.Env();
 
-        try
-        {
-            const auto env = info.Env();
-
+        return WithExceptionHandlingReturningNull(logger, env, [&]()
+                                                  {
             const auto result = common_alloc_alive_count();
             return Number::New(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            const auto env = info.Env();
-            return env.Null();
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            const auto env = info.Env();
-            return env.Null();
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            const auto env = info.Env();
-            return env.Null();
-        }
+        });
     }
 
     Object Init(const Env env, Object exports)
