@@ -299,15 +299,15 @@ namespace Bindings::ModuleManager
             const auto targetModule = JSONStringify(info[1].As<Object>());
             const auto manager = info[2].As<Object>();
 
-            const auto FGetSelected = manager.Get("getSelected").As<Function>();
-            const auto FSetSelected = manager.Get("setSelected").As<Function>();
-            const auto FGetDisabled = manager.Get("getDisabled").As<Function>();
-            const auto FSetDisabled = manager.Get("setDisabled").As<Function>();
+            const auto fGetSelected = manager.Get("getSelected").As<Function>();
+            const auto fSetSelected = manager.Get("setSelected").As<Function>();
+            const auto fGetDisabled = manager.Get("getDisabled").As<Function>();
+            const auto fSetDisabled = manager.Get("setDisabled").As<Function>();
 
             const auto sourceCopy = CopyWithFree(source.Utf16Value());
             const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
 
-            auto data = EnableDisableData{env, FGetSelected, FSetSelected, FGetDisabled, FSetDisabled};
+            auto data = EnableDisableData{env, fGetSelected, fSetSelected, fGetDisabled, fSetDisabled};
 
             const auto result = bmm_disable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled);
             ThrowOrReturn(env, result);

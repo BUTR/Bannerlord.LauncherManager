@@ -37,7 +37,7 @@ namespace Utils
     using del_ptr = std::unique_ptr<return_value_ptr, common_deallocor<return_value_ptr>>;
     using del_async = std::unique_ptr<return_value_async, common_deallocor<return_value_async>>;
 
-    uint8_t *const Copy(const uint8_t *src, const size_t length)
+    inline uint8_t *const Copy(const uint8_t *src, const size_t length)
     {
         auto dst = static_cast<uint8_t *const>(common_alloc(length));
         if (dst == nullptr)
@@ -49,7 +49,7 @@ namespace Utils
         return dst;
     }
 
-    char16_t *const Copy(const std::u16string str)
+    inline char16_t *const Copy(const std::u16string str)
     {
         const auto src = str.c_str();
         const auto srcChar16Length = str.length();
@@ -67,28 +67,28 @@ namespace Utils
         return dst;
     }
 
-    std::unique_ptr<uint8_t[], common_deallocor<uint8_t>> CopyWithFree(const uint8_t *const data, size_t length)
+    inline std::unique_ptr<uint8_t[], common_deallocor<uint8_t>> CopyWithFree(const uint8_t *const data, size_t length)
     {
         return std::unique_ptr<uint8_t[], common_deallocor<uint8_t>>(Copy(data, length));
     }
 
-    std::unique_ptr<char16_t[], common_deallocor<char16_t>> CopyWithFree(const std::u16string str)
+    inline std::unique_ptr<char16_t[], common_deallocor<char16_t>> CopyWithFree(const std::u16string str)
     {
         return std::unique_ptr<char16_t[], common_deallocor<char16_t>>(Copy(str));
     }
 
-    std::unique_ptr<char16_t[], common_deallocor<char16_t>> NullStringCopy()
+    inline std::unique_ptr<char16_t[], common_deallocor<char16_t>> NullStringCopy()
     {
         return std::unique_ptr<char16_t[], common_deallocor<char16_t>>(nullptr);
     }
 
-    const char16_t *const NoCopy(const std::u16string str) noexcept
+    inline const char16_t *const NoCopy(const std::u16string str) noexcept
     {
         return str.c_str();
     }
 
     template <typename T>
-    T *const Create(const T val)
+    inline T *const Create(const T val)
     {
         const auto size = sizeof(T);
         auto dst = static_cast<T *const>(common_alloc(size));

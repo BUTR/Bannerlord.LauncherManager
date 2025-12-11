@@ -10,7 +10,7 @@ using namespace Napi;
 
 namespace Utils
 {
-    Napi::Value ReturnAndHandleReject(const Env env, return_value_async *const result, const Napi::Promise::Deferred deferred, Napi::ThreadSafeFunction tsfn)
+    inline Napi::Value ReturnAndHandleReject(const Env env, return_value_async *const result, const Napi::Promise::Deferred deferred, Napi::ThreadSafeFunction tsfn)
     {
         const del_async del{result};
 
@@ -30,7 +30,7 @@ namespace Utils
         return deferred.Promise();
     }
 
-    void ThrowOrReturn(const Env env, return_value_void *const val)
+    inline void ThrowOrReturn(const Env env, return_value_void *const val)
     {
         const del_void del{val};
 
@@ -49,7 +49,7 @@ namespace Utils
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    Value ThrowOrReturnString(const Env env, return_value_string *const result)
+    inline Value ThrowOrReturnString(const Env env, return_value_string *const result)
     {
         const del_string del{result};
 
@@ -68,14 +68,14 @@ namespace Utils
             }
 
             const auto value = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(result->value);
-            return String::New(env, result->value);
+            return String::New(env, value.get());
         }
 
         const auto error = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(result->error);
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    Value ThrowOrReturnJson(const Env env, return_value_json *const result)
+    inline Value ThrowOrReturnJson(const Env env, return_value_json *const result)
     {
         const del_json del{result};
 
@@ -94,14 +94,14 @@ namespace Utils
             }
 
             const auto value = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(result->value);
-            return JSONParse(String::New(env, result->value));
+            return JSONParse(String::New(env, value.get()));
         }
 
         const auto error = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(result->error);
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    Value ThrowOrReturnBoolean(const Env env, return_value_bool *const result)
+    inline Value ThrowOrReturnBoolean(const Env env, return_value_bool *const result)
     {
         const del_bool del{result};
 
@@ -120,7 +120,7 @@ namespace Utils
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    Value ThrowOrReturnInt32(const Env env, return_value_int32 *const result)
+    inline Value ThrowOrReturnInt32(const Env env, return_value_int32 *const result)
     {
         const del_int32 del{result};
 
@@ -139,7 +139,7 @@ namespace Utils
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    Value ThrowOrReturnUInt32(const Env env, return_value_uint32 *const result)
+    inline Value ThrowOrReturnUInt32(const Env env, return_value_uint32 *const result)
     {
         const del_uint32 del{result};
 
@@ -158,7 +158,7 @@ namespace Utils
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    void *ThrowOrReturnPtr(const Env env, return_value_ptr *const result)
+    inline void *ThrowOrReturnPtr(const Env env, return_value_ptr *const result)
     {
         const del_ptr del{result};
 

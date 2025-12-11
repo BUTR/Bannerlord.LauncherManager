@@ -8,7 +8,7 @@ using namespace Napi;
 
 namespace Utils
 {
-    void ConsoleLog(const String message)
+    inline void ConsoleLog(const String message)
     {
         const auto env = message.Env();
         const auto consoleObject = env.Global().Get("console").As<Object>();
@@ -16,21 +16,21 @@ namespace Utils
         // log.Call(consoleObject, {message});
     }
 
-    String JSONStringify(const Object object)
+    inline String JSONStringify(const Object object)
     {
         const auto env = object.Env();
 
         if (object.IsUndefined() || object.IsNull())
         {
             Logger::Log(__FUNCTION__, "Null or undefined object");
-            return env.Null().As<String>();
+            return env.Null();
         }
         const auto jsonObject = env.Global().Get("JSON").As<Object>();
         const auto stringify = jsonObject.Get("stringify").As<Function>();
         return stringify.Call(jsonObject, {object}).As<String>();
     }
 
-    Object JSONParse(const String json)
+    inline Object JSONParse(const String json)
     {
         const auto env = json.Env();
         const auto jsonObject = env.Global().Get("JSON").As<Object>();

@@ -149,7 +149,7 @@ namespace Bindings::Utils
             const auto languageCopy = CopyWithFree(language.Utf16Value());
 
             const auto result = utils_set_language(languageCopy.get());
-            return ThrowOrReturn(env, result);
+            ThrowOrReturn(env, result);
         }
         catch (const Napi::Error &e)
         {
