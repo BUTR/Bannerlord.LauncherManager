@@ -2,6 +2,9 @@
 #define VE_LIB_UTILS_CALLBACKS_GUARD_HPP_
 
 #include <napi.h>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
 #include "Logger.hpp"
 #include "Utils.Generic.hpp"
 #include "Utils.JS.hpp"
@@ -463,6 +466,154 @@ namespace Utils
         HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback,
                              [](const Napi::Value &) -> return_value_void * { return Create(return_value_void{nullptr}); },
                              mtx, cv, completed, result);
+    }
+
+    // Helper for outer exception handling in callbacks - returns error result
+    template <typename TResult, typename Func>
+    inline TResult *CallbackWithExceptionHandling(LoggerScope &logger, Func &&func) noexcept
+    {
+        try
+        {
+            return func();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            return CreateErrorResult<TResult>(GetErrorMessage(e));
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            return CreateErrorResult<TResult>(Utf8ToUtf16(e.what()));
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            return CreateErrorResult<TResult>(u"Unknown exception");
+        }
+    }
+
+    // Blocking call synchronization data
+    struct BlockingCallData
+    {
+        std::mutex mtx;
+        std::condition_variable cv;
+        bool completed = false;
+        return_value_void *result = nullptr;
+    };
+
+    // Signal completion of a blocking call
+    inline void SignalBlockingCallComplete(BlockingCallData &data)
+    {
+        std::lock_guard<std::mutex> lock(data.mtx);
+        data.result = Create(return_value_void{nullptr});
+        data.completed = true;
+        data.cv.notify_one();
+    }
+
+    // Wait for a blocking call to complete and return the result
+    inline return_value_void *WaitForBlockingCall(LoggerScope &logger, BlockingCallData &data)
+    {
+        std::unique_lock<std::mutex> lock(data.mtx);
+        data.cv.wait(lock, [&data]
+                     { return data.completed; });
+        logger.Log("Blocking call completed");
+        return data.result;
+    }
+
+    // Non-blocking callback pattern helper (void return type)
+    // Used for callbacks that don't need to return a value synchronously
+    template <typename TManager, typename TThreadSafeFunction, typename TMainThreadCall, typename TBackgroundCall>
+    inline return_value_void *ExecuteNonBlockingCallback(
+        const char *functionName,
+        TManager *manager,
+        TThreadSafeFunction &tsfn,
+        TMainThreadCall &&mainThreadCall,
+        TBackgroundCall &&backgroundCall) noexcept
+    {
+        LoggerScope logger(functionName);
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
+                                                                {
+            if (std::this_thread::get_id() == manager->MainThreadId)
+            {
+                mainThreadCall();
+                return Create(return_value_void{nullptr});
+            }
+            else
+            {
+                const auto callback = [functionName, &backgroundCall](Napi::Env env, Napi::Function jsCallback)
+                {
+                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+                    try
+                    {
+                        backgroundCall(env);
+                    }
+                    catch (const Napi::Error &e)
+                    {
+                        callbackLogger.LogError(e);
+                        // For non-blocking, we just log - no direct return value
+                    }
+                };
+
+                const auto status = tsfn.NonBlockingCall(callback);
+                if (status != napi_ok)
+                {
+                    logger.Log("NonBlockingCall failed with status: " + std::to_string(status));
+                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                }
+                return Create(return_value_void{nullptr});
+            } });
+    }
+
+    // Blocking callback pattern helper
+    // Used for callbacks that need to return a value synchronously from another thread
+    template <typename TManager, typename TThreadSafeFunction, typename TReturnValue, typename TMainThreadCall, typename TBackgroundCall, typename TErrorResultCreator>
+    inline return_value_void *ExecuteBlockingCallback(
+        const char *functionName,
+        TManager *manager,
+        TThreadSafeFunction &tsfn,
+        param_ptr *p_callback_handler,
+        void (*p_callback)(param_ptr *, TReturnValue *),
+        TMainThreadCall &&mainThreadCall,
+        TBackgroundCall &&backgroundCall,
+        TErrorResultCreator &&createErrorResult) noexcept
+    {
+        LoggerScope logger(functionName);
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
+                                                                {
+            if (std::this_thread::get_id() == manager->MainThreadId)
+            {
+                mainThreadCall();
+                return Create(return_value_void{nullptr});
+            }
+            else
+            {
+                BlockingCallData blockingData;
+
+                const auto callback = [functionName, p_callback_handler, p_callback, &blockingData, &backgroundCall, &createErrorResult](Napi::Env env, Napi::Function jsCallback)
+                {
+                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+                    try
+                    {
+                        backgroundCall(env, jsCallback, &blockingData.mtx, &blockingData.cv, &blockingData.completed, &blockingData.result);
+                    }
+                    catch (const Napi::Error &e)
+                    {
+                        callbackLogger.LogError(e);
+                        p_callback(p_callback_handler, createErrorResult(GetErrorMessage(e)));
+                        SignalBlockingCallComplete(blockingData);
+                    }
+                };
+
+                const auto status = tsfn.BlockingCall(callback);
+                if (status != napi_ok)
+                {
+                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
+                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                }
+
+                return WaitForBlockingCall(logger, blockingData);
+            } });
     }
 }
 
