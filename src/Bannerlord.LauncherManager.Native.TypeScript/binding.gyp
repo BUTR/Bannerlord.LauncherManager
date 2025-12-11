@@ -25,7 +25,7 @@
                 "VCCLCompilerTool": {
                     "AdditionalOptions": [
                         "/EHsc",
-                        "/std:c++17"
+                        "/std:c++20"
                     ],
                     "ExceptionHandling": 1,
                     "EnablePREfast": "true"

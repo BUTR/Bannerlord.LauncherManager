@@ -39,8 +39,7 @@ namespace Bindings::ModuleManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_bool{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -78,8 +77,7 @@ namespace Bindings::ModuleManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_bool{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -110,8 +108,7 @@ namespace Bindings::ModuleManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -128,7 +125,7 @@ namespace Bindings::ModuleManager
             const auto data = static_cast<const EnableDisableData *const>(p_owner);
             const auto env = data->Env;
 
-            const auto moduleId = String::New(env, Copy(p_module_id));
+            const auto moduleId = String::New(env, p_module_id);
 
             return Create(return_value_bool{nullptr, data->FGetDisabled({moduleId}).As<Boolean>()});
         }
@@ -140,8 +137,7 @@ namespace Bindings::ModuleManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_bool{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_bool{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -172,8 +168,7 @@ namespace Bindings::ModuleManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {

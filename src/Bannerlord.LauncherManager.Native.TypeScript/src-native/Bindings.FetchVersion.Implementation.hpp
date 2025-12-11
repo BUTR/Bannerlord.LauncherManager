@@ -2,7 +2,6 @@
 #define VE_FETCHBLVERSION_IMPL_GUARD_HPP_
 
 #include <napi.h>
-#include <codecvt>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Utils.Return.hpp"
 #include "Bindings.FetchVersion.hpp"

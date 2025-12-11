@@ -82,11 +82,10 @@
     } while (0)
 
 #include <napi.h>
-#include <codecvt>
-#include <locale>
 #include <string>
 #include <sstream>
 #include "Bannerlord.LauncherManager.Native.h"
+#include "Utils.Utf.hpp"
 
 using namespace Napi;
 using namespace Bannerlord::LauncherManager::Native;
@@ -141,8 +140,7 @@ public:
 
     static void LogInput(const std::string &caller, char16_t *val)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Parameter: " + convert.to_bytes(val));
+        Log(caller, "Parameter: " + Utils::Utf16ToUtf8(val));
     }
     static void LogInput(const std::string &caller, uint8_t val)
     {
@@ -166,56 +164,47 @@ public:
 
     static void LogInput(const std::string &caller, return_value_void *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? "" : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? "" : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_string *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + std::string(convert.to_bytes(returnData->error == nullptr ? returnData->value : returnData->error)));
+        Log(caller, "Starting: " + Utils::Utf16ToUtf8(returnData->error == nullptr ? returnData->value : returnData->error));
     }
 
     static void LogInput(const std::string &caller, return_value_json *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + std::string(convert.to_bytes(returnData->error == nullptr ? returnData->value : returnData->error)));
+        Log(caller, "Starting: " + Utils::Utf16ToUtf8(returnData->error == nullptr ? returnData->value : returnData->error));
     }
 
     static void LogInput(const std::string &caller, return_value_data *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? ("(" + to_hex(returnData->value) + ", " + std::to_string(returnData->length) + ")") : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? ("(" + to_hex(returnData->value) + ", " + std::to_string(returnData->length) + ")") : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_bool *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? returnData->value ? "true" : "false" : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? returnData->value ? "true" : "false" : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_int32 *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? std::to_string(returnData->value) : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? std::to_string(returnData->value) : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_uint32 *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? std::to_string(returnData->value) : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? std::to_string(returnData->value) : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_ptr *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? to_hex(returnData->value) : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? to_hex(returnData->value) : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_async *returnData)
     {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        Log(caller, "Starting: " + (returnData->error == nullptr ? "" : std::string(convert.to_bytes(returnData->error))));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? "" : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static std::string to_hex(void *ptr)

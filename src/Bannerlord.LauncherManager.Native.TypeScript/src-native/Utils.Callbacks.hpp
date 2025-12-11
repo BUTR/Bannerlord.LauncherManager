@@ -2,10 +2,10 @@
 #define VE_LIB_UTILS_CALLBACKS_GUARD_HPP_
 
 #include <napi.h>
-#include <codecvt>
 #include "Logger.hpp"
 #include "Utils.Generic.hpp"
 #include "Utils.JS.hpp"
+#include "Utils.Utf.hpp"
 
 using namespace Napi;
 
@@ -320,8 +320,7 @@ namespace Utils
             return stack.Utf16Value();
         }
 
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-        return conv.from_bytes(e.Message());
+        return Utf8ToUtf16(e.Message());
     }
 
     // Template specializations to create error results for each return type

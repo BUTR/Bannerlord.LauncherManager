@@ -23,7 +23,7 @@ namespace Utils
         if (object.IsUndefined() || object.IsNull())
         {
             Logger::Log(__FUNCTION__, "Null or undefined object");
-            return env.Null();
+            return env.Null().As<String>();
         }
         const auto jsonObject = env.Global().Get("JSON").As<Object>();
         const auto stringify = jsonObject.Get("stringify").As<Function>();

@@ -2,8 +2,6 @@
 #define VE_COMMON_IMPL_GUARD_HPP_
 
 #include <napi.h>
-#include <codecvt>
-#include <locale>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
 #include "Bindings.Common.hpp"
@@ -39,8 +37,6 @@ namespace Bindings::Common
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-
             const auto env = info.Env();
             return env.Null();
         }
@@ -79,15 +75,12 @@ namespace Bindings::Common
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-
             const auto env = info.Env();
             return env.Null();
         }
         catch (...)
         {
             logger.Log("Unknown exception");
-
             const auto env = info.Env();
             return env.Null();
         }
@@ -113,15 +106,12 @@ namespace Bindings::Common
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-
             const auto env = info.Env();
             return env.Null();
         }
         catch (...)
         {
             logger.Log("Unknown exception");
-
             const auto env = info.Env();
             return env.Null();
         }

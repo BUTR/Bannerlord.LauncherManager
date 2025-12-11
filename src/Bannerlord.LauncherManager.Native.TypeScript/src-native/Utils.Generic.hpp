@@ -2,7 +2,6 @@
 #define VE_LIB_UTILS_GUARD_HPP_
 
 #include <napi.h>
-#include <codecvt>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
 

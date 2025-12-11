@@ -72,8 +72,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -141,8 +140,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -244,8 +242,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -320,8 +317,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -403,8 +399,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -484,8 +479,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -563,8 +557,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -642,8 +635,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -718,8 +710,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -794,8 +785,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -857,8 +847,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -933,8 +922,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
@@ -1009,8 +997,7 @@ namespace Bindings::LauncherManager
         catch (const std::exception &e)
         {
             logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+            return Create(return_value_void{Copy(Utf8ToUtf16(e.what()))});
         }
         catch (...)
         {
