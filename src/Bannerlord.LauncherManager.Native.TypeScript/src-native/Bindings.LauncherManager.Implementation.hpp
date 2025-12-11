@@ -1,6 +1,7 @@
 #ifndef VE_LAUNCHERMANAGER_IMPL_GUARD_HPP_
 #define VE_LAUNCHERMANAGER_IMPL_GUARD_HPP_
 
+#include <napi.h>
 #include <thread>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"

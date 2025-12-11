@@ -1,10 +1,11 @@
 #ifndef VE_BLMANAGER_CB_GUARD_HPP_
 #define VE_BLMANAGER_CB_GUARD_HPP_
 
+#include <napi.h>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
-#include "Utils.Converters.hpp"
 #include "Utils.Callbacks.hpp"
+#include "Utils.Converters.hpp"
 #include "Bindings.ModuleManager.hpp"
 
 using namespace Napi;

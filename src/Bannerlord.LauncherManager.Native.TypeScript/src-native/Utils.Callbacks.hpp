@@ -387,151 +387,6 @@ namespace Utils
         }
     }
 
-    // Blocking call synchronization data
-    struct BlockingCallData
-    {
-        std::mutex mtx;
-        std::condition_variable cv;
-        bool completed = false;
-        return_value_void *result = nullptr;
-    };
-
-    // Signal completion of a blocking call
-    inline void SignalBlockingCallComplete(BlockingCallData &data)
-    {
-        std::lock_guard<std::mutex> lock(data.mtx);
-        data.result = Create(return_value_void{nullptr});
-        data.completed = true;
-        data.cv.notify_one();
-    }
-
-    // Wait for a blocking call to complete and return the result
-    inline return_value_void *WaitForBlockingCall(LoggerScope &logger, BlockingCallData &data)
-    {
-        std::unique_lock<std::mutex> lock(data.mtx);
-        data.cv.wait(lock, [&data]
-                     { return data.completed; });
-        logger.Log("Blocking call completed");
-        return data.result;
-    }
-
-    // Non-awaitable void callback helper with error handling
-    // Queues work on main thread but doesn't wait for completion
-    // TManager: manager type with MainThreadId field
-    // TCallable: callable that receives manager pointer
-    template <typename TManager, typename TCallable>
-    inline return_value_void *NonAwaitableVoidCallback(
-        const char *functionName,
-        TManager *manager,
-        Napi::ThreadSafeFunction &tsfn,
-        param_ptr *p_callback_handler,
-        void (*p_callback)(param_ptr *, return_value_void *),
-        TCallable &&jsCallLogic) noexcept
-    {
-        LoggerScope logger(functionName);
-        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
-                                                                {
-            if (std::this_thread::get_id() == manager->MainThreadId)
-            {
-                jsCallLogic(manager);
-                return Create(return_value_void{nullptr});
-            }
-            else
-            {
-                const auto callback = [functionName, &jsCallLogic, manager, p_callback_handler, p_callback](Napi::Env env, Napi::Function jsCallback)
-                {
-                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-                    try
-                    {
-                        jsCallLogic(manager);
-                    }
-                    catch (const Napi::Error &e)
-                    {
-                        callbackLogger.LogError(e);
-                        p_callback(p_callback_handler, Create(return_value_void{Copy(GetErrorMessage(e))}));
-                    }
-                };
-
-                const auto status = tsfn.BlockingCall(callback);
-                if (status != napi_ok)
-                {
-                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
-                }
-                return Create(return_value_void{nullptr});
-            } });
-    }
-
-    // Non-awaitable async string callback helper (for dialog-style callbacks)
-    // Used for callbacks that return a string asynchronously via promise resolution
-    template <typename TManager, typename TCallable>
-    inline return_value_void *NonAwaitableStringPromiseCallback(
-        const char *functionName,
-        TManager *manager,
-        Napi::ThreadSafeFunction &tsfn,
-        param_ptr *p_callback_handler,
-        void (*p_callback)(param_ptr *, return_value_string *),
-        TCallable &&createArgsAndCall) noexcept
-    {
-        LoggerScope logger(functionName);
-        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
-                                                                {
-            // Create resolve/reject handlers that will invoke the callback
-            const auto onResolve = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                const auto result = info[0];
-                if (result.IsNull() || result.IsUndefined())
-                {
-                    p_callback(p_callback_handler, Create(return_value_string{nullptr, nullptr}));
-                }
-                else
-                {
-                    const auto resultStr = result.As<Napi::String>();
-                    p_callback(p_callback_handler, Create(return_value_string{nullptr, Copy(resultStr.Utf16Value())}));
-                }
-            };
-            const auto onReject = [p_callback_handler, p_callback](const Napi::CallbackInfo &info)
-            {
-                if (info.Length() == 0)
-                {
-                    p_callback(p_callback_handler, Create(return_value_string{Copy(u"Unknown error"), nullptr}));
-                }
-                else
-                {
-                    const auto error = info[0].As<Napi::Error>();
-                    p_callback(p_callback_handler, Create(return_value_string{Copy(GetErrorMessage(error)), nullptr}));
-                }
-            };
-
-            if (std::this_thread::get_id() == manager->MainThreadId)
-            {
-                // On main thread, call directly without blocking
-                const auto promise = createArgsAndCall(manager).template As<Napi::Promise>();
-                const auto env = promise.Env();
-                const auto then = promise.Get("then").template As<Napi::Function>();
-                then.Call(promise, {Napi::Function::New(env, onResolve), Napi::Function::New(env, onReject)});
-            }
-            else
-            {
-                // Use the TSFN trampoline
-                const auto callback = [functionName, manager, onResolve, onReject, &createArgsAndCall](Napi::Env env, Napi::Function jsCallback)
-                {
-                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-                    const auto promise = createArgsAndCall(manager);
-                    jsCallback.Call({promise, Napi::Function::New(env, onResolve), Napi::Function::New(env, onReject)});
-                };
-
-                const auto status = tsfn.BlockingCall(callback);
-                if (status != napi_ok)
-                {
-                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
-                }
-            }
-
-            return Create(return_value_void{nullptr}); });
-    }
-
     // Awaitable callback helper with synchronization
     // Queues work on main thread and waits for completion
     // TReturnValue: the return value type for the callback
@@ -559,20 +414,26 @@ namespace Utils
             }
             else
             {
-                BlockingCallData blockingData;
+                std::mutex mtx;
+                std::condition_variable cv;
+                bool completed = false;
+                return_value_void *result = nullptr;
 
-                const auto callback = [functionName, p_callback_handler, p_callback, &backgroundCall, &blockingData](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_callback_handler, p_callback, &backgroundCall, &mtx, &cv, &completed, &result](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
-                        backgroundCall(env, jsCallback, &blockingData.mtx, &blockingData.cv, &blockingData.completed, &blockingData.result);
+                        backgroundCall(env, jsCallback, &mtx, &cv, &completed, &result);
                     }
                     catch (const Napi::Error &e)
                     {
                         callbackLogger.LogError(e);
                         p_callback(p_callback_handler, CreateErrorResult<TReturnValue>(GetErrorMessage(e)));
-                        SignalBlockingCallComplete(blockingData);
+                        std::lock_guard<std::mutex> lock(mtx);
+                        result = Create(return_value_void{nullptr});
+                        completed = true;
+                        cv.notify_one();
                     }
                 };
 
@@ -583,102 +444,11 @@ namespace Utils
                     return Create(return_value_void{Copy(u"Failed to queue async call")});
                 }
 
-                return WaitForBlockingCall(logger, blockingData);
-            } });
-    }
-
-    // Non-awaitable callback pattern helper (void return type)
-    // Used for callbacks that don't need to return a value synchronously
-    template <typename TManager, typename TThreadSafeFunction, typename TMainThreadCall, typename TBackgroundCall>
-    inline return_value_void *ExecuteNonAwaitableCallback(
-        const char *functionName,
-        TManager *manager,
-        TThreadSafeFunction &tsfn,
-        TMainThreadCall &&mainThreadCall,
-        TBackgroundCall &&backgroundCall) noexcept
-    {
-        LoggerScope logger(functionName);
-        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
-                                                                {
-            if (std::this_thread::get_id() == manager->MainThreadId)
-            {
-                mainThreadCall();
-                return Create(return_value_void{nullptr});
-            }
-            else
-            {
-                const auto callback = [functionName, &backgroundCall](Napi::Env env, Napi::Function jsCallback)
-                {
-                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-                    try
-                    {
-                        backgroundCall(env);
-                    }
-                    catch (const Napi::Error &e)
-                    {
-                        callbackLogger.LogError(e);
-                        // For non-blocking, we just log - no direct return value
-                    }
-                };
-
-                const auto status = tsfn.BlockingCall(callback);
-                if (status != napi_ok)
-                {
-                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
-                }
-                return Create(return_value_void{nullptr});
-            } });
-    }
-
-    // Awaitable callback pattern helper
-    // Used for callbacks that need to return a value synchronously from another thread
-    template <typename TManager, typename TThreadSafeFunction, typename TReturnValue, typename TMainThreadCall, typename TBackgroundCall, typename TErrorResultCreator>
-    inline return_value_void *ExecuteAwaitableCallback(
-        const char *functionName,
-        TManager *manager,
-        TThreadSafeFunction &tsfn,
-        param_ptr *p_callback_handler,
-        void (*p_callback)(param_ptr *, TReturnValue *),
-        TMainThreadCall &&mainThreadCall,
-        TBackgroundCall &&backgroundCall,
-        TErrorResultCreator &&createErrorResult) noexcept
-    {
-        LoggerScope logger(functionName);
-        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
-                                                                {
-            if (std::this_thread::get_id() == manager->MainThreadId)
-            {
-                mainThreadCall();
-                return Create(return_value_void{nullptr});
-            }
-            else
-            {
-                BlockingCallData blockingData;
-
-                const auto callback = [functionName, p_callback_handler, p_callback, &blockingData, &backgroundCall, &createErrorResult](Napi::Env env, Napi::Function jsCallback)
-                {
-                    LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
-                    try
-                    {
-                        backgroundCall(env, jsCallback, &blockingData.mtx, &blockingData.cv, &blockingData.completed, &blockingData.result);
-                    }
-                    catch (const Napi::Error &e)
-                    {
-                        callbackLogger.LogError(e);
-                        p_callback(p_callback_handler, createErrorResult(GetErrorMessage(e)));
-                        SignalBlockingCallComplete(blockingData);
-                    }
-                };
-
-                const auto status = tsfn.BlockingCall(callback);
-                if (status != napi_ok)
-                {
-                    logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
-                }
-
-                return WaitForBlockingCall(logger, blockingData);
+                std::unique_lock<std::mutex> lock(mtx);
+                cv.wait(lock, [&completed]
+                        { return completed; });
+                logger.Log("Blocking call completed");
+                return result;
             } });
     }
 }

@@ -2,9 +2,9 @@
 #define VE_BLMANAGER_IMPL_GUARD_HPP_
 
 #include <napi.h>
-#include <thread>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
+#include "Utils.Return.hpp"
 #include "Bindings.ModuleManager.hpp"
 #include "Bindings.ModuleManager.Callbacks.hpp"
 

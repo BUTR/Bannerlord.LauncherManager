@@ -2,9 +2,9 @@
 #define VE_UTILS_IMPL_GUARD_HPP_
 
 #include <napi.h>
-#include <thread>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Logger.hpp"
+#include "Utils.Return.hpp"
 #include "Bindings.Utils.hpp"
 
 using namespace Napi;

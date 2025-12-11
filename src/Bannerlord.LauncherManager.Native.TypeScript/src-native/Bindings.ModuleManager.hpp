@@ -1,6 +1,7 @@
 #ifndef VE_BLMANAGER_GUARD_HPP_
 #define VE_BLMANAGER_GUARD_HPP_
 
+#include <napi.h>
 #include "Bannerlord.LauncherManager.Native.h"
 
 using namespace Napi;
