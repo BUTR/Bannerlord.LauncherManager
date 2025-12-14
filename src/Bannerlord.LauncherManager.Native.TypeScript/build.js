@@ -5,7 +5,7 @@
  * Converted from commands.ps1 to native JavaScript
  *
  * Usage: node build.js [type] [configuration]
- * Types: build, test, clear, build-native, build-napi, build-ts, build-content, test-build
+ * Types: build, test, clear, build-native, build-napi, build-ts, test-build
  * Configuration: Release (default) or Debug
  */
 
@@ -21,7 +21,6 @@ const VALID_TYPES = [
   "build-native",
   "build-napi",
   "build-ts",
-  "build-content",
   "test-build",
 ];
 
@@ -50,7 +49,7 @@ if (!["Release", "Debug"].includes(configuration)) {
 class MissingDotNetSDKException extends Error {
   constructor() {
     super(
-      "Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0",
+      "Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/10.0",
     );
     this.name = "MissingDotNetSDKException";
   }
@@ -101,6 +100,31 @@ function spawnAsync(exe, args, options = {}, out = console) {
       reject(err);
     }
   });
+}
+
+/**
+ * Signs a file using the configured signing tool
+ * @param {string} filePath - Path to file to sign
+ * @returns {Promise<void>}
+ */
+async function sign(filePath) {
+  if (process.env["SIGN_TOOL"] !== undefined) {
+    console.log(`  Signing: ${filePath}`);
+    return spawnAsync(process.env["SIGN_TOOL"], [
+      "sign",
+      "/sha1",
+      process.env["SIGN_THUMBPRINT"],
+      "/td",
+      "sha256",
+      "/fd",
+      "sha256",
+      "/tr",
+      "http://timestamp.comodoca.com",
+      filePath,
+    ]);
+  } else {
+    console.log(`  Skipping signing (SIGN_TOOL not configured)`);
+  }
 }
 
 /**
@@ -232,7 +256,7 @@ async function main() {
     if (["build", "test", "build-native"].includes(type)) {
       if (!commandExists("dotnet")) {
         throw new Error(
-          "dotnet CLI not found. Please install .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0",
+          "dotnet CLI not found. Please install .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/10.0",
         );
       }
     }
@@ -253,7 +277,6 @@ async function main() {
         "*.lib",
         "*.so",
         "build",
-        "build-dotnet",
         "dist",
         "coverage",
         ".nyc_output",
@@ -273,13 +296,13 @@ async function main() {
         );
       }
 
-      // Create output directory if it doesn't exist
+      // Create directory if it doesn't exist
       const dotnetArtifacts = path.resolve("build-dotnet");
       if (!fs.existsSync(dotnetArtifacts)) {
         fs.mkdirSync(dotnetArtifacts, { recursive: true });
       }
 
-      // Run dotnet publish with explicit output directory
+      // Run dotnet publish with retry logic
       const buildArgs = [
         "publish",
         "--self-contained",
@@ -299,7 +322,7 @@ async function main() {
         await spawnAsync("dotnet", buildArgs);
       }
 
-      // Copy native artifacts from the output directory
+      // Copy native artifacts
       console.log(`  Checking artifacts in: ${dotnetArtifacts}`);
       const artifactFiles = fs.readdirSync(dotnetArtifacts);
       console.log(`  Found files: ${artifactFiles.join(", ")}`);
@@ -319,7 +342,7 @@ async function main() {
         copyItem(path.join(dotnetArtifacts, file), file);
       });
 
-      // Also check for files in the native subfolder (Windows AOT build)
+      // Also check for .lib file in the native subfolder (Windows AOT build)
       const nativeSubfolder = path.join(dotnetArtifacts, "native");
       console.log(`  Checking native subfolder: ${nativeSubfolder}`);
       if (fs.existsSync(nativeSubfolder)) {
@@ -337,63 +360,54 @@ async function main() {
         console.log(`  Native subfolder does not exist`);
       }
 
-      // Copy header file and lib file from the original build location
-      // These files are generated in bin/ not in the -o output directory
-      const rid = process.platform === "win32" ? "win-x64" : "linux-x64";
+      // Fallback: Check the original build location if .lib is still missing
+      if (process.platform === "win32" && !fs.existsSync("Bannerlord.LauncherManager.Native.lib")) {
+        // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
+        const possibleLibPaths = [
+          // Standard path: bin/Release/net10.0/win-x64/native/
+          path.resolve(nativeDir, `bin/${configuration}/net10.0/win-x64/native/Bannerlord.LauncherManager.Native.lib`),
+          // CI path with platform folder: bin/x64/Release/net10.0/win-x64/native/
+          path.resolve(nativeDir, `bin/x64/${configuration}/net10.0/win-x64/native/Bannerlord.LauncherManager.Native.lib`),
+        ];
 
-      // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
-      const possibleBinPaths = [
-        // Standard path: bin/Release/net10.0/win-x64/
-        path.resolve(nativeDir, `bin/${configuration}/net10.0/${rid}`),
-        // CI path with platform folder: bin/x64/Release/net10.0/win-x64/
-        path.resolve(nativeDir, `bin/x64/${configuration}/net10.0/${rid}`),
-      ];
+        let foundLib = false;
+        for (const libPath of possibleLibPaths) {
+          console.log(`  Checking lib path: ${libPath}`);
+          if (fs.existsSync(libPath)) {
+            copyItem(libPath, "Bannerlord.LauncherManager.Native.lib");
+            foundLib = true;
+            break;
+          }
+        }
 
-      let foundBinPath = null;
-      for (const binPath of possibleBinPaths) {
-        console.log(`  Checking bin path: ${binPath}`);
-        if (fs.existsSync(binPath)) {
-          foundBinPath = binPath;
-          console.log(`  Found bin path: ${binPath}`);
-          break;
+        if (!foundLib) {
+          console.log(`  .lib file not found in any expected location`);
+          // List what's in the native dir bin folder for debugging
+          const binDir = path.resolve(nativeDir, "bin");
+          if (fs.existsSync(binDir)) {
+            console.log(`  Contents of ${binDir}:`);
+            const listDirRecursive = (dir, indent = "    ") => {
+              const items = fs.readdirSync(dir, { withFileTypes: true });
+              items.forEach(item => {
+                console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
+                if (item.isDirectory() && indent.length < 16) {
+                  listDirRecursive(path.join(dir, item.name), indent + "  ");
+                }
+              });
+            };
+            listDirRecursive(binDir);
+          }
         }
       }
 
-      if (foundBinPath) {
-        // Copy header file
-        const headerPath = path.join(foundBinPath, "Bannerlord.LauncherManager.Native.h");
-        if (fs.existsSync(headerPath)) {
-          copyItem(headerPath, "Bannerlord.LauncherManager.Native.h");
-        } else {
-          console.log(`  Warning: Header file not found at ${headerPath}`);
-        }
+      copyItem(
+        path.join(nativeDir, "Bannerlord.LauncherManager.Native.h"),
+        "Bannerlord.LauncherManager.Native.h",
+      );
 
-        // Copy lib file (Windows only)
-        if (process.platform === "win32" && !fs.existsSync("Bannerlord.LauncherManager.Native.lib")) {
-          const libPath = path.join(foundBinPath, "native", "Bannerlord.LauncherManager.Native.lib");
-          if (fs.existsSync(libPath)) {
-            copyItem(libPath, "Bannerlord.LauncherManager.Native.lib");
-          } else {
-            console.log(`  Warning: Lib file not found at ${libPath}`);
-          }
-        }
-      } else {
-        console.log(`  Warning: Could not find bin path in any expected location`);
-        // List what's in the native dir bin folder for debugging
-        const binDir = path.resolve(nativeDir, "bin");
-        if (fs.existsSync(binDir)) {
-          console.log(`  Contents of ${binDir}:`);
-          const listDirRecursive = (dir, indent = "    ") => {
-            const items = fs.readdirSync(dir, { withFileTypes: true });
-            items.forEach((item) => {
-              console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
-              if (item.isDirectory() && indent.length < 16) {
-                listDirRecursive(path.join(dir, item.name), indent + "  ");
-              }
-            });
-          };
-          listDirRecursive(binDir);
-        }
+      // Sign the DLL if signing is configured
+      if (fs.existsSync("Bannerlord.LauncherManager.Native.dll")) {
+        await sign("Bannerlord.LauncherManager.Native.dll");
       }
 
       console.log("");
@@ -421,27 +435,13 @@ async function main() {
       console.log("");
     }
 
-    // Build TypeScript
-    if (["build", "test", "test-build", "build-ts"].includes(type)) {
-      console.log("Building TypeScript");
-
-      // Build main library
-      execCommand("npx tsc -p tsconfig.json");
-      execCommand("npx tsc -p tsconfig.module.json");
-
-      // Build tests
-      execCommand("npx tsc -p tsconfig.test.json");
-
-      console.log("");
-    }
-
     // Copy content to dist
     if (["build", "test", "test-build", "build-content"].includes(type)) {
       console.log("Copying content to dist");
 
-      if (process.platform === "win32") {
+      if (process.platform == "win32") {
         copyItem("Bannerlord.LauncherManager.Native.dll", "dist/Bannerlord.LauncherManager.Native.dll");
-      } else if (process.platform === "linux") {
+      } else if (process.platform == "linux") {
         copyItem("Bannerlord.LauncherManager.Native.so", "dist/Bannerlord.LauncherManager.Native.so");
       }
 
@@ -449,20 +449,33 @@ async function main() {
         `build/${configuration}/launchermanager.node`,
         "dist/launchermanager.node",
       );
+      console.log("");
+    }
 
-      // Copy test data
-      copyItem("test/Version.xml", "dist/test/bin/Win64_Shipping_Client/Version.xml");
-      copyItem("test/Harmony.xml", "dist/test/Modules/Bannerlord.Harmony/SubModule.xml");
-      copyItem("test/UIExtenderEx.xml", "dist/test/Modules/Bannerlord.UIExtenderEx/SubModule.xml");
+    // Build TypeScript
+    if (["build", "build-ts"].includes(type)) {
+      console.log("Building TypeScript");
+
+      // Verify TypeScript config exists
+      if (!fs.existsSync("tsconfig.json")) {
+        throw new Error("tsconfig.json not found");
+      }
+
+      // Build main library
+      execCommand("npx tsc -p tsconfig.json");
+      execCommand("npx tsc -p tsconfig.module.json");
 
       console.log("");
     }
 
     // Run tests
     if (type === "test") {
-      console.log(`Running tests with Configuration ${configuration}`);
+      console.log("Running tests");
 
-      // Copy native module to dist/build for tests
+      // Compile TypeScript tests
+      execCommand("npx tsc -p tsconfig.test.json");
+
+      // Copy native module to dist for tests
       const buildDir = path.resolve("dist/build");
       if (!fs.existsSync(buildDir)) {
         fs.mkdirSync(buildDir, { recursive: true });
@@ -473,9 +486,9 @@ async function main() {
       // On Linux, tolerate exit code 139 (segfault) which can occur during Native AOT cleanup
       // This is a known issue: .NET Native AOT libraries don't support clean unloading
       try {
-        execCommand(`npx ava -- ${configuration}`);
+        execCommand("npx ava");
       } catch (err) {
-        if (process.platform === "linux" && err.status === 139) {
+        if (process.platform === 'linux' && err.status === 139) {
           console.log("  Note: Segfault during cleanup (exit code 139) - this is expected on Linux with Native AOT");
         } else {
           throw err;
@@ -498,7 +511,7 @@ async function main() {
       console.error("\nStack trace:", error.stack);
     }
 
-    const exitCode = err?.code || 1;
+    const exitCode = err?.code || -1;
     process.exit(exitCode);
   }
 }
