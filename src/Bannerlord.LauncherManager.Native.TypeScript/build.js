@@ -337,44 +337,62 @@ async function main() {
         console.log(`  Native subfolder does not exist`);
       }
 
-      // Fallback: Check the original build location if .lib is still missing
-      if (process.platform === "win32" && !fs.existsSync("Bannerlord.LauncherManager.Native.lib")) {
-        const rid = "win-x64";
-        // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
-        const possibleLibPaths = [
-          // Standard path: bin/Release/net10.0/win-x64/native/
-          path.resolve(nativeDir, `bin/${configuration}/net10.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
-          // CI path with platform folder: bin/x64/Release/net10.0/win-x64/native/
-          path.resolve(nativeDir, `bin/x64/${configuration}/net10.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
-        ];
+      // Copy header file and lib file from the original build location
+      // These files are generated in bin/ not in the -o output directory
+      const rid = process.platform === "win32" ? "win-x64" : "linux-x64";
 
-        let foundLib = false;
-        for (const libPath of possibleLibPaths) {
-          console.log(`  Checking lib path: ${libPath}`);
-          if (fs.existsSync(libPath)) {
-            copyItem(libPath, "Bannerlord.LauncherManager.Native.lib");
-            foundLib = true;
-            break;
-          }
+      // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
+      const possibleBinPaths = [
+        // Standard path: bin/Release/net10.0/win-x64/
+        path.resolve(nativeDir, `bin/${configuration}/net10.0/${rid}`),
+        // CI path with platform folder: bin/x64/Release/net10.0/win-x64/
+        path.resolve(nativeDir, `bin/x64/${configuration}/net10.0/${rid}`),
+      ];
+
+      let foundBinPath = null;
+      for (const binPath of possibleBinPaths) {
+        console.log(`  Checking bin path: ${binPath}`);
+        if (fs.existsSync(binPath)) {
+          foundBinPath = binPath;
+          console.log(`  Found bin path: ${binPath}`);
+          break;
+        }
+      }
+
+      if (foundBinPath) {
+        // Copy header file
+        const headerPath = path.join(foundBinPath, "Bannerlord.LauncherManager.Native.h");
+        if (fs.existsSync(headerPath)) {
+          copyItem(headerPath, "Bannerlord.LauncherManager.Native.h");
+        } else {
+          console.log(`  Warning: Header file not found at ${headerPath}`);
         }
 
-        if (!foundLib) {
-          console.log(`  .lib file not found in any expected location`);
-          // List what's in the native dir bin folder for debugging
-          const binDir = path.resolve(nativeDir, "bin");
-          if (fs.existsSync(binDir)) {
-            console.log(`  Contents of ${binDir}:`);
-            const listDirRecursive = (dir, indent = "    ") => {
-              const items = fs.readdirSync(dir, { withFileTypes: true });
-              items.forEach((item) => {
-                console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
-                if (item.isDirectory() && indent.length < 16) {
-                  listDirRecursive(path.join(dir, item.name), indent + "  ");
-                }
-              });
-            };
-            listDirRecursive(binDir);
+        // Copy lib file (Windows only)
+        if (process.platform === "win32" && !fs.existsSync("Bannerlord.LauncherManager.Native.lib")) {
+          const libPath = path.join(foundBinPath, "native", "Bannerlord.LauncherManager.Native.lib");
+          if (fs.existsSync(libPath)) {
+            copyItem(libPath, "Bannerlord.LauncherManager.Native.lib");
+          } else {
+            console.log(`  Warning: Lib file not found at ${libPath}`);
           }
+        }
+      } else {
+        console.log(`  Warning: Could not find bin path in any expected location`);
+        // List what's in the native dir bin folder for debugging
+        const binDir = path.resolve(nativeDir, "bin");
+        if (fs.existsSync(binDir)) {
+          console.log(`  Contents of ${binDir}:`);
+          const listDirRecursive = (dir, indent = "    ") => {
+            const items = fs.readdirSync(dir, { withFileTypes: true });
+            items.forEach((item) => {
+              console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
+              if (item.isDirectory() && indent.length < 16) {
+                listDirRecursive(path.join(dir, item.name), indent + "  ");
+              }
+            });
+          };
+          listDirRecursive(binDir);
         }
       }
 
