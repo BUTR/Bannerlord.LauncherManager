@@ -49,7 +49,7 @@
 		"NUGET_XMLDOC_MODE": "skip"
 	},
 	"postStartCommand": {
-        "dotnet restore": "dotnet restore src/Bannerlord.LauncherManager.sln",
+        "dotnet restore": "dotnet restore Bannerlord.LauncherManager.sln",
         "yarn install": "cd src/Bannerlord.LauncherManager.Native.TypeScript && yarn install"
     },
 	"customizations": {
@@ -74,7 +74,7 @@
 				},
 				"telemetry.telemetryLevel": "off",
 				"dotnetAcquisitionExtension.enableTelemetry": false,
-                "dotnet.defaultSolution": "src/Bannerlord.LauncherManager.sln"
+                "dotnet.defaultSolution": "Bannerlord.LauncherManager.sln"
 			}
 		}
 	}
