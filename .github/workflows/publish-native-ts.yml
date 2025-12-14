@@ -32,19 +32,10 @@ jobs:
       - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Debug
       - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Release
 
-      - name: Read Node.js version from package.json
-        id: node-version
-        shell: pwsh
-        run: |
-          $packageJson = Get-Content src/Bannerlord.LauncherManager.Native.TypeScript/package.json | ConvertFrom-Json
-          $nodeVersion = $packageJson.engines.node
-          echo "NODE_VERSION=$nodeVersion" >> $env:GITHUB_OUTPUT
-          echo "Using Node.js version: $nodeVersion"
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
+          node-version: '22'
 
       - run: |
           cd ./src/Bannerlord.LauncherManager.Native.TypeScript && `
@@ -58,18 +49,18 @@ jobs:
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Debug
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Release
 
-      - uses: actions/setup-node@v3.4.1
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
+          node-version: '22'
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_NPM_TOKEN }}
 
-      - uses: actions/setup-node@v3.4.1
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
+          node-version: '22'
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
