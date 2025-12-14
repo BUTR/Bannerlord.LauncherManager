@@ -4,11 +4,12 @@ import { FileHandle, open, readdir, readFile, writeFile } from 'node:fs/promises
 import path from 'path';
 import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../src/types';
 import { NativeLauncherManager, allocAliveCount, allocWithoutOwnership, types } from '../src';
+import { GAME_ROOT } from './testData';
 
 const isDebug = process.argv[2] == "Debug";
 
 test('Main', async (t) => {
-  const gamePath = __dirname;
+  const gamePath = GAME_ROOT;
 
   let moduleViewModels: ModuleViewModel[] = [];
 

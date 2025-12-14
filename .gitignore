@@ -389,3 +389,6 @@ MigrationBackup/
 /**/.idea/*
 /src/Bannerlord.VortexExtension.Native/Bannerlord.VortexExtension.Native.h
 /src/Bannerlord.LauncherManager.Native/Bannerlord.LauncherManager.Native.h
+
+# Test data (un-ignore bin directory for test fixtures)
+!src/Bannerlord.LauncherManager.Native.TypeScript/test/bin/

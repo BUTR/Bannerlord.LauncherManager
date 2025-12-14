@@ -1,4 +1,16 @@
-const invalidXml = `<?xml version="1.0" encoding="UTF-8"?>
+import * as path from 'path';
+
+// Path to the test data directory (resolves from compiled dist/test back to source test/)
+// Structure: dist/test/*.spec.js -> ../../test/ (source)
+export const TEST_DATA_DIR = path.resolve(__dirname, '../../test');
+
+// Simulated game installation paths
+export const GAME_ROOT = TEST_DATA_DIR;
+export const BIN_DIR = path.join(TEST_DATA_DIR, 'bin/Win64_Shipping_Client');
+export const MODULES_DIR = path.join(TEST_DATA_DIR, 'Modules');
+
+// XML test data for BannerlordModuleManager tests
+export const invalidXml = `<?xml version="1.0" encoding="UTF-8"?>
 <Module>
   <Name value="Кириллица" />
   <Id value="Invalid" />
@@ -23,7 +35,7 @@ const invalidXml = `<?xml version="1.0" encoding="UTF-8"?>
   </SubModules>
 </Module>`;
 
-const uiExtenderExXml = `<?xml version="1.0" encoding="UTF-8"?>
+export const uiExtenderExXml = `<?xml version="1.0" encoding="UTF-8"?>
 <Module>
   <Name value="UIExtenderEx" />
   <Id value="Bannerlord.UIExtenderEx" />
@@ -55,7 +67,7 @@ const uiExtenderExXml = `<?xml version="1.0" encoding="UTF-8"?>
   </SubModules>
 </Module>`;
 
-const harmonyXml = `<?xml version="1.0" encoding="UTF-8"?>
+export const harmonyXml = `<?xml version="1.0" encoding="UTF-8"?>
 <Module>
   <Name value="Harmony" />
   <Id value="Bannerlord.Harmony" />
@@ -87,7 +99,7 @@ const harmonyXml = `<?xml version="1.0" encoding="UTF-8"?>
   </SubModules>
 </Module>`;
 
-const harmonySubModuleXml = `<SubModule>
+export const harmonySubModuleXml = `<SubModule>
   <Name value="Harmony" />
   <DLLName value="Bannerlord.Harmony.dll" />
   <SubModuleClassType value="Bannerlord.Harmony.SubModule" />
@@ -97,5 +109,3 @@ const harmonySubModuleXml = `<SubModule>
     <Tag key="IsNoRenderModeElement" value="false" />
   </Tags>
 </SubModule>`;
-
-module.exports = { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml }

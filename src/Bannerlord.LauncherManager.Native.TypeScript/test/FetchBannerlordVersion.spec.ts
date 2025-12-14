@@ -1,11 +1,12 @@
 import test from 'ava';
 
 import { FetchBannerlordVersion, allocAliveCount } from '../src';
+import { GAME_ROOT } from './testData';
 
 const isDebug = process.argv[2] == "Debug";
 
 test('Main', async (t) => {
-  const path = __dirname;
+  const path = GAME_ROOT;
   const dllName = 'TaleWorlds.Library.dll';
 
   const changeSet = FetchBannerlordVersion.getChangeSet(path, dllName);

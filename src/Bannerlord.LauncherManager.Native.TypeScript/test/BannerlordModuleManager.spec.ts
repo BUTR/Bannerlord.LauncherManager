@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml } from './_data';
+import { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml } from './testData';
 import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType } from '../src/types';
 import { BannerlordModuleManager, allocAliveCount } from '../src';
 
