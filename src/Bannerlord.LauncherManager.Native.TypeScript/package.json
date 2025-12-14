@@ -22,49 +22,35 @@
   },
   "scripts": {
     "install": "echo",
-    "clean": "pwsh ./commands.ps1 clean",
-    "native": "pwsh ./commands.ps1 build-native",
-    "build": "pwsh ./commands.ps1 build",
-    "build-native": "pwsh ./commands.ps1 build-native",
-    "build-napi": "pwsh ./commands.ps1 build-napi",
-    "build-ts": "pwsh ./commands.ps1 build-ts",
-    "build-content": "pwsh ./commands.ps1 build-content",
-    "test": "pwsh ./commands.ps1 test",
-    "test-build": "pwsh ./commands.ps1 test-build",
+    "clean": "node build.js clear",
+    "native": "node build.js build-native",
+    "build": "node build.js build",
+    "build-native": "node build.js build-native",
+    "build-napi": "node build.js build-napi",
+    "build-ts": "node build.js build-ts",
+    "build-content": "node build.js build-content",
+    "test": "node build.js test",
+    "test-build": "node build.js test-build",
     "test-no-build": "pwsh ./commands.ps1 test-no-build",
-    "watch:build": "tsc -p tsconfig.json -w",
-    "watch:test": "nyc --silent ava --watch",
-    "cov": "run-s build test-no-build cov:html cov:lcov && open-cli coverage/index.html",
-    "cov:html": "nyc report --reporter=html",
-    "cov:lcov": "nyc report --reporter=lcov",
-    "cov:send": "run-s cov:lcov && codecov",
-    "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "doc": "run-s doc:html && open-cli dist/docs/index.html",
-    "doc:html": "typedoc --entryPoints src/index.ts --exclude **/*.spec.* --exclude **/_*.* --out dist/docs",
-    "doc:json": "typedoc --entryPoints src/index.ts --exclude **/*.spec.* --exclude **/_*.* --json dist/docs/typedoc.json"
+    "test-ava": "tsc -p tsconfig.test.json && node -e \"require('fs').mkdirSync('dist/build', {recursive:true}); require('fs').copyFileSync('build/Release/launchermanager.node', 'dist/build/launchermanager.node');\" && ava",
+    "watch:build": "tsc -p tsconfig.json -w"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
+  },
+  "binary": {
+    "napi_versions": [
+      8
+    ]
   },
   "devDependencies": {
-    "@ava/typescript": "^5.0.0",
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@types/node": "^18.7.9",
+    "@ava/typescript": "^6.0.0",
+    "@types/node": "^22.0.0",
     "ava": "^6.4.1",
-    "codecov": "^3.8.2",
-    "cspell": "^6.19.2",
-    "node-addon-api": "^8.3.1",
-    "node-gyp": "^11.1.0",
-    "npm-run-all": "^4.1.5",
-    "nyc": "^15.1.0",
-    "open-cli": "^7.0.1",
-    "shx": "^0.3.4",
+    "node-addon-api": "8.5.0",
+    "node-gyp": "10.0.0",
     "ts-node": "^10.9.1",
-    "typedoc": "^0.23.7",
     "typescript": "^5.7.3"
-  },
-  "overrides": {
-    "got": "^11.8.5"
   },
   "files": [
     "dist/main/index.*",
@@ -80,23 +66,11 @@
   "ava": {
     "failFast": false,
     "timeout": "60s",
-    "typescript": {
-      "rewritePaths": {
-        "test/": "dist/test/"
-      },
-      "compile": false
-    },
     "files": [
-      "test/**/*.spec.ts",
-      "!dist/module/**"
-    ]
-  },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": [
-      "**/_*.*",
-      "**/Version.xml",
-      "**/*.spec.*"
+      "dist/test/**/*.spec.js"
+    ],
+    "require": [
+      "./test/_force-exit.js"
     ]
   }
 }

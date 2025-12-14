@@ -65,5 +65,4 @@ namespace Utils
         return Create(return_value_void{nullptr});
     }
 }
-
 #endif

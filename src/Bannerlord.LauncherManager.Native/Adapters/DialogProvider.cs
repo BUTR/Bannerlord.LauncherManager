@@ -1,5 +1,6 @@
 ﻿using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Native.Extensions;
 
 using BUTR.NativeAOT.Shared;
 
@@ -22,40 +23,70 @@ internal sealed class DialogProvider : IDialogProvider
         _sendDialog = sendDialog;
     }
 
-    public async Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters)
+    public Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters)
     {
-        var tcs = new TaskCompletionSource<string>();
-        SendDialogNative(type.ToStringFast().ToLowerInvariant(), title, message, filters, tcs);
-        return await tcs.Task;
+#if DEBUG
+        //using var logger = LogMethod(type.ToFormattable(), title.ToFormattable(), message.ToFormattable());
+        using var logger = LogMethod(title.ToFormattable(), message.ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<string>();
+            SendDialogNative(type.ToStringFast().ToLowerInvariant(), title, message, filters, tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void SendDialogNativeCallback(param_ptr* pOwner, return_value_string* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(pResult);
+#else
+        using var logger = LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsString(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsString(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private unsafe void SendDialogNative(ReadOnlySpan<char> type, ReadOnlySpan<char> title, ReadOnlySpan<char> message, IReadOnlyList<DialogFileFilter> filters, TaskCompletionSource<string> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(type.ToString().ToFormattable(), message.ToString().ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
@@ -67,13 +98,12 @@ internal sealed class DialogProvider : IDialogProvider
             try
             {
                 using var result = SafeStructMallocHandle.Create(_sendDialog(_pOwner, (param_string*) pType, (param_string*) pTitle, (param_string*) pMessage, (param_json*) pFilters, (param_ptr*) GCHandle.ToIntPtr(handle), &SendDialogNativeCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }

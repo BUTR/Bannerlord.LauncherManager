@@ -1,6 +1,17 @@
 .nyc_output
 build
+build-dotnet
 node_modules
 coverage
 *.log
 *.dll
+*.lib
+*.h
+*.so
+src
+src-native
+test
+tsconfig*.json
+binding.gyp
+build.js
+commands.ps1

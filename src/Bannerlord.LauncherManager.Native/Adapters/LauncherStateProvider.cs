@@ -1,5 +1,6 @@
 ﻿using Bannerlord.LauncherManager.External;
 using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Native.Extensions;
 
 using BUTR.NativeAOT.Shared;
 
@@ -30,53 +31,110 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
         _getState = getState;
     }
 
-    public async Task SetGameParametersAsync(string executable, IReadOnlyList<string> gameParameters)
+    public Task SetGameParametersAsync(string executable, IReadOnlyList<string> gameParameters)
     {
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        SetGameParametersNative(executable, gameParameters, tcs);
-        await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod(executable.ToFormattable());
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            SetGameParametersNative(executable, gameParameters, tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
-    public async Task<LauncherOptions> GetOptionsAsync()
+    public Task<LauncherOptions> GetOptionsAsync()
     {
-        var tcs = new TaskCompletionSource<LauncherOptions>(TaskCreationOptions.RunContinuationsAsynchronously);
-        GetOptionsNative(tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<LauncherOptions>(TaskCreationOptions.RunContinuationsAsynchronously);
+            GetOptionsNative(tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
-    public async Task<LauncherState> GetStateAsync()
+    public Task<LauncherState> GetStateAsync()
     {
-        var tcs = new TaskCompletionSource<LauncherState>(TaskCreationOptions.RunContinuationsAsynchronously);
-        GetStateNative(tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<LauncherState>(TaskCreationOptions.RunContinuationsAsynchronously);
+            GetStateNative(tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void SetGameParametersNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsVoid(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
     private unsafe void SetGameParametersNative(ReadOnlySpan<char> executable, IReadOnlyList<string> gameParameters, TaskCompletionSource tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
@@ -86,13 +144,12 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
             try
             {
                 using var result = SafeStructMallocHandle.Create(_setGameParameters(_pOwner, (param_string*) pExecutable, (param_json*) pGameParameters, (param_ptr*) GCHandle.ToIntPtr(handle), &SetGameParametersNativeCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }
@@ -102,42 +159,56 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetOptionsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherOptions?> tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherOptions?> tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherOptions);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherOptions);
-        handle.Free();
-
-        Logger.LogOutput();
     }
     private unsafe void GetOptionsNative(TaskCompletionSource<LauncherOptions> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         try
         {
             using var result = SafeStructMallocHandle.Create(_getOptions(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetOptionsNativeCallback), true);
+            logger.LogResult(result);
             result.ValueAsVoid();
-
-            Logger.LogOutput();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             tcs.TrySetException(e);
             handle.Free();
         }
@@ -146,42 +217,56 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetStateNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherState?> tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<LauncherState?> tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherState);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherState);
-        handle.Free();
-
-        Logger.LogOutput();
     }
     private unsafe void GetStateNative(TaskCompletionSource<LauncherState> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         try
         {
             using var result = SafeStructMallocHandle.Create(_getState(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetStateNativeCallback), true);
+            logger.LogResult(result);
             result.ValueAsVoid();
-
-            Logger.LogOutput();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             tcs.TrySetException(e);
             handle.Free();
         }

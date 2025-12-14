@@ -32,83 +32,139 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
         _setModuleViewModels = setModuleViewModels;
     }
 
-    public async Task<IModuleViewModel[]?> GetAllModuleViewModelsAsync()
+    public Task<IModuleViewModel[]?> GetAllModuleViewModelsAsync()
     {
-        var tcs = new TaskCompletionSource<IModuleViewModel[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        GetAllModuleViewModelsNative(tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<IModuleViewModel[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            GetAllModuleViewModelsNative(tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
-    public async Task<IModuleViewModel[]?> GetModuleViewModelsAsync()
+    public Task<IModuleViewModel[]?> GetModuleViewModelsAsync()
     {
-        var tcs = new TaskCompletionSource<IModuleViewModel[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        GetModuleViewModelsNative(tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<IModuleViewModel[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            GetModuleViewModelsNative(tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
-    public async Task SetModuleViewModelsAsync(IReadOnlyList<IModuleViewModel> moduleViewModels)
+    public Task SetModuleViewModelsAsync(IReadOnlyList<IModuleViewModel> moduleViewModels)
     {
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        SetModuleViewModelsNative(moduleViewModels, tcs);
-        await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            SetModuleViewModelsNative(moduleViewModels, tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetAllModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<IModuleViewModel[]?> tcs } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
         try
         {
-            var moduleViewModels = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
-                .Where(x => x != null!)
-                .Cast<IModuleViewModel>()
-                .OrderBy(x => x.Index)
-                .ToArray();
-            tcs.TrySetResult(moduleViewModels);
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-            Logger.LogOutput();
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<IModuleViewModel[]?> tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            try
+            {
+                var moduleViewModels = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
+                    .Where(x => x != null!)
+                    .Cast<IModuleViewModel>()
+                    .OrderBy(x => x.Index)
+                    .ToArray();
+                tcs.TrySetResult(moduleViewModels);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                tcs.TrySetException(e);
+            }
+            finally
+            {
+                handle.Free();
+            }
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
-            tcs.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
+            logger.LogException(e);
+            throw;
         }
     }
     private unsafe void GetAllModuleViewModelsNative(TaskCompletionSource<IModuleViewModel[]?> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         try
         {
             using var result = SafeStructMallocHandle.Create(_getAllModuleViewModels(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetAllModuleViewModelsNativeCallback), true);
+            logger.LogResult(result);
             result.ValueAsVoid();
-
-            Logger.LogOutput();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             tcs.TrySetException(e);
             handle.Free();
         }
@@ -117,58 +173,72 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<IModuleViewModel[]?> tcs } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
         try
         {
-            var moduleViewModels = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
-                .Where(x => x != null!)
-                .Cast<IModuleViewModel>()
-                .OrderBy(x => x.Index)
-                .ToArray();
-            tcs.TrySetResult(moduleViewModels);
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-            Logger.LogOutput();
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<IModuleViewModel[]?> tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            try
+            {
+                var moduleViewModels = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
+                    .Where(x => x != null!)
+                    .Cast<IModuleViewModel>()
+                    .OrderBy(x => x.Index)
+                    .ToArray();
+                tcs.TrySetResult(moduleViewModels);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                tcs.TrySetException(e);
+            }
+            finally
+            {
+                handle.Free();
+            }
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
-            tcs.TrySetException(e);
-        }
-        finally
-        {
-            handle.Free();
+            logger.LogException(e);
+            throw;
         }
     }
     private unsafe void GetModuleViewModelsNative(TaskCompletionSource<IModuleViewModel[]?> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         try
         {
             using var result = SafeStructMallocHandle.Create(_getModuleViewModels(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetModuleViewModelsNativeCallback), true);
+            logger.LogResult(result);
             result.ValueAsVoid();
-
-            Logger.LogOutput();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             tcs.TrySetException(e);
             handle.Free();
         }
@@ -177,29 +247,44 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void SetModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsVoid(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
     private unsafe void SetModuleViewModelsNative(IReadOnlyList<IModuleViewModel> moduleViewModels, TaskCompletionSource tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
@@ -209,13 +294,12 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             try
             {
                 using var result = SafeStructMallocHandle.Create(_setModuleViewModels(_pOwner, (param_json*) pModuleViewModels, (param_ptr*) GCHandle.ToIntPtr(handle), &SetModuleViewModelsNativeCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }

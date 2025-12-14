@@ -2,19 +2,19 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": false,
-    "incremental": true,
-    "composite": true,
-    "target": "es2015",
+    "incremental": false,
+    "target": "ES2019",
     "outDir": "dist/main",
     "rootDir": "src",
     "moduleResolution": "node",
-    "module": "UMD",
+    "module": "commonjs",
     "declaration": true,
-    "declarationMap": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "resolveJsonModule": false,
+    "skipLibCheck": true,
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
@@ -32,7 +32,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "lib": [
-      "es2017"
+      "ES2019"
     ],
     "types": [
       "node"

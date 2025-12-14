@@ -1,5 +1,6 @@
 ﻿using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Native.Extensions;
 
 using BUTR.NativeAOT.Shared;
 
@@ -23,38 +24,68 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
 
     public Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
     {
-        var tcs = new TaskCompletionSource();
-        SendNotificationNative(id, type.ToStringFast().ToLowerInvariant(), message, displayMs, tcs);
-        return tcs.Task;
+#if DEBUG
+        //using var logger = Logger.LogMethod(id.ToFormattable(), type.ToFormattable(), displayMs);
+        using var logger = Logger.LogMethod(id.ToFormattable(), displayMs);
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource();
+            SendNotificationNative(id, type.ToStringFast().ToLowerInvariant(), message, displayMs, tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static void SendNotificationCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsVoid(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private void SendNotificationNative(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs, TaskCompletionSource tcs)
     {
-        Logger.LogInput(displayMs);
+#if DEBUG
+        using var logger = Logger.LogMethod(displayMs);
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         fixed (char* pId = id)
         fixed (char* pType = type)
@@ -65,13 +96,12 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
             try
             {
                 using var result = SafeStructMallocHandle.Create(_sendNotification(_pOwner, (param_string*) pId, (param_string*) pType, (param_string*) pMessage, displayMs, (param_ptr*) GCHandle.ToIntPtr(handle), &SendNotificationCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }

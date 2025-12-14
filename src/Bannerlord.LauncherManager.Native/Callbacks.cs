@@ -33,3 +33,8 @@ internal unsafe delegate return_value_void* N_SetModuleViewModels(param_ptr* p_o
 internal unsafe delegate return_value_void* N_GetOptions(param_ptr* p_owner, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_GetState(param_ptr* p_owner, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+internal unsafe delegate param_int N_Log(param_ptr* p_owner,
+    param_int level,
+    param_string* p_messsage);

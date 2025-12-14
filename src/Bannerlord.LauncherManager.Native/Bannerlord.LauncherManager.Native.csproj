@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
 
     <VersionOverride>0</VersionOverride>
-    <Version>2.0.$(VersionOverride)</Version>
+    <Version>3.0.$(VersionOverride)</Version>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -16,13 +16,20 @@
     <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
     <NativeLib>Shared</NativeLib>
+    <DefineConstants>$(DefineConstants);LOGGING;</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration) == 'Debug'">
-    <!--
-    <DefineConstants>$(DefineConstants);TRACK_ALLOCATIONS;LOGGING;</DefineConstants>
-    -->
+
+  <PropertyGroup Condition="$(OS) == 'Windows_NT'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(OS) != 'Windows_NT'">
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
     <DefineConstants>$(DefineConstants);TRACK_ALLOCATIONS;</DefineConstants>
-  </PropertyGroup>
+  </PropertyGroup>  
+
   <PropertyGroup Condition="$(Configuration) == 'Release'">
     <!--
     <DebuggerSupport>false</DebuggerSupport>
@@ -60,6 +67,14 @@
     <PackageReference Include="ConcurrentHashSet" Version="1.3.0" />
     <PackageReference Include="FetchBannerlordVersion" Version="1.0.6.46" />
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+    <PackageReference Include="ZLogger" Version="2.5.10" />
   </ItemGroup>
+
+  <Target Name="CopyNativeContent" AfterTargets="Publish">
+    <ItemGroup>
+      <NativeOutputFiles Include="bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\native\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeOutputFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

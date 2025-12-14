@@ -1,10 +1,8 @@
 .nyc_output
 build
+build-dotnet
 dist
 node_modules
-src/test/**/**.js
-!src/test/**/_**.js
-!src/**/**.spec.js
 coverage
 *.tgz
 *.log

@@ -104,6 +104,12 @@ partial class LauncherManagerHandlerNative
 
         bool IsObfuscatedInternal(byte[] data)
         {
+#if DEBUG
+            using var logger = LogMethod();
+#else
+            using var logger = LogMethod();
+#endif
+
             try
             {
                 using var stream = new MemoryStream(data);
@@ -130,7 +136,7 @@ partial class LauncherManagerHandlerNative
             // Failing to read the metadata is a direct sign of metadata manipulation
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 return true;
             }
         }

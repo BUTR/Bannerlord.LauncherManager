@@ -14,7 +14,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bfv_get_change_set", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_uint32* GetChangeSet([IsConst<IsPtrConst>] param_string* p_game_folder_path, [IsConst<IsPtrConst>] param_string* p_lib_assembly)
     {
-        Logger.LogInput(p_game_folder_path, p_lib_assembly);
+#if DEBUG
+        using var logger = LogMethod(p_game_folder_path, p_lib_assembly);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var gameFolderPath = new string(param_string.ToSpan(p_game_folder_path));
@@ -22,12 +26,11 @@ public static unsafe partial class Bindings
 
             var result = (uint) Fetcher.GetChangeSet(gameFolderPath, libAssembly);
 
-            Logger.LogOutput();
             return return_value_uint32.AsValue(result, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_uint32.AsException(e, false);
         }
     }
@@ -35,7 +38,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bfv_get_version", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_string* GetVersion([IsConst<IsPtrConst>] param_string* p_game_folder_path, [IsConst<IsPtrConst>] param_string* p_lib_assembly)
     {
-        Logger.LogInput(p_game_folder_path, p_lib_assembly);
+#if DEBUG
+        using var logger = LogMethod(p_game_folder_path, p_lib_assembly);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var gameFolderPath = new string(param_string.ToSpan(p_game_folder_path));
@@ -43,12 +50,11 @@ public static unsafe partial class Bindings
 
             var result = Fetcher.GetVersion(gameFolderPath, libAssembly);
 
-            Logger.LogOutput(result);
             return return_value_string.AsValue(BUTR.NativeAOT.Shared.Utils.Copy(result, false), false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_string.AsException(e, false);
         }
     }
@@ -56,7 +62,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bfv_get_version_type", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_uint32* GetVersionType([IsConst<IsPtrConst>] param_string* p_game_folder_path, [IsConst<IsPtrConst>] param_string* p_lib_assembly)
     {
-        Logger.LogInput(p_game_folder_path, p_lib_assembly);
+#if DEBUG
+        using var logger = LogMethod(p_game_folder_path, p_lib_assembly);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var gameFolderPath = new string(param_string.ToSpan(p_game_folder_path));
@@ -64,12 +74,11 @@ public static unsafe partial class Bindings
 
             var result = (uint) Fetcher.GetVersionType(gameFolderPath, libAssembly);
 
-            Logger.LogOutput();
             return return_value_uint32.AsValue(result, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_uint32.AsException(e, false);
         }
     }

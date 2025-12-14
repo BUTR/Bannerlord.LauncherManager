@@ -60,7 +60,7 @@ internal class SteamModuleProvider : IModulePathProvider
         var commonIndex = installPath.IndexOf("common", StringComparison.Ordinal);
         if (commonIndex < 0)
             yield break;
-        
+
         var steamApps = installPath.Substring(0, commonIndex);
         var workshopDir = Path.Combine(steamApps, "workshop", "content", "261550");
 

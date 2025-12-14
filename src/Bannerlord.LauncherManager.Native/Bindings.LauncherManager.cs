@@ -33,7 +33,11 @@ public static partial class Bindings
         delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_get_options,
         delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_get_state)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_set_game_parameters is null || p_load_load_order is null || p_save_load_order is null || p_send_notification is null || p_send_dialog is null ||
@@ -69,12 +73,11 @@ public static partial class Bindings
                 )
             );
 
-            Logger.LogOutput();
             return return_value_ptr.AsValue(launcherManager.HandlePtr, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_ptr.AsException(e, false);
         }
     }
@@ -82,7 +85,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_dispose_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* DisposeHandler(param_ptr* p_handle)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -90,12 +97,11 @@ public static partial class Bindings
 
             handler.Dispose();
 
-            Logger.LogOutput();
             return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_void.AsException(e, false);
         }
     }
@@ -104,7 +110,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_game_version_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetGameVersionAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -112,28 +122,41 @@ public static partial class Bindings
 
             handler.GetGameVersionAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result,
-                    $"{nameof(GetGameVersionAsync)}_{nameof(handler.GetGameVersionAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetGameVersionAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetGameVersionAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetGameVersionAsync)}_{nameof(handler.GetGameVersionAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue((string?) null, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue(BUTR.NativeAOT.Shared.Utils.Copy(result.Result, false), false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_string.AsValue(BUTR.NativeAOT.Shared.Utils.Copy(result.Result, false), false));
-                    Logger.LogOutput($"{nameof(GetGameVersionAsync)}_{nameof(handler.GetGameVersionAsync)}");
+                    p_callback(p_callback_handler, return_value_string.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -142,7 +165,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_json* TestModule(param_ptr* p_handle, param_json* p_files)
     {
-        Logger.LogInput(p_files);
+#if DEBUG
+        using var logger = LogMethod(p_files);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -154,12 +181,12 @@ public static partial class Bindings
             var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
 
             var result = handler.TestModuleContent(files);
-            Logger.LogOutput();
+
             return return_value_json.AsValue(result, CustomSourceGenerationContext.SupportedResult, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -167,7 +194,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos)
     {
-        Logger.LogInput(p_files, p_module_infos);
+#if DEBUG
+        using var logger = LogMethod(p_files, p_module_infos);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -182,12 +213,12 @@ public static partial class Bindings
                 .Where(x => x != null!).ToArray();
 
             var result = handler.InstallModuleContent(files, moduleInfos);
-            Logger.LogOutput();
+
             return return_value_json.AsValue(result, CustomSourceGenerationContext.InstallResult, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -196,7 +227,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_is_sorting", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_bool* IsSorting(param_ptr* p_handle)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -204,12 +239,11 @@ public static partial class Bindings
 
             var result = handler.IsSorting;
 
-            Logger.LogOutput();
             return return_value_bool.AsValue(result, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_bool.AsException(e, false);
         }
     }
@@ -217,7 +251,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SortAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -225,26 +263,41 @@ public static partial class Bindings
 
             handler.SortAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(SortAsync)}_{nameof(handler.SortAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SortAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SortAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SortAsync)}_{nameof(handler.SortAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(SortAsync)}_{nameof(handler.SortAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -253,7 +306,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_refresh_modules_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* RefreshModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -261,26 +318,41 @@ public static partial class Bindings
 
             handler.RefreshModulesAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(RefreshModulesAsync)}_{nameof(handler.RefreshModulesAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(RefreshModulesAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(RefreshModulesAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(RefreshModulesAsync)}_{nameof(handler.RefreshModulesAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(RefreshModulesAsync)}_{nameof(handler.RefreshModulesAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -289,7 +361,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_refresh_game_parameters_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* RefreshGameParametersAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -297,26 +373,41 @@ public static partial class Bindings
 
             handler.RefreshGameParametersAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(RefreshGameParametersAsync)}_{nameof(handler.RefreshGameParametersAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(RefreshGameParametersAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(RefreshGameParametersAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(RefreshGameParametersAsync)}_{nameof(handler.RefreshGameParametersAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(RefreshGameParametersAsync)}_{nameof(handler.RefreshGameParametersAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -325,7 +416,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_modules_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -333,28 +428,41 @@ public static partial class Bindings
 
             handler.GetModulesAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata),
-                    $"{nameof(GetModulesAsync)}_{nameof(handler.GetModulesAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetModulesAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetModulesAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetModulesAsync)}_{nameof(handler.GetModulesAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
-                    Logger.LogOutput($"{nameof(GetModulesAsync)}_{nameof(handler.GetModulesAsync)}");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -362,7 +470,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_all_modules_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetAllModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -370,28 +482,41 @@ public static partial class Bindings
 
             handler.GetAllModulesAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata),
-                    $"{nameof(GetAllModulesAsync)}_{nameof(handler.GetAllModulesAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetAllModulesAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetAllModulesAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetAllModulesAsync)}_{nameof(handler.GetAllModulesAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
-                    Logger.LogOutput($"{nameof(GetAllModulesAsync)}_{nameof(handler.GetAllModulesAsync)}");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -400,7 +525,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_check_for_root_harmony_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* CheckForRootHarmonyAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -408,26 +537,41 @@ public static partial class Bindings
 
             handler.CheckForRootHarmonyAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(CheckForRootHarmonyAsync)}_{nameof(IssuesChecker.CheckForRootHarmonyAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(CheckForRootHarmonyAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(CheckForRootHarmonyAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(CheckForRootHarmonyAsync)}_{nameof(IssuesChecker.CheckForRootHarmonyAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(CheckForRootHarmonyAsync)}_{nameof(IssuesChecker.CheckForRootHarmonyAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -436,7 +580,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* ModuleListHandlerExportAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -445,26 +593,41 @@ public static partial class Bindings
             var moduleListHandler = new ModuleListHandler(handler);
             moduleListHandler.ExportAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(ModuleListHandlerExportAsync)}_{nameof(moduleListHandler.ExportAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerExportAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerExportAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(ModuleListHandlerExportAsync)}_{nameof(moduleListHandler.ExportAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(ModuleListHandlerExportAsync)}_{nameof(moduleListHandler.ExportAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -472,7 +635,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_export_save_file_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* ModuleListHandlerExportSaveFileAsync(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput(p_save_file);
+#if DEBUG
+        using var logger = LogMethod(p_save_file);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -483,26 +650,41 @@ public static partial class Bindings
             var moduleListHandler = new ModuleListHandler(handler);
             moduleListHandler.ExportSaveFileAsync(saveFile).ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(ModuleListHandlerExportSaveFileAsync)}_{nameof(moduleListHandler.ExportSaveFileAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerExportSaveFileAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerExportSaveFileAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(ModuleListHandlerExportSaveFileAsync)}_{nameof(moduleListHandler.ExportSaveFileAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(ModuleListHandlerExportSaveFileAsync)}_{nameof(moduleListHandler.ExportSaveFileAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -510,7 +692,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* ModuleListHandlerImportAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -522,28 +708,41 @@ public static partial class Bindings
             var moduleListHandler = new ModuleListHandler(handler);
             moduleListHandler.ImportAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result.ToString(),
-                    $"{nameof(ModuleListHandlerImportAsync)}_{nameof(moduleListHandler.ImportAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerImportAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerImportAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(ModuleListHandlerImportAsync)}_{nameof(moduleListHandler.ImportAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(false, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
-                    Logger.LogOutput($"{nameof(ModuleListHandlerImportAsync)}_{nameof(moduleListHandler.ImportAsync)}");
+                    p_callback(p_callback_handler, return_value_bool.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -551,7 +750,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_module_list_handler_import_save_file_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* ModuleListHandlerImportSaveFileAsync(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
     {
-        Logger.LogInput(p_save_file);
+#if DEBUG
+        using var logger = LogMethod(p_save_file);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -565,28 +768,41 @@ public static partial class Bindings
             var moduleListHandler = new ModuleListHandler(handler);
             moduleListHandler.ImportSaveFileAsync(saveFile).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result.ToString(),
-                    $"{nameof(ModuleListHandlerImportSaveFileAsync)}_{nameof(moduleListHandler.ImportSaveFileAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerImportSaveFileAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(ModuleListHandlerImportSaveFileAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(ModuleListHandlerImportSaveFileAsync)}_{nameof(moduleListHandler.ImportSaveFileAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(false, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
-                    Logger.LogOutput($"{nameof(ModuleListHandlerImportSaveFileAsync)}_{nameof(moduleListHandler.ImportSaveFileAsync)}");
+                    p_callback(p_callback_handler, return_value_bool.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -595,7 +811,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_validate_module_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SortHelperValidateModuleAsync(param_ptr* p_handle, param_json* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput(p_module_view_model);
+#if DEBUG
+        using var logger = LogMethod(p_module_view_model);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -608,31 +828,44 @@ public static partial class Bindings
 
             handler.GetModuleViewModelsAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result?.OfType<ModuleViewModel>().ToArray(), CustomSourceGenerationContext.ModuleViewModelArray),
-                    $"{nameof(SortHelperValidateModuleAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SortHelperValidateModuleAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SortHelperValidateModuleAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SortHelperValidateModuleAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.StringArray, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        var modules = result.Result?.ToArray() ?? [];
+                        var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
+                        var validateResult = SortHelper.ValidateModule(modules, lookup, moduleViewModel).ToArray();
+                        p_callback(p_callback_handler, return_value_json.AsValue(validateResult, CustomSourceGenerationContext.StringArray, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    var modules = result.Result?.ToArray() ?? [];
-                    var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
-                    var validateResult = SortHelper.ValidateModule(modules, lookup, moduleViewModel).ToArray();
-                    p_callback(p_callback_handler, return_value_json.AsValue(validateResult, CustomSourceGenerationContext.StringArray, false));
-                    Logger.LogOutput($"{nameof(SortHelperValidateModuleAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -640,7 +873,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_toggle_module_selection_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SortHelperToggleModuleSelectionAsync(param_ptr* p_handle, param_json* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput(p_module_view_model);
+#if DEBUG
+        using var logger = LogMethod(p_module_view_model);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -653,31 +890,44 @@ public static partial class Bindings
 
             handler.GetModuleViewModelsAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result?.OfType<ModuleViewModel>().ToArray(), CustomSourceGenerationContext.ModuleViewModelArray),
-                    $"{nameof(SortHelperToggleModuleSelectionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SortHelperToggleModuleSelectionAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SortHelperToggleModuleSelectionAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SortHelperToggleModuleSelectionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.ModuleViewModel, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        var modules = result.Result?.ToArray() ?? [];
+                        var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
+                        SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
+                        p_callback(p_callback_handler, return_value_json.AsValue(moduleViewModel, CustomSourceGenerationContext.ModuleViewModel, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    var modules = result.Result?.ToArray() ?? [];
-                    var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
-                    SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
-                    p_callback(p_callback_handler, return_value_json.AsValue(moduleViewModel, CustomSourceGenerationContext.ModuleViewModel, false));
-                    Logger.LogOutput($"{nameof(SortHelperToggleModuleSelectionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -685,7 +935,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_change_module_position_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SortHelperChangeModulePositionAsync(param_ptr* p_handle, param_json* p_module_view_model, param_int insertIndex, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
     {
-        Logger.LogInput(p_module_view_model, &insertIndex);
+#if DEBUG
+        using var logger = LogMethod(p_module_view_model, &insertIndex);
+#else
+        using var logger = LogMethod();
+#endif
 
         var insertIndexInt = (int) insertIndex;
 
@@ -701,34 +955,58 @@ public static partial class Bindings
 
             handler.GetModuleViewModelsAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result?.OfType<ModuleViewModel>().ToArray(), CustomSourceGenerationContext.ModuleViewModelArray),
-                    $"{nameof(SortHelperChangeModulePositionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SortHelperChangeModulePositionAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SortHelperChangeModulePositionAsync));
+#endif
 
-                return AfterGetModuleViewModelsAsync(handler, moduleViewModel, insertIndexInt, positionResult =>
+                try
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsValue(positionResult, false));
-                    Logger.LogOutput($"{nameof(SortHelperChangeModulePositionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
-                }, e =>
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                        return result;
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(false, false));
+                        logger.Log("Cancelled");
+                        return result;
+                    }
+                    else
+                    {
+                        return AfterGetModuleViewModelsAsync(handler, moduleViewModel, insertIndexInt, positionResult =>
+                        {
+                            p_callback(p_callback_handler, return_value_bool.AsValue(positionResult, false));
+                        }, e =>
+                        {
+                            using var logger = LogCallbackMethod($"{nameof(SortHelperChangeModulePositionAsync)}{nameof(AfterGetModuleViewModelsAsync)}");
+
+                            p_callback(p_callback_handler, return_value_bool.AsException(e, false));
+                            logger.LogException(e);
+                        }, result);
+                    }
+                }
+                catch (Exception e)
                 {
                     p_callback(p_callback_handler, return_value_bool.AsException(e, false));
-                    Logger.LogException(e, $"{nameof(SortHelperChangeModulePositionAsync)}_{nameof(handler.GetModuleViewModelsAsync)}");
-                }, result);
+                    logger.LogException(e);
+                    return Task.FromException(e);
+                }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
     private static async Task AfterGetModuleViewModelsAsync(LauncherManagerHandlerNative handler, ModuleViewModel moduleViewModel, param_int insertIndex, Action<bool> onResult, Action<Exception> onException, Task<IEnumerable<IModuleViewModel>?> result)
     {
-        Logger.LogInput();
-
         if (result.Exception is not null)
         {
             onException(result.Exception);
@@ -748,7 +1026,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_files_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetSaveFilesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -756,28 +1038,41 @@ public static partial class Bindings
 
             handler.GetSaveFilesAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.IReadOnlyListSaveMetadata),
-                    $"{nameof(GetSaveFilesAsync)}_{nameof(handler.GetSaveFilesAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetSaveFilesAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetSaveFilesAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetSaveFilesAsync)}_{nameof(handler.GetSaveFilesAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
-                    Logger.LogOutput($"{nameof(GetSaveFilesAsync)}_{nameof(handler.GetSaveFilesAsync)}");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -785,7 +1080,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_metadata_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetSaveMetadataAsync(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput(p_save_file, p_data, &data_len);
+#if DEBUG
+        using var logger = LogMethod(p_save_file, p_data, &data_len);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -796,28 +1095,41 @@ public static partial class Bindings
 
             handler.GetSaveMetadataAsync(saveFile, data).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.SaveMetadata),
-                    $"{nameof(GetSaveMetadataAsync)}_{nameof(handler.GetSaveMetadataAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetSaveMetadataAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetSaveMetadataAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetSaveMetadataAsync)}_{nameof(handler.GetSaveMetadataAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.SaveMetadata, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.SaveMetadata, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.SaveMetadata, false));
-                    Logger.LogOutput($"{nameof(GetSaveMetadataAsync)}_{nameof(handler.GetSaveMetadataAsync)}");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -825,7 +1137,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_file_path_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetSaveFilePathAsync(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Logger.LogInput(p_save_file);
+#if DEBUG
+        using var logger = LogMethod(p_save_file);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -835,28 +1151,41 @@ public static partial class Bindings
 
             handler.GetSaveFilePathAsync(saveFile).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result ?? "null",
-                    $"{nameof(GetSaveFilePathAsync)}_{nameof(handler.GetSaveFilePathAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetSaveFilePathAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetSaveFilePathAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetSaveFilePathAsync)}_{nameof(handler.GetSaveFilePathAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue((string?) null, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue(result.Result, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_string.AsValue(result.Result, false));
-                    Logger.LogOutput($"{nameof(GetSaveFilePathAsync)}_{nameof(handler.GetSaveFilePathAsync)}");
+                    p_callback(p_callback_handler, return_value_string.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -867,7 +1196,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_order_by_load_order_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* OrderByLoadOrderAsync(param_ptr* p_handle, param_json* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Logger.LogInput(p_load_order);
+#if DEBUG
+        using var logger = LogMethod(p_load_order);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -881,35 +1214,48 @@ public static partial class Bindings
             var loadOrderDict = loadOrder.ToDictionary(x => x.Key, x => x.Value.IsSelected);
             handler.TryOrderByLoadOrderAsync(loadOrder.OrderBy(x => x.Value.Index).Select(x => x.Key), x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    BUTR.NativeAOT.Shared.Utils.SerializeJson(result.Result, CustomSourceGenerationContext.OrderByLoadOrderResult),
-                    $"{nameof(OrderByLoadOrderAsync)}_{nameof(handler.TryOrderByLoadOrderAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(OrderByLoadOrderAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(OrderByLoadOrderAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(OrderByLoadOrderAsync)}_{nameof(handler.TryOrderByLoadOrderAsync)}");
-                }
-                else
-                {
-                    var (res, issues, orderedModuleViewModels) = result.Result;
-                    var orderByLoadOrderResult = new OrderByLoadOrderResultNative(res, issues, orderedModuleViewModels.Select(x => new ModuleViewModel(x.ModuleInfoExtended, x.IsValid)
+                    if (result.Exception is not null)
                     {
-                        IsSelected = x.IsSelected,
-                        IsDisabled = x.IsDisabled,
-                        Index = x.Index,
-                    }).ToArray());
-                    p_callback(p_callback_handler, return_value_json.AsValue(orderByLoadOrderResult, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
-                    Logger.LogOutput($"{nameof(OrderByLoadOrderAsync)}_{nameof(handler.TryOrderByLoadOrderAsync)}");
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        var (res, issues, orderedModuleViewModels) = result.Result;
+                        var orderByLoadOrderResult = new OrderByLoadOrderResultNative(res, issues, orderedModuleViewModels.Select(x => new ModuleViewModel(x.ModuleInfoExtended, x.IsValid)
+                        {
+                            IsSelected = x.IsSelected,
+                            IsDisabled = x.IsDisabled,
+                            Index = x.Index,
+                        }).ToArray());
+                        p_callback(p_callback_handler, return_value_json.AsValue(orderByLoadOrderResult, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
+                    }
+                }
+                catch (Exception e)
+                {
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -918,7 +1264,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_executable_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SetGameParameterExecutableAsync(param_ptr* p_handle, param_string* p_executable, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput(p_executable);
+#if DEBUG
+        using var logger = LogMethod(p_executable);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -928,27 +1278,41 @@ public static partial class Bindings
 
             handler.SetGameParameterExecutableAsync(executable).ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(SetGameParameterExecutableAsync)}_{nameof(handler.SetGameParameterExecutableAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SetGameParameterExecutableAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SetGameParameterExecutableAsync));
+#endif
 
-
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SetGameParameterExecutableAsync)}_{nameof(handler.SetGameParameterExecutableAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(SetGameParameterExecutableAsync)}_{nameof(handler.SetGameParameterExecutableAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -956,7 +1320,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_load_order_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SetGameParameterLoadOrderAsync(param_ptr* p_handle, param_json* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput(p_load_order);
+#if DEBUG
+        using var logger = LogMethod(p_load_order);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -969,26 +1337,41 @@ public static partial class Bindings
 
             handler.SetGameParameterLoadOrderAsync(loadOrder).ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(SetGameParameterLoadOrderAsync)}_{nameof(handler.SetGameParameterLoadOrderAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SetGameParameterLoadOrderAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SetGameParameterLoadOrderAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SetGameParameterLoadOrderAsync)}_{nameof(handler.SetGameParameterLoadOrderAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(SetGameParameterLoadOrderAsync)}_{nameof(handler.SetGameParameterLoadOrderAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -996,7 +1379,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_save_file_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SetGameParameterSaveFileAsync(param_ptr* p_handle, param_string* p_save_file, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput(p_save_file);
+#if DEBUG
+        using var logger = LogMethod(p_save_file);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1006,26 +1393,41 @@ public static partial class Bindings
 
             handler.SetGameParameterSaveFileAsync(saveFile).ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(SetGameParameterSaveFileAsync)}_{nameof(handler.SetGameParameterSaveFileAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SetGameParameterSaveFileAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SetGameParameterSaveFileAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SetGameParameterSaveFileAsync)}_{nameof(handler.SetGameParameterSaveFileAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(SetGameParameterSaveFileAsync)}_{nameof(handler.SetGameParameterSaveFileAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -1033,7 +1435,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_continue_last_save_file_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* SetGameParameterContinueLastSaveFileAsync(param_ptr* p_handle, param_bool p_value, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
-        Logger.LogInput(&p_value);
+#if DEBUG
+        using var logger = LogMethod(&p_value);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1041,26 +1447,41 @@ public static partial class Bindings
 
             handler.SetGameParameterContinueLastSaveFileAsync(p_value).ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(SetGameParameterContinueLastSaveFileAsync)}_{nameof(handler.SetGameParameterContinueLastSaveFileAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(SetGameParameterContinueLastSaveFileAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(SetGameParameterContinueLastSaveFileAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(SetGameParameterContinueLastSaveFileAsync)}_{nameof(handler.SetGameParameterContinueLastSaveFileAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_void.AsValue(false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_void.AsValue(false));
-                    Logger.LogOutput($"{nameof(SetGameParameterContinueLastSaveFileAsync)}_{nameof(handler.SetGameParameterContinueLastSaveFileAsync)}");
+                    p_callback(p_callback_handler, return_value_void.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -1069,7 +1490,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_store", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* SetGameStore(param_ptr* p_handle, param_string* p_game_store)
     {
-        Logger.LogInput(p_game_store);
+#if DEBUG
+        using var logger = LogMethod(p_game_store);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1080,12 +1505,11 @@ public static partial class Bindings
 
             handler.SetGameStore(gameStore);
 
-            Logger.LogOutput();
             return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_void.AsException(e, false);
         }
     }
@@ -1093,7 +1517,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_get_game_platform_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* GetGamePlatformAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1101,29 +1529,42 @@ public static partial class Bindings
 
             handler.GetPlatformAsync().ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result.ToStringFast(),
-                    $"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(GetGamePlatformAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(GetGamePlatformAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue((string?) null, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        var platform = result.Result.ToStringFast();
+                        p_callback(p_callback_handler, return_value_string.AsValue(platform, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    var platform = result.Result.ToStringFast();
-                    p_callback(p_callback_handler, return_value_string.AsValue(platform, false));
-                    Logger.LogOutput($"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
+                    p_callback(p_callback_handler, return_value_string.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -1131,7 +1572,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_is_obfuscated_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* IsObfuscatedAsync(param_ptr* p_handle, param_json* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
     {
-        Logger.LogInput(p_module);
+#if DEBUG
+        using var logger = LogMethod(p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1142,28 +1587,41 @@ public static partial class Bindings
 
             handler.IsObfuscatedAsync(module).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result ? "true" : "false",
-                    $"{nameof(IsObfuscatedAsync)}_{nameof(handler.IsObfuscatedAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(IsObfuscatedAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(IsObfuscatedAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(GetGamePlatformAsync)}_{nameof(handler.GetPlatformAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(false, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_bool.AsValue(result.Result, false));
-                    Logger.LogOutput($"{nameof(IsObfuscatedAsync)}_{nameof(handler.IsObfuscatedAsync)}");
+                    p_callback(p_callback_handler, return_value_bool.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -1172,7 +1630,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* DialogTestWarningAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1183,28 +1645,41 @@ public static partial class Bindings
 
             handler.SendDialogAsync(DialogType.Warning, "Test Title", "Test Message", Array.Empty<DialogFileFilter>()).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result,
-                    $"{nameof(DialogTestWarningAsync)}_{nameof(handler.SendDialogAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(DialogTestWarningAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(DialogTestWarningAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(DialogTestWarningAsync)}_{nameof(handler.SendDialogAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue((string?) null, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue(result.Result, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_string.AsValue(result.Result, false));
-                    Logger.LogOutput($"{nameof(DialogTestWarningAsync)}_{nameof(handler.SendDialogAsync)}");
+                    p_callback(p_callback_handler, return_value_string.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }
@@ -1212,7 +1687,11 @@ public static partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_file_open_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* DialogTestFileOpenAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
@@ -1223,28 +1702,41 @@ public static partial class Bindings
 
             handler.SendDialogAsync(DialogType.FileOpen, "Test Title", "Test Message", [new DialogFileFilter("Test Filter", ["*.test"])]).ContinueWith(result =>
             {
-                Logger.LogAsyncInput(
-                    result.Result,
-                    $"{nameof(DialogTestFileOpenAsync)}_{nameof(handler.SendDialogAsync)}");
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(DialogTestFileOpenAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(DialogTestFileOpenAsync));
+#endif
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(DialogTestFileOpenAsync)}_{nameof(handler.SendDialogAsync)}");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue((string?) null, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_string.AsValue(result.Result, false));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_string.AsValue(result.Result, false));
-                    Logger.LogOutput($"{nameof(DialogTestFileOpenAsync)}_{nameof(handler.SendDialogAsync)}");
+                    p_callback(p_callback_handler, return_value_string.AsException(e, false));
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
         }
     }

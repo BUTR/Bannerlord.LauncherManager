@@ -20,53 +20,81 @@ internal sealed class GameInfoProvider : IGameInfoProvider
         _getInstallPath = getInstallPath;
     }
 
-    public async Task<string> GetInstallPathAsync()
+    public Task<string> GetInstallPathAsync()
     {
-        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        GetInstallPathNative(tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            GetInstallPathNative(tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetInstallPathNativeCallback(param_ptr* pOwner, return_value_string* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = Logger.LogCallbackMethod(pResult);
+#else
+        using var logger = Logger.LogCallbackMethod(pResult);
+#endif
 
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
+            if (pOwner == null)
+            {
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
+            {
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.SetAsString(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsString(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private unsafe void GetInstallPathNative(TaskCompletionSource<string> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = Logger.LogMethod();
+#else
+        using var logger = Logger.LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         try
         {
             using var result = SafeStructMallocHandle.Create(_getInstallPath(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetInstallPathNativeCallback), true);
+            logger.LogResult(result);
             result.ValueAsVoid();
-
-            Logger.LogOutput();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             tcs.TrySetException(e);
             handle.Free();
         }

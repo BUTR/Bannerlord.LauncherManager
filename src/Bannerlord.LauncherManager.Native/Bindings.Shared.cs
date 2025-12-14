@@ -11,17 +11,25 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "common_alloc", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static void* CommonAlloc(nuint size)
     {
-        Logger.LogInput(size);
+#if DEBUG
+        using var logger = LogMethod(size);
+#endif
+
         try
         {
             var result = Allocator.Alloc(size);
-
-            Logger.LogOutput(new IntPtr(result).ToString("x16"), nameof(CommonAlloc));
+#if DEBUG
+            logger.LogResult(new IntPtr(result), "x16");
+#endif
             return result;
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+#if DEBUG
+            logger.LogException(e);
+#else
+            LogMethod(size).LogException(e);
+#endif
             return null;
         }
     }
@@ -29,23 +37,31 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "common_dealloc", CallConvs = [typeof(CallConvCdecl)])]
     public static void CommonDealloc([IsConst<IsPtrConst>] param_ptr* ptr)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(ptr);
+#endif
+
         try
         {
             Allocator.Free(ptr);
-
-            Logger.LogOutput(new IntPtr(ptr).ToString("x16"), nameof(CommonDealloc));
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+#if DEBUG
+            logger.LogException(e);
+#else
+            LogMethod(ptr).LogException(e);
+#endif
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "common_alloc_alive_count", CallConvs = [typeof(CallConvCdecl)])]
     public static int CommonAllocAliveCount()
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#endif
+
         try
         {
 #if TRACK_ALLOCATIONS
@@ -54,12 +70,18 @@ public static unsafe partial class Bindings
             var result = 0;
 #endif
 
-            Logger.LogOutput(result);
+#if DEBUG
+            logger.LogResult(result);
+#endif
             return result;
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+#if DEBUG
+            logger.LogException(e);
+#else
+            LogMethod().LogException(e);
+#endif
             return -1;
         }
     }

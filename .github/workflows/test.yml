@@ -1,0 +1,85 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  csharp-tests:
+    name: C# Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Build Solution (Windows)
+        if: runner.os == 'Windows'
+        run: dotnet build -c Release
+
+      - name: Build Test Projects (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          dotnet build test/Bannerlord.LauncherManager.Tests -c Release
+          dotnet build test/Bannerlord.LauncherManager.Native.Tests -c Release
+
+      - name: Publish Native Module (Windows)
+        if: runner.os == 'Windows'
+        run: dotnet publish src/Bannerlord.LauncherManager.Native -r win-x64 --self-contained -c Release
+
+      - name: Run LauncherManager Tests
+        run: dotnet test test/Bannerlord.LauncherManager.Tests -c Release --verbosity normal
+
+      - name: Run Native Tests (Windows only)
+        if: runner.os == 'Windows'
+        run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Release --verbosity normal
+
+  js-native-tests:
+    name: JS Native Tests (${{ matrix.config }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Setup Python (for node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: src/Bannerlord.LauncherManager.Native.TypeScript
+
+      - name: Build and run tests
+        run: yarn test -- ${{ matrix.config }}
+        working-directory: src/Bannerlord.LauncherManager.Native.TypeScript

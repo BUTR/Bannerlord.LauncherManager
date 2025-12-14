@@ -16,7 +16,7 @@ public sealed unsafe class LauncherManagerWrapper
 {
     private static byte* Copy(in ReadOnlySpan<byte> data, bool isOwner)
     {
-        var dst = (byte*) Allocator.Alloc(new UIntPtr((uint) data.Length));
+        var dst = (byte*) Allocator.Alloc((uint) data.Length);
         data.CopyTo(new Span<byte>(dst, data.Length));
         return dst;
     }
@@ -61,7 +61,7 @@ public sealed unsafe class LauncherManagerWrapper
                 return return_value_void.AsValue(false);
             }
 
-            var bufferPtr = (byte*) Allocator.Alloc(new UIntPtr(length));
+            var bufferPtr = (byte*) Allocator.Alloc((uint) (int) length);
             var buffer = new Span<byte>(bufferPtr, length);
             RandomAccess.Read(fileHandle, buffer, offset);
             p_callback(p_callback_handler, return_value_data.AsValue(bufferPtr, length, false));

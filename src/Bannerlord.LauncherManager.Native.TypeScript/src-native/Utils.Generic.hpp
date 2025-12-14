@@ -7,6 +7,7 @@
 
 using namespace Napi;
 using namespace Bannerlord::LauncherManager::Native;
+
 namespace Utils
 {
     template <typename T>
@@ -151,5 +152,4 @@ namespace Utils
         }
     }
 }
-
 #endif

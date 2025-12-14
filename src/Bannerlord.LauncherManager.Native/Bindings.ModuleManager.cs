@@ -29,7 +29,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_sort", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* Sort([IsConst<IsPtrConst>] param_json* p_source)
     {
-        Logger.LogInput(p_source);
+#if DEBUG
+        using var logger = LogMethod(p_source);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_source is null)
@@ -40,12 +44,11 @@ public static unsafe partial class Bindings
 
             var result = ModuleSorter.Sort(source).ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -53,7 +56,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_sort_with_options", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* SortWithOptions([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_options)
     {
-        Logger.LogInput(p_source, p_options);
+#if DEBUG
+        using var logger = LogMethod(p_source, p_options);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_source is null || p_options is null)
@@ -65,12 +72,11 @@ public static unsafe partial class Bindings
 
             var result = ModuleSorter.Sort(source, options).ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -79,7 +85,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_are_all_dependencies_of_module_present", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_bool* AreAllDependenciesOfModulePresent([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_module)
     {
-        Logger.LogInput(p_source, p_module);
+#if DEBUG
+        using var logger = LogMethod(p_source, p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_source is null || p_module is null)
@@ -91,12 +101,11 @@ public static unsafe partial class Bindings
 
             var result = ModuleUtilities.AreDependenciesPresent(source, module);
 
-            Logger.LogOutput();
             return return_value_bool.AsValue(result, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_bool.AsException(e, false);
         }
     }
@@ -105,7 +114,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependent_modules_of", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependentModulesOf([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_module)
     {
-        Logger.LogInput(p_source, p_module);
+#if DEBUG
+        using var logger = LogMethod(p_source, p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_source is null || p_module is null)
@@ -117,12 +130,11 @@ public static unsafe partial class Bindings
 
             var result = ModuleUtilities.GetDependencies(source, module).ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -130,7 +142,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependent_modules_of_with_options", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependentModulesOfWithOptions([IsConst<IsPtrConst>] param_json* p_source, [IsConst<IsPtrConst>] param_json* p_module, [IsConst<IsPtrConst>] param_json* p_options)
     {
-        Logger.LogInput(p_source, p_module, p_options);
+#if DEBUG
+        using var logger = LogMethod(p_source, p_module, p_options);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_source is null || p_module is null || p_options is null)
@@ -143,12 +159,11 @@ public static unsafe partial class Bindings
 
             var result = ModuleUtilities.GetDependencies(source, module, options).ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -159,7 +174,11 @@ public static unsafe partial class Bindings
         [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst<IsPtrConst>>]
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_bool*> p_is_selected)
     {
-        Logger.LogInput(p_modules, p_target_module);
+#if DEBUG
+        using var logger = LogMethod(p_modules, p_target_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_modules is null || p_target_module is null || p_is_selected is null)
@@ -173,24 +192,32 @@ public static unsafe partial class Bindings
 
             var result = ModuleUtilities.ValidateModule(modules, targetModule, module =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(ValidateModule));
+#else
+                using var logger = LogCallbackMethod(nameof(ValidateModule));
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(isSelected(p_owner, (param_string*) pModuleId), true);
-                    var result = resultStr.ValueAsBool();
-                    Logger.LogOutput();
-                    return result;
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(isSelected(p_owner, (param_string*) pModuleId), true);
+                        var result = resultStr.ValueAsBool();
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
+                    return false;
                 }
             }).ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleIssueArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -198,7 +225,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_validate_load_order", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* ValidateLoadOrder([IsConst<IsPtrConst>] param_json* p_modules, [IsConst<IsPtrConst>] param_json* p_target_module)
     {
-        Logger.LogInput(p_modules, p_target_module);
+#if DEBUG
+        using var logger = LogMethod(p_modules, p_target_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_modules is null || p_target_module is null)
@@ -210,12 +241,11 @@ public static unsafe partial class Bindings
 
             var result = ModuleUtilities.ValidateLoadOrder(modules, targetModule).ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleIssueArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -232,7 +262,11 @@ public static unsafe partial class Bindings
         [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst, IsNotConst<IsPtrConst>>]
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_bool, return_value_void*> p_set_disabled)
     {
-        Logger.LogInput(p_module, p_target_module);
+#if DEBUG
+        using var logger = LogMethod(p_module, p_target_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_module is null || p_target_module is null || p_get_selected is null || p_set_selected is null || p_get_disabled is null || p_set_disabled is null)
@@ -249,58 +283,91 @@ public static unsafe partial class Bindings
 
             ModuleUtilities.EnableModule(modules, targetModule, module =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}1");
+#else
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}1");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(getSelected(p_owner, (param_string*) pModuleId), true);
-                    var result = resultStr.ValueAsBool();
-                    Logger.LogOutput();
-                    return result;
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(getSelected(p_owner, (param_string*) pModuleId), true);
+                        var result = resultStr.ValueAsBool();
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
+                    return false;
                 }
             }, (module, value) =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}2");
+#else
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}2");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, value), true);
-                    resultStr.ValueAsVoid();
-                    Logger.LogOutput();
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, value), true);
+                        resultStr.ValueAsVoid();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
                 }
             }, module =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}3");
+#else
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}3");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(getDisabled(p_owner, (param_string*) pModuleId), true);
-                    var result = resultStr.ValueAsBool();
-                    Logger.LogOutput();
-                    return result;
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(getDisabled(p_owner, (param_string*) pModuleId), true);
+                        var result = resultStr.ValueAsBool();
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
+                    return false;
                 }
             }, (module, value) =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}4");
+#else
+                using var logger = LogCallbackMethod($"{nameof(EnableModule)}4");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, value), true);
-                    resultStr.ValueAsVoid();
-                    Logger.LogOutput();
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, value), true);
+                        resultStr.ValueAsVoid();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_void.AsException(e, false);
         }
     }
@@ -316,7 +383,11 @@ public static unsafe partial class Bindings
         [ConstMeta<IsConst<IsPtrConst>, IsConst<IsPtrConst>, IsNotConst, IsNotConst<IsPtrConst>>]
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_bool, return_value_void*> p_set_disabled)
     {
-        Logger.LogInput(p_module, p_target_module);
+#if DEBUG
+        using var logger = LogMethod(p_module, p_target_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_module is null || p_target_module is null || p_get_selected is null || p_set_selected is null || p_get_disabled is null || p_set_disabled is null)
@@ -333,58 +404,91 @@ public static unsafe partial class Bindings
 
             ModuleUtilities.DisableModule(modules, targetModule, module =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}1");
+#else
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}1");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(getSelected(p_owner, (param_string*) pModuleId), true);
-                    var result = resultStr.ValueAsBool();
-                    Logger.LogOutput();
-                    return result;
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(getSelected(p_owner, (param_string*) pModuleId), true);
+                        var result = resultStr.ValueAsBool();
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
+                    return false;
                 }
             }, (module, value) =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}2");
+#else
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}2");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, value), true);
-                    resultStr.ValueAsVoid();
-                    Logger.LogOutput();
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(setSelected(p_owner, (param_string*) pModuleId, value), true);
+                        resultStr.ValueAsVoid();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
                 }
             }, module =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}3");
+#else
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}3");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(getDisabled(p_owner, (param_string*) pModuleId), true);
-                    var result = resultStr.ValueAsBool();
-                    Logger.LogOutput();
-                    return result;
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(getDisabled(p_owner, (param_string*) pModuleId), true);
+                        var result = resultStr.ValueAsBool();
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
+                    return false;
                 }
             }, (module, value) =>
             {
-                Logger.LogInput();
-                fixed (char* pModuleId = module.Id ?? string.Empty)
+#if DEBUG
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}4");
+#else
+                using var logger = LogCallbackMethod($"{nameof(DisableModule)}4");
+#endif
+                try
                 {
-                    Logger.LogPinned(pModuleId);
-
-                    using var resultStr = SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, value), true);
-                    resultStr.ValueAsVoid();
-                    Logger.LogOutput();
+                    fixed (char* pModuleId = module.Id ?? string.Empty)
+                    {
+                        using var resultStr = SafeStructMallocHandle.Create(setDisabled(p_owner, (param_string*) pModuleId, value), true);
+                        resultStr.ValueAsVoid();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogException(e);
                 }
             });
 
-            Logger.LogOutput();
             return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_void.AsException(e, false);
         }
     }
@@ -393,19 +497,22 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetModuleInfo([IsConst<IsPtrConst>] param_string* p_xml_content)
     {
-        Logger.LogInput(p_xml_content);
+#if DEBUG
+        using var logger = LogMethod(p_xml_content);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
 
             var result = ModuleInfoExtended.FromXml(doc);
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtended, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -413,7 +520,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info_with_path", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetModuleInfoWithPath([IsConst<IsPtrConst>] param_string* p_xml_content, [IsConst<IsPtrConst>] param_string* p_path)
     {
-        Logger.LogInput(p_xml_content, p_path);
+#if DEBUG
+        using var logger = LogMethod(p_xml_content, p_path);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
@@ -421,19 +532,22 @@ public static unsafe partial class Bindings
             var module = ModuleInfoExtended.FromXml(doc);
             var result = new ModuleInfoExtendedWithPath(module, new string(param_string.ToSpan(p_path)));
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithPath, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_module_info_with_metadata", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetModuleInfoWithMetadata([IsConst<IsPtrConst>] param_string* p_xml_content, [IsConst<IsPtrConst>] param_string* p_module_provider, [IsConst<IsPtrConst>] param_string* p_path)
     {
-        Logger.LogInput(p_xml_content, p_path);
+#if DEBUG
+        using var logger = LogMethod(p_xml_content, p_path);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
@@ -441,12 +555,11 @@ public static unsafe partial class Bindings
             var module = ModuleInfoExtended.FromXml(doc);
             var result = new ModuleInfoExtendedWithMetadata(module, Enum.TryParse<ModuleProviderType>(new string(param_string.ToSpan(p_module_provider)), out var e) ? e : ModuleProviderType.Default, new string(param_string.ToSpan(p_path)));
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -454,7 +567,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_sub_module_info", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetSubModuleInfo([IsConst<IsPtrConst>] param_string* p_xml_content)
     {
-        Logger.LogInput(p_xml_content);
+#if DEBUG
+        using var logger = LogMethod(p_xml_content);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var doc = ReaderUtils2.Read(param_string.ToSpan(p_xml_content));
@@ -463,7 +580,7 @@ public static unsafe partial class Bindings
             if (result is null)
             {
                 var e = new InvalidOperationException("Invalid xml content!");
-                Logger.LogException(e);
+                logger.LogException(e);
                 return return_value_json.AsException(e, false);
             }
 
@@ -471,7 +588,7 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -479,7 +596,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_parse_application_version", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* ParseApplicationVersion([IsConst<IsPtrConst>] param_string* p_application_version)
     {
-        Logger.LogInput(p_application_version);
+#if DEBUG
+        using var logger = LogMethod(p_application_version);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var result = ApplicationVersion.TryParse(new string(param_string.ToSpan(p_application_version)), out var v) ? v : ApplicationVersion.Empty;
@@ -488,7 +609,7 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
@@ -496,7 +617,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_compare_versions", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_int32* CompareVersions([IsConst<IsPtrConst>] param_json* p_x, [IsConst<IsPtrConst>] param_json* p_y)
     {
-        Logger.LogInput(p_x, p_y);
+#if DEBUG
+        using var logger = LogMethod(p_x, p_y);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             var x = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_x, CustomSourceGenerationContext.ApplicationVersion);
@@ -504,12 +629,11 @@ public static unsafe partial class Bindings
 
             var result = _applicationVersionComparer.Compare(x, y);
 
-            Logger.LogOutput();
             return return_value_int32.AsValue(result, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_int32.AsException(e, false);
         }
     }
@@ -518,7 +642,11 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_all", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesAll([IsConst<IsPtrConst>] param_json* p_module)
     {
-        Logger.LogInput(p_module);
+#if DEBUG
+        using var logger = LogMethod(p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_module is null)
@@ -528,19 +656,22 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesAllDistinct().ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_before_this", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesLoadBeforeThis([IsConst<IsPtrConst>] param_json* p_module)
     {
-        Logger.LogInput(p_module);
+#if DEBUG
+        using var logger = LogMethod(p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_module is null)
@@ -550,19 +681,22 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesLoadBeforeThisDistinct().ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_load_after_this", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesLoadAfterThis([IsConst<IsPtrConst>] param_json* p_module)
     {
-        Logger.LogInput(p_module);
+#if DEBUG
+        using var logger = LogMethod(p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_module is null)
@@ -572,19 +706,22 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesLoadAfterThisDistinct().ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }
     [UnmanagedCallersOnly(EntryPoint = "bmm_get_dependencies_incompatibles", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* GetDependenciesIncompatibles([IsConst<IsPtrConst>] param_json* p_module)
     {
-        Logger.LogInput(p_module);
+#if DEBUG
+        using var logger = LogMethod(p_module);
+#else
+        using var logger = LogMethod();
+#endif
         try
         {
             //if (p_module is null)
@@ -594,12 +731,11 @@ public static unsafe partial class Bindings
 
             var result = module.DependenciesIncompatiblesDistinct().ToArray();
 
-            Logger.LogOutput();
             return return_value_json.AsValue(result, CustomSourceGenerationContext.DependentModuleMetadataArray, false);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
         }
     }

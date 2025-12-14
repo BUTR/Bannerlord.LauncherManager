@@ -1,41 +1,104 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Threading;
+﻿using Bannerlord.LauncherManager.Native.Adapters;
+
+using Microsoft.Extensions.Logging;
+
+using System;
+using System.Buffers;
+
+using ZLogger;
+using ZLogger.Providers;
 
 namespace Bannerlord.LauncherManager.Native;
 
-public static partial class Logger
+internal static partial class Logger
 {
-    private static readonly string _mutexName = "Global\\BannerlordLoggerMutex";
-    private static readonly string _logFilePath = "Bannerlord.LauncherManager.Native.log";
+    private static string[] _logLevel4Letters =
+    [
+        "DEBG", // Trace
+        "DEBG", // Debug
+        "INFO", // Information
+        "WARN", // Warning
+        "ERRO", // Error
+        "ERRO", // Critical
+        "DEBG", // None
+    ];
 
-    private static void Log(string message)
+    private static readonly string _logFilePathBase = $"{Environment.GetEnvironmentVariable("APPDATA")}";
+    private static ILoggerFactory? Factory { get; set; }
+    private static ILogger? NativeInstance { get; set; }
+    private static ILogger? ExternalInstance { get; set; }
+
+    public static void CreateDefault()
     {
-        using var mutex = new Mutex(false, _mutexName);
-        while (true)
-        {
-            try
-            {
-                if (!mutex.WaitOne(100)) continue;
+        Factory?.Dispose();
 
-                try
+        Factory = LoggerFactory.Create(logging =>
+        {
+#if DEBUG_
+            logging.SetMinimumLevel(LogLevel.Trace);
+            var configure = (ZLoggerRollingFileOptions options) =>
+            {
+                options.RollingSizeKB = 8 * 1024 * 1024;
+                options.FileShared = false;
+                options.FilePathSelector = (date, sequence) => $"{_logFilePathBase}\\vortex_devel\\FOMOD.ModInstaller{sequence}.log";
+                options.FullMode = BackgroundBufferFullMode.Grow;
+                options.CaptureThreadInfo = true;
+                options.IncludeScopes = true;
+                options.UsePlainTextFormatter(formatter =>
                 {
-                    using var fs = new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.SequentialScan);
-                    using var sw = new StreamWriter(fs, Encoding.UTF8);
-                    sw.Write("[C# ][");
-                    sw.Write(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture));
-                    sw.Write("] ");
-                    sw.WriteLine(message);
-                    return;
-                }
-                finally
+                    formatter.SetPrefixFormatter($"[{2}] {0:yyyy-MM-dd'T'HH:mm:ss.fff'Z'} [{1}] ", (in template, in info) => template.Format(info.Timestamp.Utc, _logLevel4Letters[(int) info.LogLevel], info.Category.Name));
+                    formatter.SetExceptionFormatter((writer, ex) => Utf8StringInterpolation.Utf8String.Format(writer, $"{ex.Message}"));
+                });
+            };
+#else
+            logging.SetMinimumLevel(LogLevel.Information);
+            var configure = (ZLoggerRollingFileOptions options) =>
+            {
+                options.RollingSizeKB = 8 * 1024 * 1024;
+                options.FileShared = false;
+                options.FilePathSelector = (date, sequence) => $"{_logFilePathBase}\\Vortex\\FOMOD.ModInstaller{sequence}.log";
+                options.FullMode = BackgroundBufferFullMode.Block;
+                options.CaptureThreadInfo = true;
+                options.IncludeScopes = true;
+                options.UsePlainTextFormatter(formatter =>
                 {
-                    mutex.ReleaseMutex();
-                }
-            }
-            catch (Exception) { /* ignored */ }
-        }
+                    formatter.SetPrefixFormatter($"[{2}] {0:yyyy-MM-dd'T'HH:mm:ss.fff'Z'} [{1}] ", PrefixFormatter);
+                    formatter.SetExceptionFormatter(ExceptionFormatter);
+                });
+            };
+#endif
+            logging.AddZLoggerRollingFile(configure);
+        });
+
+        NativeInstance = Factory.CreateLogger("C# ");
+        ExternalInstance = Factory.CreateLogger("C++");
+    }
+
+    private static void PrefixFormatter(in MessageTemplate template, in LogInfo info)
+    {
+        template.Format(info.Timestamp.Utc, _logLevel4Letters[(int) info.LogLevel], info.Category.Name);
+    }
+
+    private static void ExceptionFormatter(IBufferWriter<byte> writer, Exception ex)
+    {
+        Utf8StringInterpolation.Utf8String.Format(writer, $"{ex.Message}");
+    }
+
+    public static void Create(LoggerProvider logger)
+    {
+        Factory?.Dispose();
+
+        NativeInstance = new WrapperLogger(logger, "FOMOD C# ");
+        ExternalInstance = new WrapperLogger(logger, "FOMOD C++");
+    }
+
+    public static void ExternalLog(LogLevel level, string message)
+    {
+        ExternalInstance?.Log(level, message, null!);
+    }
+
+    public static void Dispose()
+    {
+        Factory?.Dispose();
     }
 }

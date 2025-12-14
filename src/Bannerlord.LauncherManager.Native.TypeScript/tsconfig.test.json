@@ -1,25 +1,17 @@
 {
-  "extends": "./tsconfig",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": false,
-    "outDir": "dist/test",
-    "rootDir": "test",
+    "rootDir": ".",
+    "outDir": "dist",
     "declaration": false,
-    "declarationMap": false,
-    "noUnusedParameters": false,
-    "baseUrl": ".",
-    "paths": {
-      "../src": ["./dist/main"],
-      "../src/*": ["./dist/main/*"]
-    }
+    "sourceMap": true
   },
   "include": [
+    "src/**/*",
     "test/**/*"
   ],
   "exclude": [
-    "node_modules/**"
-  ],
-  "references": [
-    { "path": "./tsconfig.json" }
+    "node_modules/**",
+    "dist/**"
   ]
 }
