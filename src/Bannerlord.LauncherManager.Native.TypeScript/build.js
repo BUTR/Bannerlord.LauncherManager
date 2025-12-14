@@ -453,7 +453,7 @@ async function main() {
     }
 
     // Build TypeScript
-    if (["build", "build-ts"].includes(type)) {
+    if (["build", "test", "build-ts"].includes(type)) {
       console.log("Building TypeScript");
 
       // Verify TypeScript config exists
