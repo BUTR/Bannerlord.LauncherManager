@@ -62,9 +62,7 @@ jobs:
           scope: '@butr'
 
       - name: Publish to NPM (trusted publishing)
-        run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish --access public
-        env:
-          NPM_CONFIG_PROVENANCE: true
+        run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
 
       - uses: actions/setup-node@v4
         with:
