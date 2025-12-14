@@ -42,6 +42,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - run: |
           cd ./src/Bannerlord.LauncherManager.Native.TypeScript && `
           npm version $(node -p "require('./package.json').version = `
