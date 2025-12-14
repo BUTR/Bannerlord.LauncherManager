@@ -19,12 +19,6 @@ jobs:
       - uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@master
-        with:
-          dotnet-version: 8.x.x
-
       - name: Setup .NET 9
         uses: actions/setup-dotnet@master
         with:
@@ -36,11 +30,19 @@ jobs:
       - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Debug
       - run: dotnet test test/Bannerlord.LauncherManager.Native.Tests -c Release
 
-      - uses: actions/setup-node@v3.4.1
+      - name: Read Node.js version from package.json
+        id: node-version
+        shell: pwsh
+        run: |
+          $packageJson = Get-Content src/Bannerlord.LauncherManager.Native.TypeScript/package.json | ConvertFrom-Json
+          $nodeVersion = $packageJson.engines.node
+          echo "NODE_VERSION=$nodeVersion" >> $env:GITHUB_OUTPUT
+          echo "Using Node.js version: $nodeVersion"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
-          cache: ''
-          cache-dependency-path: src/Bannerlord.LauncherManager.Native.TypeScript/yarn.lock
+          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
 
       - run: |
           cd ./src/Bannerlord.LauncherManager.Native.TypeScript && `
@@ -56,7 +58,7 @@ jobs:
 
       - uses: actions/setup-node@v3.4.1
         with:
-          node-version: 18
+          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
@@ -65,7 +67,7 @@ jobs:
 
       - uses: actions/setup-node@v3.4.1
         with:
-          node-version: 18
+          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish

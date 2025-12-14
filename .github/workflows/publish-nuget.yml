@@ -18,10 +18,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 8
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@master
         with:
-          dotnet-version: 8.x.x
+          dotnet-version: 9.x.x
 
       - run: dotnet pack -c Release src/Bannerlord.LauncherManager.Localization -p:VersionOverride=$(git rev-list --no-merges --count master) -o ./packages
       
