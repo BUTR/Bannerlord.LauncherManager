@@ -1,4 +1,4 @@
-name: Publish Native NPM
+name: Publish JS NPM and GPR
 
 on:
   push:
@@ -10,6 +10,11 @@ on:
       - 'src/Bannerlord.LauncherManager.Native/**.*'
       - 'src/Bannerlord.LauncherManager.Native.TypeScript/**.*'
   workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
 
 jobs:
   publish:
@@ -49,14 +54,17 @@ jobs:
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Debug
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Release
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js for NPM publish
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
+
+      - name: Publish to NPM (trusted publishing)
+        run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.PUBLISH_NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - uses: actions/setup-node@v4
         with:

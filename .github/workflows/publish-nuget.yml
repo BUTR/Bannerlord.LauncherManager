@@ -1,4 +1,4 @@
-name: Publish on NPM and GPR
+name: Publish C# NuGet and GPR
 
 on:
   push:
@@ -9,9 +9,14 @@ on:
       - 'src/Bannerlord.LauncherManager/**.*'
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
 jobs:
   publish:
-    name: Publish on NPM and GPR
+    name: Publish on NuGet and GPR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -20,23 +25,24 @@ jobs:
           fetch-depth: 0
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@master
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x
 
       - run: dotnet pack -c Release src/Bannerlord.LauncherManager.Localization -p:VersionOverride=$(git rev-list --no-merges --count master) -o ./packages
-      
+
       - run: dotnet pack -c Release src/Bannerlord.LauncherManager.Models -p:VersionOverride=$(git rev-list --no-merges --count master) -o ./packages
-     
+
       - run: dotnet pack -c Release src/Bannerlord.LauncherManager -p:VersionOverride=$(git rev-list --no-merges --count master) -o ./packages
 
+      - name: NuGet login (trusted publishing)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: BUTR
+
       - name: Push to NuGet
-        run: dotnet nuget push "./packages/*.nupkg" -k ${{secrets.NUGET_API_KEY}} -s https://www.nuget.org --skip-duplicate
-        shell: pwsh
+        run: dotnet nuget push "./packages/*.nupkg" --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Push to GPR
-        run: |
-          for f in ./packages/*.nupkg
-          do
-            curl -vX PUT -u "vslee:${{secrets.GITHUB_TOKEN}}" -F package=@$f https://nuget.pkg.github.com/BUTR/
-          done
+        run: dotnet nuget push "./packages/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/BUTR/index.json --skip-duplicate
