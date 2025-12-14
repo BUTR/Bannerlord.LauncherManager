@@ -34,9 +34,9 @@ internal static partial class Utils2
     // Use platform-specific path for the native DLL
     // The RuntimeIdentifier is set based on OS in Bannerlord.LauncherManager.Native.csproj
 #if DEBUG
-    private const string BasePath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net9.0";
+    private const string BasePath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Debug/net10.0";
 #else
-    private const string BasePath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Release/net9.0";
+    private const string BasePath = "../../../../../src/Bannerlord.LauncherManager.Native/bin/Release/net10.0";
 #endif
 
 #if WINDOWS

@@ -342,10 +342,10 @@ async function main() {
         const rid = "win-x64";
         // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
         const possibleLibPaths = [
-          // Standard path: bin/Release/net9.0/win-x64/native/
-          path.resolve(nativeDir, `bin/${configuration}/net9.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
-          // CI path with platform folder: bin/x64/Release/net9.0/win-x64/native/
-          path.resolve(nativeDir, `bin/x64/${configuration}/net9.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
+          // Standard path: bin/Release/net10.0/win-x64/native/
+          path.resolve(nativeDir, `bin/${configuration}/net10.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
+          // CI path with platform folder: bin/x64/Release/net10.0/win-x64/native/
+          path.resolve(nativeDir, `bin/x64/${configuration}/net10.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
         ];
 
         let foundLib = false;
