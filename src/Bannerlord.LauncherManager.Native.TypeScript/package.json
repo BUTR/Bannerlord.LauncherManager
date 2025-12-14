@@ -53,10 +53,8 @@
     "typescript": "^5.7.3"
   },
   "files": [
-    "dist/main/index.*",
-    "dist/main/lib",
-    "dist/module/index.*",
-    "dist/module/lib",
+    "dist/main",
+    "dist/module",
     "dist/Bannerlord.LauncherManager.Native.dll",
     "dist/launchermanager.node",
     "CHANGELOG.md",
