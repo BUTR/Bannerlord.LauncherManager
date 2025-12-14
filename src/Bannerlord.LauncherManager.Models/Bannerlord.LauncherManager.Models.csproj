@@ -41,8 +41,8 @@
   <!--SorceLink-->
   
   <ItemGroup>
-    <PackageReference Include="Bannerlord.ModuleManager.Models" Version="5.0.221" />
-    <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08" PrivateAssets="all" />
+    <PackageReference Include="Bannerlord.ModuleManager.Models" Version="6.0.247" />
+    <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta16" PrivateAssets="all" />
     <PackageReference Include="Required" Version="1.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
