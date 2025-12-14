@@ -253,6 +253,7 @@ async function main() {
         "*.lib",
         "*.so",
         "build",
+        "build-dotnet",
         "dist",
         "coverage",
         ".nyc_output",
@@ -272,17 +273,20 @@ async function main() {
         );
       }
 
-      // Determine runtime identifier based on platform
-      const rid = process.platform === "win32" ? "win-x64" : "linux-x64";
+      // Create output directory if it doesn't exist
+      const dotnetArtifacts = path.resolve("build-dotnet");
+      if (!fs.existsSync(dotnetArtifacts)) {
+        fs.mkdirSync(dotnetArtifacts, { recursive: true });
+      }
 
-      // Run dotnet publish with retry logic
+      // Run dotnet publish with explicit output directory
       const buildArgs = [
         "publish",
-        "-r",
-        rid,
         "--self-contained",
         "-c",
         configuration,
+        "-o",
+        dotnetArtifacts,
         "../Bannerlord.LauncherManager.Native",
       ];
 
@@ -295,35 +299,83 @@ async function main() {
         await spawnAsync("dotnet", buildArgs);
       }
 
-      // Copy native artifacts from the standard build location
-      const nativeBinDir = path.join(nativeDir, `bin/${configuration}/net9.0/${rid}/native`);
-      const headerPath = path.join(nativeDir, `bin/${configuration}/net9.0/${rid}/Bannerlord.LauncherManager.Native.h`);
+      // Copy native artifacts from the output directory
+      console.log(`  Checking artifacts in: ${dotnetArtifacts}`);
+      const artifactFiles = fs.readdirSync(dotnetArtifacts);
+      console.log(`  Found files: ${artifactFiles.join(", ")}`);
 
-      console.log(`  Checking artifacts in: ${nativeBinDir}`);
+      const nativeFiles = artifactFiles.filter((file) =>
+        file.startsWith("Bannerlord.LauncherManager.Native."),
+      );
 
-      if (fs.existsSync(nativeBinDir)) {
-        const artifactFiles = fs.readdirSync(nativeBinDir);
-        console.log(`  Found files: ${artifactFiles.join(", ")}`);
-
-        // Copy DLL/SO and LIB files
-        if (process.platform === "win32") {
-          const dllPath = path.join(nativeBinDir, "Bannerlord.LauncherManager.Native.dll");
-          const libPath = path.join(nativeBinDir, "Bannerlord.LauncherManager.Native.lib");
-          if (fs.existsSync(dllPath)) copyItem(dllPath, "Bannerlord.LauncherManager.Native.dll");
-          if (fs.existsSync(libPath)) copyItem(libPath, "Bannerlord.LauncherManager.Native.lib");
-        } else {
-          const soPath = path.join(nativeBinDir, "Bannerlord.LauncherManager.Native.so");
-          if (fs.existsSync(soPath)) copyItem(soPath, "Bannerlord.LauncherManager.Native.so");
-        }
-      } else {
-        throw new Error(`Native build output not found at: ${nativeBinDir}`);
+      if (nativeFiles.length === 0) {
+        throw new Error(
+          `No Bannerlord.LauncherManager.Native.* files found in ${dotnetArtifacts}`,
+        );
       }
 
-      // Copy header file
-      if (fs.existsSync(headerPath)) {
-        copyItem(headerPath, "Bannerlord.LauncherManager.Native.h");
+      console.log(`  Native files to copy: ${nativeFiles.join(", ")}`);
+      nativeFiles.forEach((file) => {
+        copyItem(path.join(dotnetArtifacts, file), file);
+      });
+
+      // Also check for files in the native subfolder (Windows AOT build)
+      const nativeSubfolder = path.join(dotnetArtifacts, "native");
+      console.log(`  Checking native subfolder: ${nativeSubfolder}`);
+      if (fs.existsSync(nativeSubfolder)) {
+        const nativeSubfolderFiles = fs.readdirSync(nativeSubfolder);
+        console.log(`  Native subfolder files: ${nativeSubfolderFiles.join(", ")}`);
+        nativeSubfolderFiles
+          .filter((file) => file.startsWith("Bannerlord.LauncherManager.Native."))
+          .forEach((file) => {
+            const destPath = file;
+            if (!fs.existsSync(destPath)) {
+              copyItem(path.join(nativeSubfolder, file), destPath);
+            }
+          });
       } else {
-        console.log(`  Warning: Header file not found at ${headerPath}`);
+        console.log(`  Native subfolder does not exist`);
+      }
+
+      // Fallback: Check the original build location if .lib is still missing
+      if (process.platform === "win32" && !fs.existsSync("Bannerlord.LauncherManager.Native.lib")) {
+        const rid = "win-x64";
+        // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
+        const possibleLibPaths = [
+          // Standard path: bin/Release/net9.0/win-x64/native/
+          path.resolve(nativeDir, `bin/${configuration}/net9.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
+          // CI path with platform folder: bin/x64/Release/net9.0/win-x64/native/
+          path.resolve(nativeDir, `bin/x64/${configuration}/net9.0/${rid}/native/Bannerlord.LauncherManager.Native.lib`),
+        ];
+
+        let foundLib = false;
+        for (const libPath of possibleLibPaths) {
+          console.log(`  Checking lib path: ${libPath}`);
+          if (fs.existsSync(libPath)) {
+            copyItem(libPath, "Bannerlord.LauncherManager.Native.lib");
+            foundLib = true;
+            break;
+          }
+        }
+
+        if (!foundLib) {
+          console.log(`  .lib file not found in any expected location`);
+          // List what's in the native dir bin folder for debugging
+          const binDir = path.resolve(nativeDir, "bin");
+          if (fs.existsSync(binDir)) {
+            console.log(`  Contents of ${binDir}:`);
+            const listDirRecursive = (dir, indent = "    ") => {
+              const items = fs.readdirSync(dir, { withFileTypes: true });
+              items.forEach((item) => {
+                console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
+                if (item.isDirectory() && indent.length < 16) {
+                  listDirRecursive(path.join(dir, item.name), indent + "  ");
+                }
+              });
+            };
+            listDirRecursive(binDir);
+          }
+        }
       }
 
       console.log("");
