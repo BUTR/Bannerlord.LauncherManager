@@ -117,9 +117,9 @@ public:
     static void Log(const std::string &message)
     {
         // Convert UTF-8 string to UTF-16 for the log function
-        //std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        //std::u16string utf16_message = convert.from_bytes(message);
-        //ModInstaller::Native::log_message(2, const_cast<char16_t *>(utf16_message.c_str()));
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+        std::u16string utf16_message = convert.from_bytes(message);
+        Bannerlord::LauncherManager::Native::log_message(2, const_cast<char16_t *>(utf16_message.c_str()));
     }
 
     static void Log(const std::string &caller, const std::string &message)
