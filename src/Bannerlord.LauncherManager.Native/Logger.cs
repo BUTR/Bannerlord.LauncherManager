@@ -40,7 +40,7 @@ internal static partial class Logger
             {
                 options.RollingSizeKB = 8 * 1024 * 1024;
                 options.FileShared = false;
-                options.FilePathSelector = (date, sequence) => $"{_logFilePathBase}\\vortex_devel\\FOMOD.ModInstaller{sequence}.log";
+                options.FilePathSelector = (date, sequence) => $"{_logFilePathBase}\\vortex_devel\\Bannerlord.LauncherManager{sequence}.log";
                 options.FullMode = BackgroundBufferFullMode.Grow;
                 options.CaptureThreadInfo = true;
                 options.IncludeScopes = true;
@@ -56,7 +56,7 @@ internal static partial class Logger
             {
                 options.RollingSizeKB = 8 * 1024 * 1024;
                 options.FileShared = false;
-                options.FilePathSelector = (date, sequence) => $"{_logFilePathBase}\\Vortex\\FOMOD.ModInstaller{sequence}.log";
+                options.FilePathSelector = (date, sequence) => $"{_logFilePathBase}\\Vortex\\Bannerlord.LauncherManager{sequence}.log";
                 options.FullMode = BackgroundBufferFullMode.Block;
                 options.CaptureThreadInfo = true;
                 options.IncludeScopes = true;
@@ -88,8 +88,8 @@ internal static partial class Logger
     {
         Factory?.Dispose();
 
-        NativeInstance = new WrapperLogger(logger, "FOMOD C# ");
-        ExternalInstance = new WrapperLogger(logger, "FOMOD C++");
+        NativeInstance = new WrapperLogger(logger,   "Bannerlord C# ");
+        ExternalInstance = new WrapperLogger(logger, "Bannerlord C++");
     }
 
     public static void ExternalLog(LogLevel level, string message)
