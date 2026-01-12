@@ -274,7 +274,12 @@ namespace Utils
             }
         };
 
-        if (jsResult.IsPromise())
+        // Check for Promise using duck typing - IsPromise() doesn't detect Promise.resolve() created promises
+        const bool isPromiseLike = jsResult.IsObject() &&
+            jsResult.As<Napi::Object>().Has("then") &&
+            jsResult.As<Napi::Object>().Get("then").IsFunction();
+
+        if (isPromiseLike)
         {
             const auto promise = jsResult.As<Napi::Object>();
             const auto then = promise.Get("then").As<Napi::Function>();
