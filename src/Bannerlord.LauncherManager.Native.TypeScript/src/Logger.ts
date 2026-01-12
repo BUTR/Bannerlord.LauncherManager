@@ -4,7 +4,7 @@ export class NativeLogger implements types.Logger {
   private manager: types.Logger;
 
   public constructor(log: (level: number, message: string) => void) {
-    const addon: types.ILoggerExtension = require("./../build/launchermanager.node");
+    const addon: types.ILoggerExtension = require("./../launchermanager.node");
     this.manager = new addon.Logger(log);
   }
 
@@ -17,7 +17,7 @@ export class NativeLogger implements types.Logger {
   }
 
   public static setDefaultCallbacks = (): void => {
-    const addon: types.ILoggerExtension = require("./../build/launchermanager.node");
+    const addon: types.ILoggerExtension = require("./../launchermanager.node");
     return addon.Logger.setDefaultCallbacks();
   };
 }
