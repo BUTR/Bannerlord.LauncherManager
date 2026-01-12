@@ -1,15 +1,21 @@
-export * from './BannerlordModuleManager';
-export * from './FetchBannerlordVersion';
-export * from './LauncherManager';
-export * from './Utils';
+export * from "./BannerlordModuleManager";
+export * from "./FetchBannerlordVersion";
+export * from "./LauncherManager";
+export * from "./Logger";
+export * from "./Utils";
 
-import { IBannerlordModuleManager } from './BannerlordModuleManager';
-import { IFetchBannerlordVersion } from './FetchBannerlordVersion';
-import { INativeExtension } from './LauncherManager';
-import { IUtils } from './Utils';
+import { IBannerlordModuleManager } from "./BannerlordModuleManager";
+import { IFetchBannerlordVersion } from "./FetchBannerlordVersion";
+import { INativeExtension } from "./LauncherManager";
+import { IUtils } from "./Utils";
 
-export interface IExtension extends IBannerlordModuleManager, IFetchBannerlordVersion, IUtils, INativeExtension {
-    allocWithOwnership(length: number): Buffer | null;
-    allocWithoutOwnership(length: number): Buffer | null;
-    allocAliveCount(): number;
+export interface IExtension
+  extends
+    IBannerlordModuleManager,
+    IFetchBannerlordVersion,
+    IUtils,
+    INativeExtension {
+  allocWithOwnership(length: number): Buffer | null;
+  allocWithoutOwnership(length: number): Buffer | null;
+  allocAliveCount(): number;
 }
