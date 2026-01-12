@@ -3,6 +3,7 @@
 #include "Platform.hpp"
 #include <napi.h>
 #include "Bindings.Common.Implementation.hpp"
+#include "Bindings.Logging.Implementation.hpp"
 #include "Bindings.FetchVersion.Implementation.hpp"
 #include "Bindings.ModuleManager.Implementation.hpp"
 #include "Bindings.LauncherManager.Implementation.hpp"
@@ -13,6 +14,7 @@ using namespace Napi;
 Object InitAll(const Env env, const Object exports)
 {
   Bindings::Common::Init(env, exports);
+  Bindings::Logging::Init(env, exports);
   Bindings::FetchVersion::Init(env, exports);
   Bindings::ModuleManager::Init(env, exports);
   Bindings::LauncherManager::Init(env, exports);
