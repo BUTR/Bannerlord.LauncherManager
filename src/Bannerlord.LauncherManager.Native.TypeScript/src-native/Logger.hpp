@@ -6,93 +6,97 @@
 
 // Don't even care anymore
 
-#define EXTRACT_FUNCTION_NAME(function) \
-    []() { \
-                std::string fullName = function; \
-                size_t lastColon = fullName.rfind("::"); \
-                size_t secondLastColon = fullName.rfind("::", lastColon - 1); \
-                size_t thirdLastColon = fullName.rfind("::", secondLastColon - 1); \
-                return fullName.substr(thirdLastColon + 2, secondLastColon - thirdLastColon - 2); }()
+#define EXTRACT_FUNCTION_NAME(function)                                                                                                                                            \
+    []() {                                                                                                                                                                         \
+        std::string fullName = function;                                                                                                                                           \
+        size_t lastColon = fullName.rfind("::");                                                                                                                                   \
+        size_t secondLastColon = fullName.rfind("::", lastColon - 1);                                                                                                              \
+        size_t thirdLastColon = fullName.rfind("::", secondLastColon - 1);                                                                                                         \
+        return fullName.substr(thirdLastColon + 2, secondLastColon - thirdLastColon - 2);                                                                                          \
+    }()
 
-#define EXTRACT_LAMBDA_FUNCTION_NAME(function) \
-    []() { \
-        std::string fullName = function; \
-        size_t lastColon = fullName.rfind("::"); \
-        size_t secondLastColon = fullName.rfind("::", lastColon - 1); \
-        size_t thirdLastColon = fullName.rfind("::", secondLastColon - 1); \
-        size_t fourthLastColon = fullName.rfind("::", thirdLastColon - 1); \
-        return fullName.substr(0, fourthLastColon); }()
+#define EXTRACT_LAMBDA_FUNCTION_NAME(function)                                                                                                                                     \
+    []() {                                                                                                                                                                         \
+        std::string fullName = function;                                                                                                                                           \
+        size_t lastColon = fullName.rfind("::");                                                                                                                                   \
+        size_t secondLastColon = fullName.rfind("::", lastColon - 1);                                                                                                              \
+        size_t thirdLastColon = fullName.rfind("::", secondLastColon - 1);                                                                                                         \
+        size_t fourthLastColon = fullName.rfind("::", thirdLastColon - 1);                                                                                                         \
+        return fullName.substr(0, fourthLastColon);                                                                                                                                \
+    }()
 
 /*
 #define LOG(message) Logger::Log(std::string(__FUNCTION__) + std::string(" - ") + std::string(message))
 #define LOGINPUT() Logger::LogInput(__FUNCTION__)
 #define LOGOUTPUT() Logger::LogOutput(__FUNCTION__)
 
-#define LOGLAMBDA(caller, message) Logger::Log(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) + std::string("::") + std::string(caller) + std::string(" - ") + std::string(message))
-#define LOGINPUTLAMBDA(caller) Logger::LogInput(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) + std::string("::") + std::string(caller))
-#define LOGOUTPUTLAMBDA(caller) Logger::LogOutput(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) + std::string("::") + std::string(caller))
+#define LOGLAMBDA(caller, message) Logger::Log(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) +
+std::string("::") + std::string(caller) + std::string(" - ") + std::string(message)) #define LOGINPUTLAMBDA(caller)
+Logger::LogInput(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) + std::string("::") + std::string(caller))
+#define LOGOUTPUTLAMBDA(caller) Logger::LogOutput(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) +
+std::string("::") + std::string(caller))
 */
 
-#define LOG(message)                                                    \
-    do                                                                  \
-    {                                                                   \
-        std::ostringstream oss;                                         \
-        oss << EXTRACT_FUNCTION_NAME(__FUNCTION__) << " - " << message; \
-        Logger::Log(oss.str());                                         \
+#define LOG(message)                                                                                                                                                               \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+        std::ostringstream oss;                                                                                                                                                    \
+        oss << EXTRACT_FUNCTION_NAME(__FUNCTION__) << " - " << message;                                                                                                            \
+        Logger::Log(oss.str());                                                                                                                                                    \
     } while (0)
 
-#define LOGINPUT()                                  \
-    do                                              \
-    {                                               \
-        std::ostringstream oss;                     \
-        oss << EXTRACT_FUNCTION_NAME(__FUNCTION__); \
-        Logger::LogInput(oss.str());                \
+#define LOGINPUT()                                                                                                                                                                 \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+        std::ostringstream oss;                                                                                                                                                    \
+        oss << EXTRACT_FUNCTION_NAME(__FUNCTION__);                                                                                                                                \
+        Logger::LogInput(oss.str());                                                                                                                                               \
     } while (0)
 
-#define LOGOUTPUT()                                 \
-    do                                              \
-    {                                               \
-        std::ostringstream oss;                     \
-        oss << EXTRACT_FUNCTION_NAME(__FUNCTION__); \
-        Logger::LogOutput(oss.str());               \
+#define LOGOUTPUT()                                                                                                                                                                \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+        std::ostringstream oss;                                                                                                                                                    \
+        oss << EXTRACT_FUNCTION_NAME(__FUNCTION__);                                                                                                                                \
+        Logger::LogOutput(oss.str());                                                                                                                                              \
     } while (0)
 
-#define LOGLAMBDA(caller, message)                                                              \
-    do                                                                                          \
-    {                                                                                           \
-        std::ostringstream oss;                                                                 \
-        oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller << " - " << message; \
-        Logger::Log(oss.str());                                                                 \
+#define LOGLAMBDA(caller, message)                                                                                                                                                 \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+        std::ostringstream oss;                                                                                                                                                    \
+        oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller << " - " << message;                                                                                    \
+        Logger::Log(oss.str());                                                                                                                                                    \
     } while (0)
 
-#define LOGINPUTLAMBDA(caller)                                              \
-    do                                                                      \
-    {                                                                       \
-        std::ostringstream oss;                                             \
-        oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller; \
-        Logger::LogInput(oss.str());                                        \
+#define LOGINPUTLAMBDA(caller)                                                                                                                                                     \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+        std::ostringstream oss;                                                                                                                                                    \
+        oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller;                                                                                                        \
+        Logger::LogInput(oss.str());                                                                                                                                               \
     } while (0)
 
-#define LOGOUTPUTLAMBDA(caller)                                             \
-    do                                                                      \
-    {                                                                       \
-        std::ostringstream oss;                                             \
-        oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller; \
-        Logger::LogOutput(oss.str());                                       \
+#define LOGOUTPUTLAMBDA(caller)                                                                                                                                                    \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+        std::ostringstream oss;                                                                                                                                                    \
+        oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller;                                                                                                        \
+        Logger::LogOutput(oss.str());                                                                                                                                              \
     } while (0)
 
-#include <napi.h>
-#include <string>
-#include <sstream>
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Utils.Utf.hpp"
+#include <napi.h>
+#include <sstream>
+#include <string>
 
 using namespace Napi;
 using namespace Bannerlord::LauncherManager::Native;
 
 class Logger
 {
-private:
+  private:
     static const std::string _logFilePath;
     static const std::wstring _mutexName;
 
@@ -113,7 +117,7 @@ private:
         return function.substr(thirdLastColon + 2, secondLastColon - thirdLastColon - 2);
     };
 
-public:
+  public:
     static void Log(const std::string &message)
     {
         // Convert UTF-8 string to UTF-16 for the log function
@@ -155,8 +159,7 @@ public:
         Log(caller, "Parameter: " + std::to_string(val));
     }
 
-    template <typename T, typename... Args>
-    static void LogInput(const std::string &caller, const T &first, const Args &...args)
+    template <typename T, typename... Args> static void LogInput(const std::string &caller, const T &first, const Args &...args)
     {
         LogInput(caller, first);
         LogInput(caller, args...);
@@ -179,7 +182,8 @@ public:
 
     static void LogInput(const std::string &caller, return_value_data *returnData)
     {
-        Log(caller, "Starting: " + (returnData->error == nullptr ? ("(" + to_hex(returnData->value) + ", " + std::to_string(returnData->length) + ")") : Utils::Utf16ToUtf8(returnData->error)));
+        Log(caller, "Starting: " + (returnData->error == nullptr ? ("(" + to_hex(returnData->value) + ", " + std::to_string(returnData->length) + ")")
+                                                                 : Utils::Utf16ToUtf8(returnData->error)));
     }
 
     static void LogInput(const std::string &caller, return_value_bool *returnData)
@@ -222,9 +226,8 @@ class LoggerScope
 {
     const std::string caller_;
 
-public:
-    template <typename... Args>
-    LoggerScope(const std::string &caller, const Args &...args) : caller_(caller)
+  public:
+    template <typename... Args> LoggerScope(const std::string &caller, const Args &...args) : caller_(caller)
     {
         Logger::LogStarted(caller_);
 

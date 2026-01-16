@@ -1,19 +1,19 @@
 #ifndef VE_COMMON_GUARD_HPP_
 #define VE_COMMON_GUARD_HPP_
 
-#include <napi.h>
 #include "Bannerlord.LauncherManager.Native.h"
+#include <napi.h>
 
 using namespace Napi;
 using namespace Bannerlord::LauncherManager::Native;
 namespace Bindings::Common
 {
-    Value AllocWithOwnership(const CallbackInfo &info);
+Value AllocWithOwnership(const CallbackInfo &info);
 
-    Value AllocWithoutOwnership(const CallbackInfo &info);
+Value AllocWithoutOwnership(const CallbackInfo &info);
 
-    Value AllocAliveCount(const CallbackInfo &info);
+Value AllocAliveCount(const CallbackInfo &info);
 
-    Object Init(const Env env, Object exports);
-}
+Object Init(const Env env, Object exports);
+} // namespace Bindings::Common
 #endif

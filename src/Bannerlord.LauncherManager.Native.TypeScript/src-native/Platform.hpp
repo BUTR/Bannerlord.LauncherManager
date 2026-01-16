@@ -9,12 +9,12 @@
 // but if it's void (__cdecl )(params) it becomes void ()(params) which is invalid.
 // Solution: On non-Windows, define __cdecl as __attribute__((cdecl)) which GCC ignores
 #ifdef _WIN32
-    // Windows already has __cdecl defined by the compiler
+// Windows already has __cdecl defined by the compiler
 #else
-    // Linux/Mac: define __cdecl as something GCC will accept and ignore
-    #ifndef __cdecl
-        #define __cdecl __attribute__((__cdecl__))
-    #endif
+// Linux/Mac: define __cdecl as something GCC will accept and ignore
+#ifndef __cdecl
+#define __cdecl __attribute__((__cdecl__))
+#endif
 #endif
 
 #endif // PLATFORM_HPP
