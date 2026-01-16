@@ -225,7 +225,7 @@ class Logger
 class LoggerScope
 {
     const std::string caller_;
-    const bool isSilent_ = false;
+    bool isSilent_ = false;
 
   public:
     template <typename... Args> LoggerScope(const std::string &caller, const Args &...args) : caller_(caller)
