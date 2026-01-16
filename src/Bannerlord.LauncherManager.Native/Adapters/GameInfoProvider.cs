@@ -23,9 +23,9 @@ internal sealed class GameInfoProvider : IGameInfoProvider
     public Task<string> GetInstallPathAsync()
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -45,9 +45,9 @@ internal sealed class GameInfoProvider : IGameInfoProvider
     public static unsafe void GetInstallPathNativeCallback(param_ptr* pOwner, return_value_string* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -79,9 +79,9 @@ internal sealed class GameInfoProvider : IGameInfoProvider
     private unsafe void GetInstallPathNative(TaskCompletionSource<string> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);

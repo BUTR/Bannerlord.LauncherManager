@@ -35,9 +35,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public Task<byte[]?> ReadFileContentAsync(string filePath, int offset, int length)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(filePath.ToFormattable(), offset, length);
+        using var logger = LogMethod(filePath.ToFormattable(), offset, length);
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -56,9 +56,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public Task WriteFileContentAsync(string filePath, byte[]? data)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(filePath.ToFormattable(), data?.Length ?? 0);
+        using var logger = LogMethod(filePath.ToFormattable(), data?.Length ?? 0);
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -77,9 +77,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public Task<string[]?> ReadDirectoryFileListAsync(string directoryPath)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(directoryPath.ToFormattable());
+        using var logger = LogMethod(directoryPath.ToFormattable());
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -98,9 +98,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public Task<string[]?> ReadDirectoryListAsync(string directoryPath)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(directoryPath.ToFormattable());
+        using var logger = LogMethod(directoryPath.ToFormattable());
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -120,9 +120,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public static unsafe void ReadFileContentNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -153,9 +153,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     private unsafe void ReadFileContentNative(ReadOnlySpan<char> filePath, int offset, int length, TaskCompletionSource<byte[]?> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(offset, length);
+        using var logger = LogMethod(offset, length);
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -181,9 +181,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public static unsafe void WriteFileContentNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -214,9 +214,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     private unsafe void WriteFileContentNative(ReadOnlySpan<char> filePath, ReadOnlySpan<byte> data, int length, TaskCompletionSource tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(length);
+        using var logger = LogMethod(length);
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -243,9 +243,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public static unsafe void ReadDirectoryFileListNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -276,9 +276,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     private unsafe void ReadDirectoryFileListNative(ReadOnlySpan<char> directoryPath, TaskCompletionSource<string[]?> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -304,9 +304,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     public static unsafe void ReadDirectoryListNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -337,9 +337,9 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     private unsafe void ReadDirectoryListNative(string directoryPath, TaskCompletionSource<string[]?> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);

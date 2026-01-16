@@ -56,7 +56,9 @@ inline return_value_data *ConvertToDataResult(const Napi::Value &result)
     }
 
     auto buffer = result.As<Buffer<uint8_t>>();
+#if DEBUG
     Logger::Log(__FUNCTION__, "Buffer size: " + std::to_string(buffer.ByteLength()));
+#endif
     return Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())});
 }
 

@@ -225,6 +225,7 @@ class Logger
 class LoggerScope
 {
     const std::string caller_;
+    const bool isSilent_ = false;
 
   public:
     template <typename... Args> LoggerScope(const std::string &caller, const Args &...args) : caller_(caller)
@@ -239,9 +240,20 @@ class LoggerScope
 #endif
     }
 
-    LoggerScope(const std::string &caller) : caller_(caller)
+    LoggerScope(const std::string &caller) : LoggerScope(caller, false)
     {
-        Logger::LogStarted(caller_);
+    }
+
+    LoggerScope(const std::string &caller, const bool isSilent) : caller_(caller), isSilent_(isSilent)
+    {
+#if DEBUG
+        isSilent_ = false;
+#endif
+
+        if (!isSilent_)
+        {
+            Logger::LogStarted(caller_);
+        }
     }
 
     void LogError(const Napi::Error &e)
@@ -261,12 +273,18 @@ class LoggerScope
 
     void LogResult(const std::string &message)
     {
-        Logger::Log(caller_, message);
+        if (!isSilent_)
+        {
+            Logger::Log(caller_, message);
+        }
     }
 
     ~LoggerScope()
     {
-        Logger::LogFinished(caller_);
+        if (!isSilent_)
+        {
+            Logger::LogFinished(caller_);
+        }
     }
 };
 

@@ -34,9 +34,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     public Task SetGameParametersAsync(string executable, IReadOnlyList<string> gameParameters)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(executable.ToFormattable());
+        using var logger = LogMethod(executable.ToFormattable());
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -55,9 +55,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     public Task<LauncherOptions> GetOptionsAsync()
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -76,9 +76,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     public Task<LauncherState> GetStateAsync()
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -98,9 +98,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     public static unsafe void SetGameParametersNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -131,9 +131,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     private unsafe void SetGameParametersNative(ReadOnlySpan<char> executable, IReadOnlyList<string> gameParameters, TaskCompletionSource tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -160,9 +160,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     public static unsafe void GetOptionsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -193,9 +193,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     private unsafe void GetOptionsNative(TaskCompletionSource<LauncherOptions> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -218,9 +218,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     public static unsafe void GetStateNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -251,9 +251,9 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     private unsafe void GetStateNative(TaskCompletionSource<LauncherState> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);

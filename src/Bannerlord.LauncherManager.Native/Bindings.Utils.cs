@@ -46,7 +46,7 @@ public static unsafe partial class Bindings
 #if DEBUG
         using var logger = LogMethod(p_module);
 #else
-        using var logger = LogMethod();
+        using var logger = SilentLogMethod();
 #endif
         try
         {
@@ -139,7 +139,7 @@ public static unsafe partial class Bindings
 #if DEBUG
         using var logger = LogMethod(p_template, p_values);
 #else
-        using var logger = LogMethod();
+        using var logger = SilentLogMethod();
 #endif
         try
         {

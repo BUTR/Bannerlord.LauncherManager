@@ -12,11 +12,16 @@ static partial class Logger
     {
         return new LoggerScope(caller);
     }
-    public static LoggerScope LogCallbackMethod(string? caller)
+    public static LoggerScope LogCallbackMethod([CallerMemberName] string? caller = null)
     {
-        return new LoggerScope($"{caller}Callback");
+        return new LoggerScope($"{caller}Callback", true);
     }
 
+    public static LoggerScope SilentLogMethod([CallerMemberName] string? caller = null)
+    {
+        return new LoggerScope(caller, true);
+    }
+    
     public static LoggerScope LogMethod<T1>(T1 param1, [CallerMemberName] string? caller = null)
         where T1 : IFormattable
     {
@@ -72,7 +77,7 @@ static partial class Logger
     public static unsafe LoggerScope LogCallbackMethod<TResult>(TResult* result, [CallerMemberName] string? caller = null)
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithResult(result);
     }
 
@@ -86,7 +91,7 @@ static partial class Logger
         where T1 : unmanaged, IParameterSpanFormattable<T1>
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithInput(T1.ToSpan(param1).ToString())
             .WithResult(result);
     }
@@ -103,7 +108,7 @@ static partial class Logger
         where T2 : unmanaged, IParameterSpanFormattable<T2>
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithInput(T1.ToSpan(param1).ToString(), T2.ToSpan(param2).ToString())
             .WithResult(result);
     }
@@ -122,7 +127,7 @@ static partial class Logger
         where T3 : unmanaged, IParameterSpanFormattable<T3>
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithInput(T1.ToSpan(param1).ToString(), T2.ToSpan(param2).ToString(), T3.ToSpan(param3).ToString())
             .WithResult(result);
     }
@@ -143,7 +148,7 @@ static partial class Logger
         where T4 : unmanaged, IParameterSpanFormattable<T4>
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithInput(T1.ToSpan(param1).ToString(), T2.ToSpan(param2).ToString(), T3.ToSpan(param3).ToString(), T4.ToSpan(param4).ToString())
             .WithResult(result);
     }
@@ -166,7 +171,7 @@ static partial class Logger
         where T5 : unmanaged, IParameterSpanFormattable<T5>
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithInput(T1.ToSpan(param1).ToString(), T2.ToSpan(param2).ToString(), T3.ToSpan(param3).ToString(), T4.ToSpan(param4).ToString(), T5.ToSpan(param5).ToString())
             .WithResult(result);
     }
@@ -191,7 +196,7 @@ static partial class Logger
         where T6 : unmanaged, IParameterSpanFormattable<T6>
         where TResult : unmanaged, IReturnValueSpanFormattable<TResult>
     {
-        return new LoggerScope(caller)
+        return new LoggerScope(caller, true)
             .WithInput(T1.ToSpan(param1).ToString(), T2.ToSpan(param2).ToString(), T3.ToSpan(param3).ToString(), T4.ToSpan(param4).ToString(), T5.ToSpan(param5).ToString(), T6.ToSpan(param6).ToString())
             .WithResult(result);
     }

@@ -11,47 +11,80 @@ static partial class Logger
     internal readonly ref struct LoggerScope
     {
         private readonly string? _caller;
+        private readonly bool _silent;
 
-        public LoggerScope(string? caller)
+        public LoggerScope(string? caller) : this(caller, false) { }
+        
+        public LoggerScope(string? caller, bool silent)
         {
             _caller = caller;
-            NativeInstance?.LogStarted(_caller);
+            _silent = silent;
+            
+#if DEBUG
+            _silent = false;
+#endif
+            
+            if (!_silent)
+            {
+                NativeInstance?.LogStarted(_caller);
+            }
         }
 
         public LoggerScope WithInput(string p1)
         {
-            NativeInstance?.LogParameters1(_caller, p1);
+            if (!_silent)
+            {
+                NativeInstance?.LogParameters1(_caller, p1);
+            }
             return this;
         }
         public LoggerScope WithInput(string p1, string p2)
         {
-            NativeInstance?.LogParameters2(_caller, p1, p2);
+            if (!_silent)
+            {
+                NativeInstance?.LogParameters2(_caller, p1, p2);
+            }
             return this;
         }
         public LoggerScope WithInput(string p1, string p2, string p3)
         {
-            NativeInstance?.LogParameters3(_caller, p1, p2, p3);
+            if (!_silent)
+            {
+                NativeInstance?.LogParameters3(_caller, p1, p2, p3);
+            }
             return this;
         }
         public LoggerScope WithInput(string p1, string p2, string p3, string p4)
         {
-            NativeInstance?.LogParameters4(_caller, p1, p2, p3, p4);
+            if (!_silent)
+            {
+                NativeInstance?.LogParameters4(_caller, p1, p2, p3, p4);
+            }
             return this;
         }
         public LoggerScope WithInput(string p1, string p2, string p3, string p4, string p5)
         {
-            NativeInstance?.LogParameters5(_caller, p1, p2, p3, p4, p5);
+            if (!_silent)
+            {
+                NativeInstance?.LogParameters5(_caller, p1, p2, p3, p4, p5);
+            }
             return this;
         }
         public LoggerScope WithInput(string p1, string p2, string p3, string p4, string p5, string p6)
         {
-            NativeInstance?.LogParameters6(_caller, p1, p2, p3, p4, p5, p6);
+            if (!_silent)
+            {
+                NativeInstance?.LogParameters6(_caller, p1, p2, p3, p4, p5, p6);
+            }
             return this;
         }
         public unsafe LoggerScope WithResult<TStruct>(TStruct* result)
             where TStruct : unmanaged, IReturnValueSpanFormattable<TStruct>
         {
-            NativeInstance?.LogResult1(_caller, TStruct.ToSpan(result).ToString());
+            if (!_silent)
+            {
+                NativeInstance?.LogResult1(_caller, TStruct.ToSpan(result).ToString());
+            }
             return this;
         }
 
@@ -68,18 +101,27 @@ static partial class Logger
         public unsafe void LogResult<TStruct>(SafeStructMallocHandle<TStruct> result)
             where TStruct : unmanaged, IReturnValueSpanFormattable<TStruct>
         {
-            NativeInstance?.LogResult1(_caller, TStruct.ToSpan(result.Value).ToString());
+            if (!_silent)
+            {
+                NativeInstance?.LogResult1(_caller, TStruct.ToSpan(result.Value).ToString());
+            }
         }
 
         public void LogResult<TResult>(TResult result, string? format = null)
             where TResult : IFormattable
         {
-            NativeInstance?.LogResult1(_caller, result.ToString(format, CultureInfo.InvariantCulture));
+            if (!_silent)
+            {
+                NativeInstance?.LogResult1(_caller, result.ToString(format, CultureInfo.InvariantCulture));
+            }
         }
 
         public void Dispose()
         {
-            NativeInstance?.LogFinished(_caller);
+            if (!_silent)
+            {
+                NativeInstance?.LogFinished(_caller);
+            }
         }
     }
 }

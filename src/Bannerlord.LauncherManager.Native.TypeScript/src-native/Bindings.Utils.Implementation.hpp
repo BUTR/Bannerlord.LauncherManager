@@ -26,7 +26,7 @@ Value IsLoadOrderCorrect(const CallbackInfo &info)
 
 Value GetDependencyHint(const CallbackInfo &info)
 {
-    LoggerScope logger(__FUNCTION__);
+    LoggerScope logger(__FUNCTION__, true);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
@@ -70,7 +70,7 @@ void SetLanguage(const CallbackInfo &info)
 
 Value LocalizeString(const CallbackInfo &info)
 {
-    LoggerScope logger(__FUNCTION__);
+    LoggerScope logger(__FUNCTION__, true);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto templateStr = info[0].As<String>();

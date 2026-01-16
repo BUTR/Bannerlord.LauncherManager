@@ -14,7 +14,7 @@ namespace Bindings::Common
 {
 Value AllocWithOwnership(const CallbackInfo &info)
 {
-    LoggerScope logger(__FUNCTION__);
+    LoggerScope logger(__FUNCTION__, true);
     const auto env = info.Env();
 
     return WithExceptionHandlingReturningNull(logger, env, [&]() {
@@ -32,7 +32,7 @@ Value AllocWithOwnership(const CallbackInfo &info)
 
 Value AllocWithoutOwnership(const CallbackInfo &info)
 {
-    LoggerScope logger(__FUNCTION__);
+    LoggerScope logger(__FUNCTION__, true);
     const auto env = info.Env();
 
     return WithExceptionHandlingReturningNull(logger, env, [&]() {
@@ -51,7 +51,7 @@ Value AllocWithoutOwnership(const CallbackInfo &info)
 
 Value AllocAliveCount(const CallbackInfo &info)
 {
-    LoggerScope logger(__FUNCTION__);
+    LoggerScope logger(__FUNCTION__, true);
     const auto env = info.Env();
 
     return WithExceptionHandlingReturningNull(logger, env, [&]() {

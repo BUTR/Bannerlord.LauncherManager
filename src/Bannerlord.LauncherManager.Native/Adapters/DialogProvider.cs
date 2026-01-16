@@ -51,7 +51,7 @@ internal sealed class DialogProvider : IDialogProvider
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -85,7 +85,7 @@ internal sealed class DialogProvider : IDialogProvider
 #if DEBUG
         using var logger = LogMethod(type.ToString().ToFormattable(), message.ToString().ToFormattable());
 #else
-        using var logger = LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);

@@ -25,10 +25,10 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
     public Task SendNotificationAsync(string id, NotificationType type, string message, uint displayMs)
     {
 #if DEBUG
-        //using var logger = Logger.LogMethod(id.ToFormattable(), type.ToFormattable(), displayMs);
-        using var logger = Logger.LogMethod(id.ToFormattable(), displayMs);
+        //using var logger = LogMethod(id.ToFormattable(), type.ToFormattable(), displayMs);
+        using var logger = LogMethod(id.ToFormattable(), displayMs);
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -48,9 +48,9 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
     public static void SendNotificationCallback(param_ptr* pOwner, return_value_void* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -82,9 +82,9 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
     private void SendNotificationNative(ReadOnlySpan<char> id, ReadOnlySpan<char> type, ReadOnlySpan<char> message, uint displayMs, TaskCompletionSource tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod(displayMs);
+        using var logger = LogMethod(displayMs);
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         fixed (char* pId = id)

@@ -35,9 +35,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     public Task<IModuleViewModel[]?> GetAllModuleViewModelsAsync()
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -56,9 +56,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     public Task<IModuleViewModel[]?> GetModuleViewModelsAsync()
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -77,9 +77,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     public Task SetModuleViewModelsAsync(IReadOnlyList<IModuleViewModel> moduleViewModels)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #endif
 
         try
@@ -100,9 +100,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     public static unsafe void GetAllModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -149,9 +149,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     private unsafe void GetAllModuleViewModelsNative(TaskCompletionSource<IModuleViewModel[]?> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -174,9 +174,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     public static unsafe void GetModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -223,9 +223,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     private unsafe void GetModuleViewModelsNative(TaskCompletionSource<IModuleViewModel[]?> tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -248,9 +248,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     public static unsafe void SetModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_void* pResult)
     {
 #if DEBUG
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = Logger.LogCallbackMethod(pResult);
+        using var logger = LogCallbackMethod();
 #endif
 
         try
@@ -281,9 +281,9 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     private unsafe void SetModuleViewModelsNative(IReadOnlyList<IModuleViewModel> moduleViewModels, TaskCompletionSource tcs)
     {
 #if DEBUG
-        using var logger = Logger.LogMethod();
+        using var logger = LogMethod();
 #else
-        using var logger = Logger.LogMethod();
+        using var logger = SilentLogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
