@@ -84,7 +84,7 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
 #if DEBUG
         using var logger = LogMethod(displayMs);
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         fixed (char* pId = id)

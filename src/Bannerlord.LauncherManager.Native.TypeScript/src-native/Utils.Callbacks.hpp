@@ -29,7 +29,7 @@ ResultCallbackData *CreateResultCallbackData(const Napi::Env env, const std::str
 
     const auto deferred = Napi::Promise::Deferred::New(env);
     const auto callback = [functionName, deferred](const Napi::CallbackInfo &info) {
-        LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback), true);
+        LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
         const auto env = info.Env();
 
         const auto length = info.Length();
@@ -44,14 +44,14 @@ ResultCallbackData *CreateResultCallbackData(const Napi::Env env, const std::str
             const auto obj = info[1];
             if (isErr.Value())
             {
-#if DEBUG
+#if _DEBUG
                 callbackLogger.Log("Rejecting");
 #endif
                 deferred.Reject(obj);
             }
             else
             {
-#if DEBUG
+#if _DEBUG
                 callbackLogger.Log("Resolving");
 #endif
                 deferred.Resolve(obj);
@@ -88,14 +88,14 @@ template <> struct ResultCallbackTraits<return_value_json>
         const auto isError = Napi::Boolean::New(env, false);
         if (returnData->value == nullptr)
         {
-#if DEBUG
+#if _DEBUG
             callbackLogger.Log("Result is null");
 #endif
             jsCallback.Call({isError, env.Null()});
         }
         else
         {
-#if DEBUG
+#if _DEBUG
             callbackLogger.Log("Result is not null");
 #endif
             const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
@@ -113,14 +113,14 @@ template <> struct ResultCallbackTraits<return_value_string>
         const auto isError = Napi::Boolean::New(env, false);
         if (returnData->value == nullptr)
         {
-#if DEBUG
+#if _DEBUG
             callbackLogger.Log("Result is null");
 #endif
             jsCallback.Call({isError, env.Null()});
         }
         else
         {
-#if DEBUG
+#if _DEBUG
             callbackLogger.Log("Result is not null");
 #endif
             const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
@@ -144,19 +144,19 @@ template <> struct ResultCallbackTraits<return_value_bool>
 template <typename TReturnValue> void HandleResultCallback(const char *functionName, param_ptr *p_owner, TReturnValue *returnData)
 {
     using Traits = ResultCallbackTraits<TReturnValue>;
-    LoggerScope logger(functionName, true);
+    LoggerScope logger(functionName);
     try
     {
         auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
         del_rcbd del{manager};
 
         const auto callback = [functionName, returnData](Napi::Env env, Napi::Function jsCallback) {
-            LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback), true);
+            LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
             typename Traits::deleter_type del{returnData};
 
             if (returnData == nullptr)
             {
-#if DEBUG
+#if _DEBUG
                 callbackLogger.Log("Null return data");
 #endif
                 jsCallback.Call({Napi::Boolean::New(env, true), Napi::Error::New(env, "Return value was null!").Value()});
@@ -165,7 +165,7 @@ template <typename TReturnValue> void HandleResultCallback(const char *functionN
 
             if (returnData->error != nullptr)
             {
-#if DEBUG
+#if _DEBUG
                 callbackLogger.Log("Error");
 #endif
                 const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
@@ -173,7 +173,7 @@ template <typename TReturnValue> void HandleResultCallback(const char *functionN
             }
             else
             {
-#if DEBUG
+#if _DEBUG
                 callbackLogger.Log("Resolving");
 #endif
                 Traits::resolve(callbackLogger, env, jsCallback, returnData);
@@ -370,7 +370,7 @@ template <typename TReturnValue, typename TManager, typename TThreadSafeFunction
 inline return_value_void *AwaitableCallback(const char *functionName, TManager *manager, TThreadSafeFunction &tsfn, param_ptr *p_callback_handler,
                                             void (*p_callback)(param_ptr *, TReturnValue *), TMainThreadCall &&mainThreadCall, TBackgroundCall &&backgroundCall) noexcept
 {
-    LoggerScope logger(functionName, true);
+    LoggerScope logger(functionName);
     return CallbackWithExceptionHandling<return_value_void>(logger, [&]() {
         if (std::this_thread::get_id() == manager->MainThreadId)
         {
@@ -385,7 +385,7 @@ inline return_value_void *AwaitableCallback(const char *functionName, TManager *
             return_value_void *result = nullptr;
 
             const auto callback = [functionName, p_callback_handler, p_callback, &backgroundCall, &mtx, &cv, &completed, &result](Napi::Env env, Napi::Function jsCallback) {
-                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback), true);
+                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                 try
                 {
                     backgroundCall(env, jsCallback, &mtx, &cv, &completed, &result);
@@ -410,7 +410,7 @@ inline return_value_void *AwaitableCallback(const char *functionName, TManager *
 
             std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [&completed] { return completed; });
-#if DEBUG
+#if _DEBUG
             logger.Log("Blocking call completed");
 #endif
             return result;

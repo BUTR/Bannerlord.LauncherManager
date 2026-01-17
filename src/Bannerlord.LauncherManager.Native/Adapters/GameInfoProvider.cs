@@ -81,7 +81,7 @@ internal sealed class GameInfoProvider : IGameInfoProvider
 #if DEBUG
         using var logger = LogMethod();
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);

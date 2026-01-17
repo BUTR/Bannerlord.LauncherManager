@@ -16,7 +16,6 @@
     <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
     <NativeLib>Shared</NativeLib>
-    <DefineConstants>$(DefineConstants);LOGGING;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(OS) == 'Windows_NT'">
@@ -26,21 +25,24 @@
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(Configuration) == 'Release'">
+  <PropertyGroup Condition="$(Configuration) == 'Debug'">
     <DefineConstants>$(DefineConstants);TRACK_ALLOCATIONS;</DefineConstants>
   </PropertyGroup>  
 
   <PropertyGroup Condition="$(Configuration) == 'Release'">
-    <!--
-    <DebuggerSupport>false</DebuggerSupport>
-    -->
     <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <EventSourceSupport>false</EventSourceSupport>
+    <Http3Support>false</Http3Support>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <MetricsSupport>false</MetricsSupport>
     <UseNativeHttpHandler>true</UseNativeHttpHandler>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
 
     <StripSymbols>true</StripSymbols>
     <IlcOptimizationPreference>Size</IlcOptimizationPreference>

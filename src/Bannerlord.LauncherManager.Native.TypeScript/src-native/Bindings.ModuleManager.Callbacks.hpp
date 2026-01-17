@@ -21,7 +21,7 @@ struct ValidationData
 };
 static return_value_bool *isSelected(param_ptr *p_owner, param_string *p_module_id) noexcept
 {
-    LoggerScope logger(__FUNCTION__, true);
+    LoggerScope logger(__FUNCTION__);
 
     try
     {
@@ -59,7 +59,7 @@ struct EnableDisableData
 };
 static return_value_bool *getSelected(param_ptr *p_owner, param_string *p_module_id) noexcept
 {
-    LoggerScope logger(__FUNCTION__, true);
+    LoggerScope logger(__FUNCTION__);
 
     try
     {
@@ -88,7 +88,7 @@ static return_value_bool *getSelected(param_ptr *p_owner, param_string *p_module
 }
 static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
 {
-    LoggerScope logger(__FUNCTION__, true);
+    LoggerScope logger(__FUNCTION__);
 
     try
     {
@@ -119,7 +119,7 @@ static return_value_void *setSelected(param_ptr *p_owner, param_string *p_module
 }
 static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module_id) noexcept
 {
-    LoggerScope logger(__FUNCTION__, true);
+    LoggerScope logger(__FUNCTION__);
 
     try
     {
@@ -148,7 +148,7 @@ static return_value_bool *getDisabled(param_ptr *p_owner, param_string *p_module
 }
 static return_value_void *setDisabled(param_ptr *p_owner, param_string *p_module_id, param_bool value_raw) noexcept
 {
-    LoggerScope logger(__FUNCTION__, true);
+    LoggerScope logger(__FUNCTION__);
 
     try
     {

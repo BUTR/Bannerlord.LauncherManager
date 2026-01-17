@@ -37,6 +37,7 @@ Logger::LogInput(std::string(EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__)) + std::
 std::string("::") + std::string(caller))
 */
 
+#if _DEBUG
 #define LOG(message)                                                                                                                                                               \
     do                                                                                                                                                                             \
     {                                                                                                                                                                              \
@@ -44,7 +45,14 @@ std::string("::") + std::string(caller))
         oss << EXTRACT_FUNCTION_NAME(__FUNCTION__) << " - " << message;                                                                                                            \
         Logger::Log(oss.str());                                                                                                                                                    \
     } while (0)
+#else
+#define LOG(message)                                                                                                                                                               \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+    } while (0)
+#endif
 
+#if _DEBUG
 #define LOGINPUT()                                                                                                                                                                 \
     do                                                                                                                                                                             \
     {                                                                                                                                                                              \
@@ -52,7 +60,14 @@ std::string("::") + std::string(caller))
         oss << EXTRACT_FUNCTION_NAME(__FUNCTION__);                                                                                                                                \
         Logger::LogInput(oss.str());                                                                                                                                               \
     } while (0)
+#else
+#define LOGINPUT()                                                                                                                                                                 \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+    } while (0)
+#endif
 
+#if _DEBUG
 #define LOGOUTPUT()                                                                                                                                                                \
     do                                                                                                                                                                             \
     {                                                                                                                                                                              \
@@ -60,7 +75,14 @@ std::string("::") + std::string(caller))
         oss << EXTRACT_FUNCTION_NAME(__FUNCTION__);                                                                                                                                \
         Logger::LogOutput(oss.str());                                                                                                                                              \
     } while (0)
+#else
+#define LOGOUTPUT()                                                                                                                                                                \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+    } while (0)
+#endif
 
+#if _DEBUG
 #define LOGLAMBDA(caller, message)                                                                                                                                                 \
     do                                                                                                                                                                             \
     {                                                                                                                                                                              \
@@ -68,7 +90,14 @@ std::string("::") + std::string(caller))
         oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller << " - " << message;                                                                                    \
         Logger::Log(oss.str());                                                                                                                                                    \
     } while (0)
+#else
+#define LOGLAMBDA(caller, message)                                                                                                                                                 \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+    } while (0)
+#endif
 
+#if _DEBUG
 #define LOGINPUTLAMBDA(caller)                                                                                                                                                     \
     do                                                                                                                                                                             \
     {                                                                                                                                                                              \
@@ -76,7 +105,14 @@ std::string("::") + std::string(caller))
         oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller;                                                                                                        \
         Logger::LogInput(oss.str());                                                                                                                                               \
     } while (0)
+#else
+#define LOGINPUTLAMBDA(caller)                                                                                                                                                     \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+    } while (0)
+#endif
 
+#if _DEBUG
 #define LOGOUTPUTLAMBDA(caller)                                                                                                                                                    \
     do                                                                                                                                                                             \
     {                                                                                                                                                                              \
@@ -84,6 +120,12 @@ std::string("::") + std::string(caller))
         oss << EXTRACT_LAMBDA_FUNCTION_NAME(__FUNCTION__) << "_" << caller;                                                                                                        \
         Logger::LogOutput(oss.str());                                                                                                                                              \
     } while (0)
+#else
+#define LOGOUTPUTLAMBDA(caller)                                                                                                                                                    \
+    do                                                                                                                                                                             \
+    {                                                                                                                                                                              \
+    } while (0)
+#endif
 
 #include "Bannerlord.LauncherManager.Native.h"
 #include "Utils.Utf.hpp"
@@ -134,81 +176,113 @@ class Logger
 
     static void LogStarted(const std::string &caller)
     {
+#if _DEBUG
         Log(caller, "Started");
+#endif
     }
 
     static void LogFinished(const std::string &caller)
     {
+#if _DEBUG
         Log(caller, "Finished");
+#endif
     }
 
     static void LogInput(const std::string &caller, char16_t *val)
     {
+#if _DEBUG
         Log(caller, "Parameter: " + Utils::Utf16ToUtf8(val));
+#endif
     }
     static void LogInput(const std::string &caller, uint8_t val)
     {
+#if _DEBUG
         Log(caller, std::string("Parameter: ") + (val ? "true" : "false"));
+#endif
     }
     static void LogInput(const std::string &caller, int32_t val)
     {
+#if _DEBUG
         Log(caller, std::string("Parameter: ") + std::to_string(val));
+#endif
     }
     static void LogInput(const std::string &caller, param_uint val)
     {
+#if _DEBUG
         Log(caller, "Parameter: " + std::to_string(val));
+#endif
     }
 
     template <typename T, typename... Args> static void LogInput(const std::string &caller, const T &first, const Args &...args)
     {
+#if _DEBUG
         LogInput(caller, first);
         LogInput(caller, args...);
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_void *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? "" : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_string *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + Utils::Utf16ToUtf8(returnData->error == nullptr ? returnData->value : returnData->error));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_json *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + Utils::Utf16ToUtf8(returnData->error == nullptr ? returnData->value : returnData->error));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_data *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? ("(" + to_hex(returnData->value) + ", " + std::to_string(returnData->length) + ")")
                                                                  : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_bool *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? returnData->value ? "true" : "false" : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_int32 *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? std::to_string(returnData->value) : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_uint32 *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? std::to_string(returnData->value) : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_ptr *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? to_hex(returnData->value) : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static void LogInput(const std::string &caller, return_value_async *returnData)
     {
+#if _DEBUG
         Log(caller, "Starting: " + (returnData->error == nullptr ? "" : Utils::Utf16ToUtf8(returnData->error)));
+#endif
     }
 
     static std::string to_hex(void *ptr)
@@ -225,35 +299,21 @@ class Logger
 class LoggerScope
 {
     const std::string caller_;
-    bool isSilent_ = false;
 
   public:
     template <typename... Args> LoggerScope(const std::string &caller, const Args &...args) : caller_(caller)
     {
         Logger::LogStarted(caller_);
 
-#if DEBUG
         if constexpr (sizeof...(args) > 0)
         {
             Logger::LogInput(caller_, args...);
         }
-#endif
     }
 
-    LoggerScope(const std::string &caller) : LoggerScope(caller, false)
+    LoggerScope(const std::string &caller) : caller_(caller)
     {
-    }
-
-    LoggerScope(const std::string &caller, const bool isSilent) : caller_(caller), isSilent_(isSilent)
-    {
-#if DEBUG
-        isSilent_ = false;
-#endif
-
-        if (!isSilent_)
-        {
-            Logger::LogStarted(caller_);
-        }
+        Logger::LogStarted(caller_);
     }
 
     void LogError(const Napi::Error &e)
@@ -271,20 +331,9 @@ class LoggerScope
         Logger::Log(caller_, message);
     }
 
-    void LogResult(const std::string &message)
-    {
-        if (!isSilent_)
-        {
-            Logger::Log(caller_, message);
-        }
-    }
-
     ~LoggerScope()
     {
-        if (!isSilent_)
-        {
-            Logger::LogFinished(caller_);
-        }
+        Logger::LogFinished(caller_);
     }
 };
 

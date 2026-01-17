@@ -155,7 +155,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 #if DEBUG
         using var logger = LogMethod(offset, length);
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -216,7 +216,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 #if DEBUG
         using var logger = LogMethod(length);
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -278,7 +278,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 #if DEBUG
         using var logger = LogMethod();
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
@@ -339,7 +339,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 #if DEBUG
         using var logger = LogMethod();
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);

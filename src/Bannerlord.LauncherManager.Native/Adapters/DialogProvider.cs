@@ -85,7 +85,7 @@ internal sealed class DialogProvider : IDialogProvider
 #if DEBUG
         using var logger = LogMethod(type.ToString().ToFormattable(), message.ToString().ToFormattable());
 #else
-        using var logger = SilentLogMethod();
+        using var logger = LogMethod();
 #endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
