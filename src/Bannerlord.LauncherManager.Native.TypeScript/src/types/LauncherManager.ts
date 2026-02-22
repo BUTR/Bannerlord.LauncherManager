@@ -1,4 +1,6 @@
+import { ScanFinding } from "./ScanFinding";
 import { ModuleInfoExtended, ModuleInfoExtendedWithMetadata } from "./BannerlordModuleManager";
+import { ScanResult } from "./ScanResult";
 
 export interface INativeExtension {
   LauncherManager: new (
@@ -98,6 +100,7 @@ export type LauncherManager = {
   getSaveMetadataAsync(saveFile: string, data: Uint8Array): Promise<SaveMetadata>;
   installModule(files: string[], moduleInfos: ModuleInfoExtendedWithMetadata[]): InstallResult;
   isObfuscatedAsync(module: ModuleInfoExtendedWithMetadata): Promise<boolean>;
+  scanModAsync(module: ModuleInfoExtendedWithMetadata): Promise<ScanResult[]>;
   isSorting(): boolean;
   moduleListHandlerExportAsync(): Promise<void>;
   moduleListHandlerExportSaveFileAsync(saveFile: string): Promise<void>;

@@ -2,6 +2,8 @@ export * from "./BannerlordModuleManager";
 export * from "./FetchBannerlordVersion";
 export * from "./LauncherManager";
 export * from "./Logger";
+//export * from "./ScanFinding";
+export * from "./ScanResult";
 export * from "./Utils";
 
 import { IBannerlordModuleManager } from "./BannerlordModuleManager";

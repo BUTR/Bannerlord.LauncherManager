@@ -1626,6 +1626,63 @@ public static partial class Bindings
         }
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "ve_scan_mod_async", CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe return_value_async* ScanModAsync(param_ptr* p_handle, param_json* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    {
+#if DEBUG
+        using var logger = LogMethod(p_module);
+#else
+        using var logger = LogMethod();
+#endif
+        try
+        {
+            if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
+                return return_value_async.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+
+
+            var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata);
+
+            handler.ScanModAsync(module).ContinueWith(result =>
+            {
+#if DEBUG
+                using var logger = LogCallbackMethod(nameof(ScanModAsync));
+#else
+                using var logger = LogCallbackMethod(nameof(ScanModAsync));
+#endif
+
+                try
+                {
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        logger.LogException(result.Exception);
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, false));
+                        logger.Log("Cancelled");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.ListScanResultDto, false));
+                    }
+                }
+                catch (Exception e)
+                {
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    logger.LogException(e);
+                }
+            });
+
+            return return_value_async.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            return return_value_async.AsException(e, false);
+        }
+    }
+
 
     [UnmanagedCallersOnly(EntryPoint = "ve_dialog_test_warning_async", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_async* DialogTestWarningAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)

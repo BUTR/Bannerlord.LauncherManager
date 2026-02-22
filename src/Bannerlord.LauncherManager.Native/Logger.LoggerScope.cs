@@ -15,7 +15,7 @@ static partial class Logger
         public LoggerScope(string? caller)
         {
             _caller = caller;
-            
+
 #if DEBUG
             NativeInstance?.LogStarted(_caller);
 #endif
@@ -85,7 +85,7 @@ static partial class Logger
         public unsafe void LogResult<TStruct>(SafeStructMallocHandle<TStruct> result)
             where TStruct : unmanaged, IReturnValueSpanFormattable<TStruct>
         {
-            
+
 #if DEBUG
             NativeInstance?.LogResult1(_caller, TStruct.ToSpan(result.Value).ToString());
 #endif

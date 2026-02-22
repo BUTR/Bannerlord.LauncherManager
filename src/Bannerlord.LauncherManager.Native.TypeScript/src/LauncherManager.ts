@@ -67,6 +67,9 @@ export class NativeLauncherManager implements LauncherManagerWithoutConstructor 
   public isObfuscatedAsync = (module: types.ModuleInfoExtendedWithMetadata): Promise<boolean> => {
     return this.manager.isObfuscatedAsync(module);
   }
+  public scanModAsync = (module: types.ModuleInfoExtendedWithMetadata): Promise<types.ScanResult[]> => {
+    return this.manager.scanModAsync(module);
+  }
   public isSorting = (): boolean => {
     return this.manager.isSorting();
   }

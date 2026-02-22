@@ -2,6 +2,8 @@
 using Bannerlord.LauncherManager.Native.Models;
 using Bannerlord.ModuleManager;
 
+using MLVScan.Models.Dto;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -57,4 +59,5 @@ namespace Bannerlord.LauncherManager.Native;
 [JsonSerializable(typeof(ModuleSorterOptions))]
 [JsonSerializable(typeof(ModuleIssue[]))]
 [JsonSerializable(typeof(DependentModuleMetadata[]))]
+[JsonSerializable(typeof(List<ScanResultDto>))]
 internal partial class SourceGenerationContext : JsonSerializerContext;

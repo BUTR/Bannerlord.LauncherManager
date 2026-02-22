@@ -64,6 +64,7 @@ class LauncherManager : public Napi::ObjectWrap<LauncherManager>
     Napi::Value GetSaveMetadataAsync(const CallbackInfo &info);
     Napi::Value InstallModule(const CallbackInfo &info);
     Napi::Value IsObfuscatedAsync(const CallbackInfo &info);
+    Napi::Value ScanModAsync(const CallbackInfo &info);
     Napi::Value IsSorting(const CallbackInfo &info);
     Napi::Value ModuleListHandlerExportAsync(const CallbackInfo &info);
     Napi::Value ModuleListHandlerExportSaveFileAsync(const CallbackInfo &info);

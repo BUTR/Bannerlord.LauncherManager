@@ -61,6 +61,7 @@ Object LauncherManager::Init(const Napi::Env env, const Object exports)
             InstanceMethod<&LauncherManager::GetSaveMetadataAsync>("getSaveMetadataAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
             InstanceMethod<&LauncherManager::InstallModule>("installModule", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
             InstanceMethod<&LauncherManager::IsObfuscatedAsync>("isObfuscatedAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+            InstanceMethod<&LauncherManager::ScanModAsync>("scanModAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
             InstanceMethod<&LauncherManager::IsSorting>("isSorting", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
             InstanceMethod<&LauncherManager::ModuleListHandlerExportAsync>("moduleListHandlerExportAsync",
                                                                            static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -239,6 +240,20 @@ Napi::Value LauncherManager::IsObfuscatedAsync(const CallbackInfo &info)
         const auto moduleCopy = CopyWithFree(module.Utf16Value());
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_is_obfuscated_async(this->_pInstance, moduleCopy.get(), cbData, HandleBooleanResultCallback);
+        return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
+    });
+}
+
+Napi::Value LauncherManager::ScanModAsync(const CallbackInfo &info)
+{
+    const auto functionName = __FUNCTION__;
+    LoggerScope logger(functionName);
+    return WithExceptionHandling(logger, [&]() {
+        const auto env = info.Env();
+        const auto module = JSONStringify(info[0].As<Object>());
+        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        auto cbData = CreateResultCallbackData(env, functionName);
+        const auto result = ve_scan_mod_async(this->_pInstance, moduleCopy.get(), cbData, HandleJsonResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
     });
 }

@@ -88,7 +88,7 @@ internal static partial class Logger
     {
         Factory?.Dispose();
 
-        NativeInstance = new WrapperLogger(logger,   "Bannerlord C# ");
+        NativeInstance = new WrapperLogger(logger, "Bannerlord C# ");
         ExternalInstance = new WrapperLogger(logger, "Bannerlord C++");
     }
 
