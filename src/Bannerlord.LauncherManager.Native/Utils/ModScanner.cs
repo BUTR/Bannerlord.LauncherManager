@@ -16,13 +16,9 @@ internal class ModScanner
 
     public ModScanner(string folderPath)
     {
-        // Create scanner with default rules
         var rules = RuleFactory.CreateDefaultRules();
         var config = new ScanConfig()
         {
-            EnableAutoScan = false,
-            EnableAutoDisable = false,
-            DumpFullIlReports = false,
             DeveloperMode = true,
         };
 

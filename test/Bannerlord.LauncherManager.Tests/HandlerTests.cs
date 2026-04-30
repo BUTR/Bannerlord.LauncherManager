@@ -210,6 +210,143 @@ public class HandlerTests
     }
 
     [Test]
+    public async Task OrderBy_Beta_RejectsInvalidUserOrder_Test()
+    {
+        // User saved [Test2, Test] but Test2 depends on Test. Beta is strict: it must surface
+        // the dependency violation rather than silently auto-correct (which is what TW does).
+        var loadOrder = new LoadOrder
+        {
+            {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 0 }},
+            {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 1 }},
+        };
+
+        var moduleViewModels = Array.Empty<IModuleViewModel>();
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogProviderProvider: new CallbackDialogProvider(
+                sendDialog: null!
+            ),
+            fileSystemProvider: new CallbackFileSystemProvider(
+                readFileContent: Read,
+                writeFileContent: null!,
+                readDirectoryFileList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetFiles(directory) : null),
+                readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: callback => callback(Path.GetFullPath(GamePath)!)
+            ),
+            notificationProviderProvider: new CallbackNotificationProvider(
+                sendNotification: (id, type, message, ms) => { }
+            ),
+            launcherStateUProvider: new CallbackLauncherStateProvider(
+                setGameParameters: (executable, parameters, callback) => callback(),
+                getOptions: callback => callback(new LauncherOptions(true)),
+                getState: callback => callback(new LauncherState(true))
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: callback => callback(moduleViewModels),
+                getModuleViewModels: callback => callback(moduleViewModels),
+                setModuleViewModels: null!)
+        );
+
+        await handler.RefreshModulesAsync();
+        var modules = await handler.GetModulesAsync();
+        moduleViewModels =
+        [
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 0,
+            },
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 1,
+            },
+        ];
+
+        var (result, issues, _) = await handler.TryOrderByLoadOrderAsync(loadOrder.Keys, x => true);
+
+        Assert.That(result, Is.False);
+        Assert.That(issues, Is.Not.Null);
+        Assert.That(issues, Is.Not.Empty);
+    }
+
+    [Test]
+    public async Task OrderBy_Beta_AcceptsValidUserOrder_Test()
+    {
+        // User saved [Test, Test2] which respects Test2's dependency on Test — Beta should pass.
+        var loadOrder = new LoadOrder
+        {
+            {"Test", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 0 }},
+            {"Test2", new LoadOrderEntry { Id = "", Name = "", IsSelected = true, IsDisabled = false, Index = 1 }},
+        };
+        var expectedLoadOrderIds = new[] { "Test", "Test2" };
+
+        var moduleViewModels = Array.Empty<IModuleViewModel>();
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogProviderProvider: new CallbackDialogProvider(
+                sendDialog: null!
+            ),
+            fileSystemProvider: new CallbackFileSystemProvider(
+                readFileContent: Read,
+                writeFileContent: null!,
+                readDirectoryFileList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetFiles(directory) : null),
+                readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: callback => callback(Path.GetFullPath(GamePath)!)
+            ),
+            notificationProviderProvider: new CallbackNotificationProvider(
+                sendNotification: (id, type, message, ms) => { }
+            ),
+            launcherStateUProvider: new CallbackLauncherStateProvider(
+                setGameParameters: (executable, parameters, callback) => callback(),
+                getOptions: callback => callback(new LauncherOptions(true)),
+                getState: callback => callback(new LauncherState(true))
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: callback => callback(moduleViewModels),
+                getModuleViewModels: callback => callback(moduleViewModels),
+                setModuleViewModels: null!)
+        );
+
+        await handler.RefreshModulesAsync();
+        var modules = await handler.GetModulesAsync();
+        moduleViewModels =
+        [
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 0,
+            },
+            new ModuleViewModel
+            {
+                ModuleInfoExtended = modules.First(x => x.Id == "Test2"),
+                IsValid = true,
+                IsSelected = true,
+                IsDisabled = false,
+                Index = 1,
+            },
+        ];
+
+        var (result, _, sorted) = await handler.TryOrderByLoadOrderAsync(loadOrder.Keys, x => true);
+
+        Assert.That(result, Is.True);
+        Assert.That(sorted.Select(x => x.ModuleInfoExtended.Id).ToArray(), Is.EqualTo(expectedLoadOrderIds));
+    }
+
+    [Test]
     public async Task ModuleProvider_GetModules_Test()
     {
         var handler = new LauncherManagerHandlerExposer(

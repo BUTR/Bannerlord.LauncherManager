@@ -13,6 +13,7 @@ namespace Bannerlord.LauncherManager.Native;
 
 partial class LauncherManagerHandlerNative
 {
+    // TODO: Switch to hashes
     private static readonly HashSet<string> ExcludedAssemblies =
     [
         "0Harmony.dll",

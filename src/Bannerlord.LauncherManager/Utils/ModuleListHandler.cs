@@ -131,7 +131,7 @@ public class ModuleListHandler
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
         if (missingModuleIds.Count > 0)
         {
-            if (!await ShowVersionWarningAsync(missingModuleIds))
+            if (!await ShowMissingWarningAsync(missingModuleIds))
                 return [];
         }
 
@@ -192,7 +192,7 @@ public class ModuleListHandler
         var missingModuleNames = importedModuleNames.Except(currentModuleNames).ToList();
         if (missingModuleNames.Count > 0)
         {
-            if (!await ShowVersionWarningAsync(missingModuleNames.Select(x => x.ToString())))
+            if (!await ShowMissingWarningAsync(missingModuleNames))
                 return [];
         }
 
@@ -256,7 +256,7 @@ public class ModuleListHandler
         var missingModuleIds = importedModuleIds.Except(currentModuleIds).ToList();
         if (missingModuleIds.Count > 0)
         {
-            if (!await ShowVersionWarningAsync(missingModuleIds.Select(x => x.ToString())))
+            if (!await ShowMissingWarningAsync(missingModuleIds))
                 return [];
         }
 
@@ -512,13 +512,24 @@ public class ModuleListHandler
                     SaveNovusPreset(fs, modules);
                     break;
             }
-            await _launcherManager.WriteFileContentAsync(fileName, fs.ToArray());
+            var payload = fs.ToArray();
+            await _launcherManager.WriteFileContentAsync(fileName, payload);
+
+            // Verify the write actually persisted. Some IFileSystemProvider implementations
+            // swallow exceptions, so a "successful" return from WriteFileContentAsync is not a
+            // guarantee that the file is on disk.
+            if (await _launcherManager.ReadFileContentAsync(fileName, 0, -1) is not { Length: > 0 } verify || verify.Length != payload.Length)
+            {
+                await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to write file!")}");
+                return;
+            }
+
+            await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
         }
         catch (Exception e)
         {
             await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\nException:\n{e}");
         }
-        await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
     }
 
     /// <summary>
@@ -564,12 +575,20 @@ public class ModuleListHandler
                     SaveNovusPreset(fs, modules);
                     break;
             }
-            await _launcherManager.WriteFileContentAsync(fileName, fs.ToArray());
+            var payload = fs.ToArray();
+            await _launcherManager.WriteFileContentAsync(fileName, payload);
+
+            if (await _launcherManager.ReadFileContentAsync(fileName, 0, -1) is not { Length: > 0 } verify || verify.Length != payload.Length)
+            {
+                await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\n{new BUTRTextObject("{=epU06HID}Failed to write file!")}");
+                return;
+            }
+
+            await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
         }
         catch (Exception e)
         {
             await _launcherManager.ShowHintAsync($"{new BUTRTextObject("{=BjtJ4Lxw}Cancelled Export!")}\n\nException:\n{e}");
         }
-        await _launcherManager.ShowHintAsync(new BUTRTextObject("{=VwFQTk5z}Successfully exported list!"));
     }
 }
