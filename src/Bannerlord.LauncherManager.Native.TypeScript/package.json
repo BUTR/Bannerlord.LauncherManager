@@ -48,7 +48,7 @@
     "@types/node": "^22.0.0",
     "ava": "^6.4.1",
     "node-addon-api": "8.5.0",
-    "node-gyp": "10.0.0",
+    "node-gyp": "13.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.7.3"
   },
@@ -57,6 +57,7 @@
     "dist/module",
     "dist/Bannerlord.LauncherManager.Native.dll",
     "dist/launchermanager.node",
+    "dist/launchermanager-rust.node",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
