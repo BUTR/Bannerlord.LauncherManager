@@ -36,12 +36,12 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
   </ItemGroup>
   <!--SorceLink-->
   
   <ItemGroup>
-    <PackageReference Include="Bannerlord.ModuleManager.Models" Version="6.0.247" />
+    <PackageReference Include="Bannerlord.ModuleManager.Models" Version="6.0.249" />
     <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta16" PrivateAssets="all" />
     <PackageReference Include="Required" Version="1.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>

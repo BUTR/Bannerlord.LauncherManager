@@ -71,15 +71,15 @@ internal sealed partial class LauncherManagerHandlerNative : LauncherManagerHand
 
     public new async Task<string> SendDialogAsync(DialogType type, string title, string message, IReadOnlyList<DialogFileFilter> filters) => await base.SendDialogAsync(type, title, message, filters);
 
-    public override Task<SaveMetadata?> GetSaveMetadataAsync(string fileName, ReadOnlyMemory<byte> data)
+    public override Task<SaveMetadata?> GetSaveMetadataAsync(string fileName, byte[] data)
     {
-        var length = BitConverter.ToInt32(data.Slice(0, 4).Span);
+        var length = BitConverter.ToInt32(data.AsSpan(0, 4));
         if (length > 5 * 1024 * 1024) return Task.FromResult<SaveMetadata?>(null); // 5MB JSON? Orly?
         if (length > data.Length - 4) return Task.FromResult<SaveMetadata?>(null);
 
         try
         {
-            var metadata = JsonSerializer.Deserialize(Encoding.UTF8.GetString(data.Slice(4, length).Span), Bindings.CustomSourceGenerationContext.TWSaveMetadata);
+            var metadata = JsonSerializer.Deserialize(Encoding.UTF8.GetString(data.AsSpan(4, length)), Bindings.CustomSourceGenerationContext.TWSaveMetadata);
             if (metadata == null) return Task.FromResult<SaveMetadata?>(null);
             return Task.FromResult<SaveMetadata?>(new SaveMetadata(Path.GetFileName(fileName), metadata));
         }

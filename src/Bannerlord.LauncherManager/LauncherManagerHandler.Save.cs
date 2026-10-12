@@ -16,7 +16,7 @@ partial class LauncherManagerHandler
     /// <summary>
     /// External<br/>
     /// </summary>
-    public virtual Task<SaveMetadata?> GetSaveMetadataAsync(string fileName, ReadOnlyMemory<byte> data) => Task.FromResult<SaveMetadata?>(null);
+    public virtual Task<SaveMetadata?> GetSaveMetadataAsync(string fileName, byte[] data) => Task.FromResult<SaveMetadata?>(null);
 
     /// <summary>
     /// External<br/>
