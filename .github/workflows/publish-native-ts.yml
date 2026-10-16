@@ -12,13 +12,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
-  packages: write
 
 jobs:
-  publish:
-    name: Publish on NPM and GPR
+  build:
+    name: Build and Test
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -42,9 +40,6 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Update npm
-        run: npm install -g npm@latest
-
       - run: |
           cd ./src/Bannerlord.LauncherManager.Native.TypeScript && `
           npm version $(node -p "require('./package.json').version = `
@@ -54,8 +49,60 @@ jobs:
 
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn install --frozen-lockfile
 
+      # The Release test runs last, so dist is left with the Release binaries
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Debug
       - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn run test -- Release
+
+      # The package as it will be published, with the versioned package.json. The paths are relative to the package
+      # folder, code-signing's config.json signs dist/Bannerlord.LauncherManager.Native.dll and dist/launchermanager.node
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm
+          path: |
+            src/Bannerlord.LauncherManager.Native.TypeScript/package.json
+            src/Bannerlord.LauncherManager.Native.TypeScript/dist/main/
+            src/Bannerlord.LauncherManager.Native.TypeScript/dist/module/
+            src/Bannerlord.LauncherManager.Native.TypeScript/dist/Bannerlord.LauncherManager.Native.dll
+            src/Bannerlord.LauncherManager.Native.TypeScript/dist/launchermanager.node
+          if-no-files-found: error
+
+  # Signs Bannerlord.LauncherManager.Native.dll and launchermanager.node with the Certum certificate
+  sign:
+    needs: [build]
+    uses: BUTR/workflows/.github/workflows/sign-certum.yml@master
+    with:
+      artifact_name: npm
+    secrets:
+      CODE_SIGNING_CLIENT_ID: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+      CODE_SIGNING_PRIVATE_KEY: ${{ secrets.CODE_SIGNING_PRIVATE_KEY }}
+
+  # Published from this workflow, so the npm trusted publishing policy for publish-native-ts.yml still applies
+  publish:
+    name: Publish on NPM and GPR
+    needs: [sign]
+    runs-on: windows-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    steps:
+      - name: Download the signed package
+        uses: actions/download-artifact@v4
+        with:
+          name: npm
+          path: ./package
+
+      # Never publish a binary that isn't signed with our certificate
+      - name: Verify the signatures
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($file in 'Bannerlord.LauncherManager.Native.dll', 'launchermanager.node') {
+            $signature = Get-AuthenticodeSignature -FilePath (Join-Path ./package/dist $file)
+            if ($signature.Status -ne 'Valid') { throw "$file isn't signed: $($signature.Status) $($signature.StatusMessage)" }
+            Write-Host "$file is signed by $($signature.SignerCertificate.Subject)"
+          }
 
       - name: Setup Node.js for NPM publish
         uses: actions/setup-node@v4
@@ -64,15 +111,18 @@ jobs:
           registry-url: https://registry.npmjs.org/
           scope: '@butr'
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Publish to NPM (trusted publishing)
-        run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && npm publish
+        run: cd ./package && npm publish
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: https://npm.pkg.github.com/
           scope: '@butr'
-      - run: cd ./src/Bannerlord.LauncherManager.Native.TypeScript && yarn publish
+      - run: cd ./package && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
