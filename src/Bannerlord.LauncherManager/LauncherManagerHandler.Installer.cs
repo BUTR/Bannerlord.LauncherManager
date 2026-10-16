@@ -10,8 +10,9 @@ namespace Bannerlord.LauncherManager;
 
 partial class LauncherManagerHandler
 {
+    // Archive entries can use either separator regardless of the host OS
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsDirectorySeparator(char c) => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar;
+    private static bool IsDirectorySeparator(char c) => c == '\\' || c == '/';
 
     private static bool EndsInDirectorySeparator(string? path) =>
         !string.IsNullOrEmpty(path) && IsDirectorySeparator(path![path.Length - 1]);

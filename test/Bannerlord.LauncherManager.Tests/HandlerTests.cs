@@ -349,6 +349,10 @@ public class HandlerTests
     [Test]
     public async Task ModuleProvider_GetModules_Test()
     {
+        const string steamInstallPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount & Blade II Bannerlord";
+        if (!Directory.Exists(Path.Combine(steamInstallPath, Constants.ModulesFolder)))
+            Assert.Ignore("Requires a local Steam installation of Bannerlord");
+
         var handler = new LauncherManagerHandlerExposer(
             dialogProviderProvider: new CallbackDialogProvider(
                 sendDialog: null!
@@ -360,7 +364,7 @@ public class HandlerTests
                 readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
             ),
             gameInfoProvider: new CallbackGameInfoProvider(
-                getInstallPath: callback => callback("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount & Blade II Bannerlord")
+                getInstallPath: callback => callback(steamInstallPath)
             ),
             notificationProviderProvider: new CallbackNotificationProvider(
                 sendNotification: null!
