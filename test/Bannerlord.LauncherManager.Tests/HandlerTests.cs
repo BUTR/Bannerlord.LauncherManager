@@ -388,6 +388,62 @@ public class HandlerTests
     }
 
     [Test]
+    public async Task ModuleProvider_VortexTaggedModule_Test()
+    {
+        // Vortex leaves a tag file in the module folders it deploys, the file list callback returns full paths
+        var gamePath = Path.Combine(Path.GetTempPath(), $"LauncherManager_{Guid.NewGuid():N}");
+        foreach (var moduleFolder in Directory.GetDirectories(Path.Combine(GamePath, Constants.ModulesFolder)))
+        {
+            var target = Path.Combine(gamePath, Constants.ModulesFolder, Path.GetFileName(moduleFolder));
+            Directory.CreateDirectory(target);
+            foreach (var file in Directory.GetFiles(moduleFolder))
+                File.Copy(file, Path.Combine(target, Path.GetFileName(file)));
+        }
+        File.WriteAllText(Path.Combine(gamePath, Constants.ModulesFolder, "Test2", "__folder_managed_by_vortex"), "");
+
+        try
+        {
+            var handler = new LauncherManagerHandlerExposer(
+                dialogProviderProvider: new CallbackDialogProvider(
+                    sendDialog: null!
+                ),
+                fileSystemProvider: new CallbackFileSystemProvider(
+                    readFileContent: Read,
+                    writeFileContent: null!,
+                    readDirectoryFileList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetFiles(directory) : null),
+                    readDirectoryList: (directory, callback) => callback(Directory.Exists(directory) ? Directory.GetDirectories(directory) : null)
+                ),
+                gameInfoProvider: new CallbackGameInfoProvider(
+                    getInstallPath: callback => callback(gamePath)
+                ),
+                notificationProviderProvider: new CallbackNotificationProvider(
+                    sendNotification: (id, type, message, ms) => { }
+                ),
+                launcherStateUProvider: new CallbackLauncherStateProvider(
+                    setGameParameters: null!,
+                    getOptions: null!,
+                    getState: null!
+                ),
+                loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                    getAllModuleViewModels: null!,
+                    getModuleViewModels: null!,
+                    setModuleViewModels: null!)
+            );
+
+            var modules = await handler.GetModulesAsync();
+
+            Assert.That(modules.Count(x => x.Id == "Test"), Is.EqualTo(1));
+            Assert.That(modules.Count(x => x.Id == "Test2"), Is.EqualTo(1));
+            Assert.That(modules.First(x => x.Id == "Test").ModuleProviderType, Is.EqualTo(ModuleProviderType.Default));
+            Assert.That(modules.First(x => x.Id == "Test2").ModuleProviderType, Is.EqualTo(ModuleProviderType.Vortex));
+        }
+        finally
+        {
+            Directory.Delete(gamePath, true);
+        }
+    }
+
+    [Test]
     public void Handler_TestModule_tTest()
     {
         var moduleFolder = "Test\\";

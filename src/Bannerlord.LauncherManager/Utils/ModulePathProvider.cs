@@ -13,6 +13,15 @@ internal interface IModulePathProvider
     IAsyncEnumerable<string> GetModulePaths();
 }
 
+internal static class VortexFolderTag
+{
+    // Vortex leaves this file in every folder it creates while deploying
+    private const string FileName = "__folder_managed_by_vortex";
+
+    // The file list holds full paths
+    public static bool IsIn(string[] files) => files.Any(x => Path.GetFileName(x) == FileName);
+}
+
 internal class MainModuleProvider : IModulePathProvider
 {
     public ModuleProviderType ModuleProviderType => ModuleProviderType.Default;
@@ -34,7 +43,7 @@ internal class MainModuleProvider : IModulePathProvider
         foreach (var moduleFolder in directories)
         {
             var files = await _handler.ReadDirectoryFileListAsync(moduleFolder) ?? [];
-            if (files.All(x => x != "__folder_managed_by_vortex"))
+            if (!VortexFolderTag.IsIn(files))
                 yield return moduleFolder;
         }
     }
@@ -97,7 +106,7 @@ internal class VortexModuleProvider : IModulePathProvider
         foreach (var moduleFolder in directories)
         {
             var files = await _handler.ReadDirectoryFileListAsync(moduleFolder) ?? [];
-            if (files.Any(x => x == "__folder_managed_by_vortex"))
+            if (VortexFolderTag.IsIn(files))
                 yield return moduleFolder;
         }
     }

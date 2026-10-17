@@ -221,7 +221,7 @@ public class ModuleListHandler
                 continue;
 
             var id = xmlNode.Attributes["Id"].InnerText;
-            var version = xmlNode.Attributes["RequiredVersion"].InnerText;
+            var version = xmlNode.Attributes["RequiredVersion"]?.InnerText ?? string.Empty;
             if (!string.IsNullOrEmpty(version) && char.IsNumber(version[0]))
                 version = $"v{version}";
             importedModules.Add(new ModuleListEntry(id, ApplicationVersion.TryParse(version, out var versionVar) ? versionVar : ApplicationVersion.Empty));
@@ -236,7 +236,12 @@ public class ModuleListHandler
                 if (moduleViewModels.FirstOrDefault(x => x.ModuleInfoExtended.Id == id) is not { } moduleVM) continue;
 
                 var launcherModuleVersion = moduleVM.ModuleInfoExtended.Version;
-                if (launcherModuleVersion != version)
+                // Novus stores the raw SubModule.xml version. Official modules declare it without a changeset,
+                // while we append the game's changeset to them, so only compare the changeset when the preset has one
+                var isSameVersion = version.ChangeSet == 0
+                    ? launcherModuleVersion.IsSame(version)
+                    : launcherModuleVersion.IsSameWithChangeSet(version);
+                if (!isSameVersion)
                     mismatchedVersions.Add(new ModuleMismatch(id, version, launcherModuleVersion));
             }
 

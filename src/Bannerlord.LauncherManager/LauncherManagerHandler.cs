@@ -26,11 +26,12 @@ public partial class LauncherManagerHandler
 
     public LauncherManagerHandler()
     {
+        // A module's first copy wins. Like the game's ModuleHelper.InitializeModules, the Modules folder comes before the Steam Workshop
         _providers =
         [
             new MainModuleProvider(this),
-            new SteamModuleProvider(this),
-            new VortexModuleProvider(this)
+            new VortexModuleProvider(this),
+            new SteamModuleProvider(this)
         ];
     }
 

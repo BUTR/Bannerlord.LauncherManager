@@ -22,6 +22,7 @@ export interface ModuleInfoExtendedWithMetadata extends ModuleInfoExtended {
 export enum ModuleProviderType {
     Default = 'Default',
     Steam = 'Steam',
+    Vortex = 'Vortex',
 }
 export interface ApplicationVersion {
     applicationVersionType: ApplicationVersionType;
