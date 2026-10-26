@@ -144,7 +144,7 @@ partial class LauncherManagerHandler
         Func<string, bool> isModuleSelected,
         bool overwriteWhenFailure)
     {
-        var rawOrderedModules = ModuleSorter.TopologySort<ModuleInfoExtended>(orderedInput, x => ModuleUtilities.GetDependencies(orderedInput, x))
+        var rawOrderedModules = SortHelper.TopologySort(orderedInput)
             .OfType<ModuleInfoExtendedWithMetadata>()
             .ToList();
 

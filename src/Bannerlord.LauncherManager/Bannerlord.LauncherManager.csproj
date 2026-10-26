@@ -24,7 +24,7 @@
   
   <ItemGroup>
     <PackageReference Condition="$(TargetFramework) == 'netstandard2.0'" Include="System.Memory" Version="4.6.3" />
-    <PackageReference Include="Bannerlord.ModuleManager" Version="6.0.249" />
+    <PackageReference Include="Bannerlord.ModuleManager" Version="6.0.251" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.12" />
     <PackageReference Include="PolySharp" Version="1.16.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="System.Linq.Async" Version="7.0.1" />

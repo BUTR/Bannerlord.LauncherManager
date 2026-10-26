@@ -20,7 +20,18 @@ public static class SortHelper
             .ThenBy(x => x.Id, new AlphanumComparatorFast())
             .ToArray();
 
-        return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
+        return TopologySort(orderedModules);
+    }
+
+    /// <summary>
+    /// Internal<br/>
+    /// Sorts <paramref name="orderedModules"/> by their dependencies, the order of the list breaks the ties.
+    /// One index for the whole sort, it asks for the dependencies of every module of the list
+    /// </summary>
+    public static IList<ModuleInfoExtended> TopologySort(IReadOnlyCollection<ModuleInfoExtended> orderedModules)
+    {
+        var index = new ModuleDependencyIndex(orderedModules, new ModuleSorterOptions { SkipOptionals = false, SkipExternalDependencies = false });
+        return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(index, module));
     }
 
     /// <summary>
@@ -62,7 +73,7 @@ public static class SortHelper
                 .ThenBy(x => x.Id, new AlphanumComparatorFast())
                 .ToArray();
 
-            return ModuleSorter.TopologySort(orderedModules, module => ModuleUtilities.GetDependencies(orderedModules, module));
+            return TopologySort(orderedModules);
         }
 
         var sorted = Sort(modules.Select(x => x.ModuleInfoExtended)).Select((x, i) => new { Item = x.Id, Index = i }).ToDictionary(x => x.Item, x => x.Index);
