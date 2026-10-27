@@ -212,7 +212,7 @@ Napi::Value LauncherManager::TestModule(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto files = JSONStringify(info[0].As<Object>());
-        const auto filesCopy = CopyWithFree(files.Utf16Value());
+        const auto filesCopy = CopyUtf8WithFree(files);
         return ThrowOrReturnJson(env, ve_test_module(this->_pInstance, filesCopy.get()));
     });
 }
@@ -224,8 +224,8 @@ Napi::Value LauncherManager::InstallModule(const CallbackInfo &info)
         const auto env = info.Env();
         const auto files = JSONStringify(info[0].As<Object>());
         const auto destinationPath = JSONStringify(info[1].As<Object>());
-        const auto filesCopy = CopyWithFree(files.Utf16Value());
-        const auto destinationPathCopy = CopyWithFree(destinationPath.Utf16Value());
+        const auto filesCopy = CopyUtf8WithFree(files);
+        const auto destinationPathCopy = CopyUtf8WithFree(destinationPath);
         return ThrowOrReturnJson(env, ve_install_module(this->_pInstance, filesCopy.get(), destinationPathCopy.get()));
     });
 }
@@ -237,7 +237,7 @@ Napi::Value LauncherManager::IsObfuscatedAsync(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto moduleCopy = CopyUtf8WithFree(module);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_is_obfuscated_async(this->_pInstance, moduleCopy.get(), cbData, HandleBooleanResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -251,7 +251,7 @@ Napi::Value LauncherManager::ScanModAsync(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto moduleCopy = CopyUtf8WithFree(module);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_scan_mod_async(this->_pInstance, moduleCopy.get(), cbData, HandleJsonResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -346,7 +346,7 @@ Napi::Value LauncherManager::ModuleListHandlerExportSaveFileAsync(const Callback
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
-        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+        const auto saveFileCopy = CopyWithFree(saveFile);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_module_list_handler_export_save_file_async(this->_pInstance, saveFileCopy.get(), cbData, HandleVoidResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -372,7 +372,7 @@ Napi::Value LauncherManager::ModuleListHandlerImportSaveFileAsync(const Callback
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
-        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+        const auto saveFileCopy = CopyWithFree(saveFile);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_module_list_handler_import_save_file_async(this->_pInstance, saveFileCopy.get(), cbData, HandleBooleanResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -399,7 +399,7 @@ Napi::Value LauncherManager::SortHelperChangeModulePositionAsync(const CallbackI
         const auto env = info.Env();
         const auto moduleViewModel = JSONStringify(info[0].As<Object>());
         const auto insertIndex = info[1].As<Number>();
-        const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
+        const auto moduleViewModelCopy = CopyUtf8WithFree(moduleViewModel);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_sort_helper_change_module_position_async(this->_pInstance, moduleViewModelCopy.get(), insertIndex.Int32Value(), cbData, HandleBooleanResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -413,7 +413,7 @@ Napi::Value LauncherManager::SortHelperToggleModuleSelectionAsync(const Callback
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto moduleViewModel = JSONStringify(info[0].As<Object>());
-        const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
+        const auto moduleViewModelCopy = CopyUtf8WithFree(moduleViewModel);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_sort_helper_toggle_module_selection_async(this->_pInstance, moduleViewModelCopy.get(), cbData, HandleJsonResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -427,7 +427,7 @@ Napi::Value LauncherManager::SortHelperValidateModuleAsync(const CallbackInfo &i
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto moduleViewModel = JSONStringify(info[0].As<Object>());
-        const auto moduleViewModelCopy = CopyWithFree(moduleViewModel.Utf16Value());
+        const auto moduleViewModelCopy = CopyUtf8WithFree(moduleViewModel);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_sort_helper_validate_module_async(this->_pInstance, moduleViewModelCopy.get(), cbData, HandleJsonResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -454,7 +454,7 @@ Napi::Value LauncherManager::GetSaveMetadataAsync(const CallbackInfo &info)
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
         auto data = info[1].As<Uint8Array>();
-        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+        const auto saveFileCopy = CopyWithFree(saveFile);
         const auto dataCopy = CopyWithFree(data.Data(), data.ByteLength());
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result =
@@ -470,7 +470,7 @@ Napi::Value LauncherManager::GetSaveFilePathAsync(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto saveFile = info[0].As<String>();
-        const auto saveFileCopy = CopyWithFree(saveFile.Utf16Value());
+        const auto saveFileCopy = CopyWithFree(saveFile);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_get_save_file_path_async(this->_pInstance, saveFileCopy.get(), cbData, HandleStringResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -484,7 +484,7 @@ Napi::Value LauncherManager::OrderByLoadOrderAsync(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto loadOrder = JSONStringify(info[0].As<Object>());
-        const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
+        const auto loadOrderCopy = CopyUtf8WithFree(loadOrder);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_order_by_load_order_async(this->_pInstance, loadOrderCopy.get(), cbData, HandleJsonResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -498,7 +498,7 @@ Napi::Value LauncherManager::SetGameParameterExecutableAsync(const CallbackInfo 
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto executable = info[0].As<String>();
-        const auto executableCopy = CopyWithFree(executable.Utf16Value());
+        const auto executableCopy = CopyWithFree(executable);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_set_game_parameter_executable_async(this->_pInstance, executableCopy.get(), cbData, HandleVoidResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -512,7 +512,7 @@ Napi::Value LauncherManager::SetGameParameterSaveFileAsync(const CallbackInfo &i
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto saveName = info[0].As<String>();
-        const auto saveNameCopy = CopyWithFree(saveName.Utf16Value());
+        const auto saveNameCopy = CopyWithFree(saveName);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_set_game_parameter_save_file_async(this->_pInstance, saveNameCopy.get(), cbData, HandleVoidResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);
@@ -549,7 +549,7 @@ void LauncherManager::SetGameStore(const CallbackInfo &info)
     WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto gameStore = info[0].As<String>();
-        const auto gameStoreCopy = CopyWithFree(gameStore.Utf16Value());
+        const auto gameStoreCopy = CopyWithFree(gameStore);
         ThrowOrReturn(env, ve_set_game_store(this->_pInstance, gameStoreCopy.get()));
     });
 }
@@ -586,7 +586,7 @@ Napi::Value LauncherManager::SetGameParameterLoadOrderAsync(const CallbackInfo &
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto loadOrder = JSONStringify(info[0].As<Object>());
-        const auto loadOrderCopy = CopyWithFree(loadOrder.Utf16Value());
+        const auto loadOrderCopy = CopyUtf8WithFree(loadOrder);
         auto cbData = CreateResultCallbackData(env, functionName);
         const auto result = ve_set_game_parameter_load_order_async(this->_pInstance, loadOrderCopy.get(), cbData, HandleVoidResultCallback);
         return ReturnAndHandleReject(env, result, cbData->deferred, cbData->tsfn);

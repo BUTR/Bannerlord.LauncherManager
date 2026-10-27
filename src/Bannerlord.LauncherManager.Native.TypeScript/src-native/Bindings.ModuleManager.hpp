@@ -9,6 +9,9 @@ using namespace Bannerlord::LauncherManager::Native;
 
 namespace Bindings::ModuleManager
 {
+Value RegisterModules(const CallbackInfo &info);
+void ReleaseModules(const CallbackInfo &info);
+
 Value Sort(const CallbackInfo &info);
 Value SortWithOptions(const CallbackInfo &info);
 

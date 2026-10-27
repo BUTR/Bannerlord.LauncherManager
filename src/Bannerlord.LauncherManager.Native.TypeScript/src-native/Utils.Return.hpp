@@ -32,15 +32,15 @@ template <> struct ReturnValueTraits<return_value_string>
     }
 };
 
-template <> struct ReturnValueTraits<return_value_json>
+// JSON as UTF-8, see Bindings.Json.cs
+template <> struct ReturnValueTraits<return_value_data>
 {
-    using deleter_type = del_json;
+    using deleter_type = del_data;
     static constexpr bool has_value = true;
     static constexpr bool value_can_be_null = true;
-    static Value convert(const Env env, return_value_json *result)
+    static Value convert(const Env env, return_value_data *result)
     {
-        const auto value = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(result->value);
-        return JSONParse(String::New(env, value.get()));
+        return JSONParseOwned(env, result->value, static_cast<size_t>(result->length));
     }
 };
 
@@ -164,7 +164,7 @@ inline Value ThrowOrReturnString(const Env env, return_value_string *const resul
     return ThrowOrReturnValue(env, result);
 }
 
-inline Value ThrowOrReturnJson(const Env env, return_value_json *const result)
+inline Value ThrowOrReturnJson(const Env env, return_value_data *const result)
 {
     return ThrowOrReturnValue(env, result);
 }

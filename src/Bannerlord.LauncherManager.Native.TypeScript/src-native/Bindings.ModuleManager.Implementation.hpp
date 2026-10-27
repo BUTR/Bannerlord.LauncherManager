@@ -14,13 +14,35 @@ using namespace Bannerlord::LauncherManager::Native;
 
 namespace Bindings::ModuleManager
 {
+// Parses a module list and keeps it until releaseModules, the list parameters then take "#" and the handle, see ModuleValidator
+Value RegisterModules(const CallbackInfo &info)
+{
+    LoggerScope logger(__FUNCTION__);
+    return WithExceptionHandling(logger, [&]() {
+        const auto env = info.Env();
+        const auto modules = JSONStringify(info[0].As<Object>());
+        const auto modulesCopy = CopyUtf8WithFree(modules);
+        return ThrowOrReturnInt32(env, bmm_register_modules(modulesCopy.get()));
+    });
+}
+
+void ReleaseModules(const CallbackInfo &info)
+{
+    LoggerScope logger(__FUNCTION__);
+    WithExceptionHandling(logger, [&]() {
+        const auto env = info.Env();
+        const auto handle = info[0].As<Number>();
+        ThrowOrReturn(env, bmm_release_modules(handle.Int32Value()));
+    });
+}
+
 Value Sort(const CallbackInfo &info)
 {
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
+        const auto source = ModuleListArgument(info[0]);
+        const auto sourceCopy = CopyUtf8WithFree(source);
         return ThrowOrReturnJson(env, bmm_sort(sourceCopy.get()));
     });
 }
@@ -30,10 +52,10 @@ Value SortWithOptions(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto options = JSONStringify(info[1].As<Object>());
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto optionsCopy = CopyWithFree(options.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto optionsCopy = CopyUtf8WithFree(options);
         return ThrowOrReturnJson(env, bmm_sort_with_options(sourceCopy.get(), optionsCopy.get()));
     });
 }
@@ -43,10 +65,10 @@ Value AreAllDependenciesOfModulePresent(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto module = JSONStringify(info[1].As<Object>());
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto moduleCopy = CopyUtf8WithFree(module);
         return ThrowOrReturnBoolean(env, bmm_are_all_dependencies_of_module_present(sourceCopy.get(), moduleCopy.get()));
     });
 }
@@ -56,10 +78,10 @@ Value GetDependentModulesOf(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto module = JSONStringify(info[1].As<Object>());
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto moduleCopy = CopyUtf8WithFree(module);
         return ThrowOrReturnJson(env, bmm_get_dependent_modules_of(sourceCopy.get(), moduleCopy.get()));
     });
 }
@@ -69,12 +91,12 @@ Value GetDependentModulesOfWithOptions(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto module = JSONStringify(info[1].As<Object>());
         const auto options = JSONStringify(info[2].As<Object>());
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
-        const auto optionsCopy = CopyWithFree(options.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto moduleCopy = CopyUtf8WithFree(module);
+        const auto optionsCopy = CopyUtf8WithFree(options);
         return ThrowOrReturnJson(env, bmm_get_dependent_modules_of_with_options(sourceCopy.get(), moduleCopy.get(), optionsCopy.get()));
     });
 }
@@ -84,10 +106,10 @@ Value ValidateLoadOrder(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto targetModule = JSONStringify(info[1].As<Object>());
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto targetModuleCopy = CopyUtf8WithFree(targetModule);
         return ThrowOrReturnJson(env, bmm_validate_load_order(sourceCopy.get(), targetModuleCopy.get()));
     });
 }
@@ -97,12 +119,12 @@ Value ValidateModule(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto targetModule = JSONStringify(info[1].As<Object>());
         const auto manager = info[2].As<Object>();
         const auto fIsSelected = manager.Get("isSelected").As<Function>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto targetModuleCopy = CopyUtf8WithFree(targetModule);
         auto data = ValidationData{env, fIsSelected};
         return ThrowOrReturnJson(env, bmm_validate_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), isSelected));
     });
@@ -113,15 +135,15 @@ void EnableModule(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto targetModule = JSONStringify(info[1].As<Object>());
         const auto manager = info[2].As<Object>();
         const auto fGetSelected = manager.Get("getSelected").As<Function>();
         const auto fSetSelected = manager.Get("setSelected").As<Function>();
         const auto fGetDisabled = manager.Get("getDisabled").As<Function>();
         const auto fSetDisabled = manager.Get("setDisabled").As<Function>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto targetModuleCopy = CopyUtf8WithFree(targetModule);
         auto data = EnableDisableData{env, fGetSelected, fSetSelected, fGetDisabled, fSetDisabled};
         ThrowOrReturn(env, bmm_enable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled));
     });
@@ -132,15 +154,15 @@ void DisableModule(const CallbackInfo &info)
     LoggerScope logger(__FUNCTION__);
     WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
-        const auto source = JSONStringify(info[0].As<Object>());
+        const auto source = ModuleListArgument(info[0]);
         const auto targetModule = JSONStringify(info[1].As<Object>());
         const auto manager = info[2].As<Object>();
         const auto fGetSelected = manager.Get("getSelected").As<Function>();
         const auto fSetSelected = manager.Get("setSelected").As<Function>();
         const auto fGetDisabled = manager.Get("getDisabled").As<Function>();
         const auto fSetDisabled = manager.Get("setDisabled").As<Function>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto targetModuleCopy = CopyWithFree(targetModule.Utf16Value());
+        const auto sourceCopy = CopyUtf8WithFree(source);
+        const auto targetModuleCopy = CopyUtf8WithFree(targetModule);
         auto data = EnableDisableData{env, fGetSelected, fSetSelected, fGetDisabled, fSetDisabled};
         ThrowOrReturn(env, bmm_disable_module(static_cast<void *const>(&data), sourceCopy.get(), targetModuleCopy.get(), getSelected, setSelected, getDisabled, setDisabled));
     });
@@ -152,7 +174,7 @@ Value GetModuleInfo(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto source = info[0].As<String>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
+        const auto sourceCopy = CopyWithFree(source);
         return ThrowOrReturnJson(env, bmm_get_module_info(sourceCopy.get()));
     });
 }
@@ -164,8 +186,8 @@ Value GetModuleInfoWithPath(const CallbackInfo &info)
         const auto env = info.Env();
         const auto source = info[0].As<String>();
         const auto path = info[1].As<String>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto pathCopy = CopyWithFree(path.Utf16Value());
+        const auto sourceCopy = CopyWithFree(source);
+        const auto pathCopy = CopyWithFree(path);
         return ThrowOrReturnJson(env, bmm_get_module_info_with_path(sourceCopy.get(), pathCopy.get()));
     });
 }
@@ -178,9 +200,9 @@ Value GetModuleInfoWithMetadata(const CallbackInfo &info)
         const auto source = info[0].As<String>();
         const auto moduleProvider = info[1].As<String>();
         const auto path = info[2].As<String>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
-        const auto moduleProviderCopy = CopyWithFree(moduleProvider.Utf16Value());
-        const auto pathCopy = CopyWithFree(path.Utf16Value());
+        const auto sourceCopy = CopyWithFree(source);
+        const auto moduleProviderCopy = CopyWithFree(moduleProvider);
+        const auto pathCopy = CopyWithFree(path);
         return ThrowOrReturnJson(env, bmm_get_module_info_with_metadata(sourceCopy.get(), moduleProviderCopy.get(), pathCopy.get()));
     });
 }
@@ -191,7 +213,7 @@ Value GetSubModuleInfo(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto source = info[0].As<String>();
-        const auto sourceCopy = CopyWithFree(source.Utf16Value());
+        const auto sourceCopy = CopyWithFree(source);
         return ThrowOrReturnJson(env, bmm_get_sub_module_info(sourceCopy.get()));
     });
 }
@@ -202,7 +224,7 @@ Value ParseApplicationVersion(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto content = info[0].As<String>();
-        const auto contentCopy = CopyWithFree(content.Utf16Value());
+        const auto contentCopy = CopyWithFree(content);
         return ThrowOrReturnJson(env, bmm_parse_application_version(contentCopy.get()));
     });
 }
@@ -214,8 +236,8 @@ Value CompareVersions(const CallbackInfo &info)
         const auto env = info.Env();
         const auto x = JSONStringify(info[0].As<Object>());
         const auto y = JSONStringify(info[1].As<Object>());
-        const auto xCopy = CopyWithFree(x.Utf16Value());
-        const auto yCopy = CopyWithFree(y.Utf16Value());
+        const auto xCopy = CopyUtf8WithFree(x);
+        const auto yCopy = CopyUtf8WithFree(y);
         return ThrowOrReturnInt32(env, bmm_compare_versions(xCopy.get(), yCopy.get()));
     });
 }
@@ -226,7 +248,7 @@ Value GetDependenciesAll(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto moduleCopy = CopyUtf8WithFree(module);
         return ThrowOrReturnJson(env, bmm_get_dependencies_all(moduleCopy.get()));
     });
 }
@@ -237,7 +259,7 @@ Value GetDependenciesToLoadBeforeThis(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto moduleCopy = CopyUtf8WithFree(module);
         return ThrowOrReturnJson(env, bmm_get_dependencies_load_before_this(moduleCopy.get()));
     });
 }
@@ -248,7 +270,7 @@ Value GetDependenciesToLoadAfterThis(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto moduleCopy = CopyUtf8WithFree(module);
         return ThrowOrReturnJson(env, bmm_get_dependencies_load_after_this(moduleCopy.get()));
     });
 }
@@ -259,13 +281,16 @@ Value GetDependenciesIncompatibles(const CallbackInfo &info)
     return WithExceptionHandling(logger, [&]() {
         const auto env = info.Env();
         const auto module = JSONStringify(info[0].As<Object>());
-        const auto moduleCopy = CopyWithFree(module.Utf16Value());
+        const auto moduleCopy = CopyUtf8WithFree(module);
         return ThrowOrReturnJson(env, bmm_get_dependencies_incompatibles(moduleCopy.get()));
     });
 }
 
 Object Init(const Env env, const Object exports)
 {
+    exports.Set("registerModules", Function::New(env, RegisterModules));
+    exports.Set("releaseModules", Function::New(env, ReleaseModules));
+
     exports.Set("sort", Function::New(env, Sort));
     exports.Set("sortWithOptions", Function::New(env, SortWithOptions));
 

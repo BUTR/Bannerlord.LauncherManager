@@ -23,22 +23,27 @@ inline return_value_string *ConvertToStringResult(const Napi::Value &result)
 #if _DEBUG
     Logger::Log(__FUNCTION__, "Value: " + resultStr.Utf8Value());
 #endif
-    return Create(return_value_string{nullptr, Copy(resultStr.Utf16Value())});
+    return Create(return_value_string{nullptr, Copy(resultStr)});
 }
 
-inline return_value_json *ConvertToJsonResult(const Napi::Value &result)
+// JSON as UTF-8, see Bindings.Json.cs
+inline return_value_data *ConvertToJsonResult(const Napi::Value &result)
 {
     if (result.IsNull())
     {
         Logger::Log(__FUNCTION__, "Value: NULL");
-        return Create(return_value_json{nullptr, nullptr});
+        return Create(return_value_data{nullptr, nullptr, 0});
     }
 
     const auto resultObj = result.As<Object>();
 #if _DEBUG
     Logger::Log(__FUNCTION__, "Value: " + JSONStringify(resultObj).Utf8Value());
 #endif
-    return Create(return_value_json{nullptr, Copy(JSONStringify(resultObj).Utf16Value())});
+    size_t length = 0;
+    auto json = std::unique_ptr<uint8_t[], common_deallocor<uint8_t>>(CopyUtf8(JSONStringify(resultObj), &length));
+    const auto converted = Create(return_value_data{nullptr, json.get(), static_cast<int>(length)});
+    json.release();
+    return converted;
 }
 
 inline return_value_data *ConvertToDataResult(const Napi::Value &result)
@@ -61,7 +66,8 @@ inline return_value_data *ConvertToDataResult(const Napi::Value &result)
 #if _DEBUG
     Logger::Log(__FUNCTION__, "Buffer size: " + std::to_string(buffer.ByteLength()));
 #endif
-    return Create(return_value_data{nullptr, Copy(buffer.Data(), buffer.ByteLength()), static_cast<int>(buffer.ByteLength())});
+    // Lent, not copied: the native side gets it in the same call, while the buffer is alive, and copies what it keeps
+    return Create(return_value_data{nullptr, buffer.Data(), static_cast<int>(buffer.ByteLength())});
 }
 
 inline return_value_void *ConvertToVoidResult(LoggerScope &logger)

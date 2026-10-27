@@ -17,7 +17,5 @@ export interface IExtension
     IFetchBannerlordVersion,
     IUtils,
     INativeExtension {
-  allocWithOwnership(length: number): Buffer | null;
-  allocWithoutOwnership(length: number): Buffer | null;
   allocAliveCount(): number;
 }

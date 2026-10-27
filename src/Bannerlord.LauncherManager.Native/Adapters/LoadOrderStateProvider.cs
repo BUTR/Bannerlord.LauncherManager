@@ -97,7 +97,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
 
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetAllModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
+    public static unsafe void GetAllModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
@@ -123,7 +123,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             logger.LogResult(result);
             try
             {
-                var moduleViewModels = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
+                var moduleViewModels = Bindings.ValueAsJsonNative(result, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
                     .Where(x => x != null!)
                     .Cast<IModuleViewModel>()
                     .OrderBy(x => x.Index)
@@ -171,7 +171,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
+    public static unsafe void GetModuleViewModelsNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
@@ -197,7 +197,7 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
             logger.LogResult(result);
             try
             {
-                var moduleViewModels = result.ValueAsJson(Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
+                var moduleViewModels = Bindings.ValueAsJsonNative(result, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel)?
                     .Where(x => x != null!)
                     .Cast<IModuleViewModel>()
                     .OrderBy(x => x.Index)
@@ -289,20 +289,20 @@ internal sealed class LoadOrderStateProvider : ILoadOrderStateProvider
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         var moduleViewModelsCasted = moduleViewModels.OfType<ModuleViewModel>().ToList();
-        fixed (char* pModuleViewModels = BUTR.NativeAOT.Shared.Utils.SerializeJson(moduleViewModelsCasted, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel))
+        try
         {
-            try
-            {
-                using var result = SafeStructMallocHandle.Create(_setModuleViewModels(_pOwner, (param_json*) pModuleViewModels, (param_ptr*) GCHandle.ToIntPtr(handle), &SetModuleViewModelsNativeCallback), true);
-                logger.LogResult(result);
-                result.ValueAsVoid();
-            }
-            catch (Exception e)
-            {
-                logger.LogException(e);
-                tcs.TrySetException(e);
-                handle.Free();
-            }
+            // The whole load order, each with its module: written into native memory without a string first. The
+            // callback returns once JS has parsed it
+            using var pModuleViewModels = Bindings.SerializeJsonNativeHandle(moduleViewModelsCasted, Bindings.CustomSourceGenerationContext.IReadOnlyListModuleViewModel);
+            using var result = SafeStructMallocHandle.Create(_setModuleViewModels(_pOwner, (param_data*) pModuleViewModels, (param_ptr*) GCHandle.ToIntPtr(handle), &SetModuleViewModelsNativeCallback), true);
+            logger.LogResult(result);
+            result.ValueAsVoid();
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            tcs.TrySetException(e);
+            handle.Free();
         }
     }
 }

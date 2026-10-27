@@ -60,34 +60,34 @@ partial class LauncherManagerHandler
     /// </summary>
     protected virtual async IAsyncEnumerable<ModuleInfoExtendedWithMetadata> ReloadModulesAsync()
     {
-        foreach (var modulePathProvider in _providers)
+        // The SubModule.xml reads overlap, see ReadAhead, and are parsed in the paths' order: GetModulesAsync keeps the
+        // first module of an id
+        var reads = _providers.ToAsyncEnumerable()
+            .SelectMany(provider => provider.GetModulePaths().Select(modulePath => (Provider: provider, SubModulePath: Path.Combine(modulePath, Constants.SubModuleName))))
+            .SelectInOrderAsync(async x => (x.Provider, x.SubModulePath, Data: await ReadFileContentAsync(x.SubModulePath, 0, -1)));
+        await foreach (var (modulePathProvider, subModulePath, data) in reads)
         {
-            await foreach (var modulePath in modulePathProvider.GetModulePaths())
+            if (data is null)
+                continue;
+
+            ModuleInfoExtended? moduleInfoExtended;
+            try
             {
-                var subModulePath = Path.Combine(modulePath, Constants.SubModuleName);
-                if (await ReadFileContentAsync(subModulePath, 0, -1) is { } data)
-                {
-                    ModuleInfoExtended? moduleInfoExtended;
-                    try
-                    {
-                        moduleInfoExtended = ModuleInfoExtended.FromXml(ReaderUtils.Read(data));
-                    }
-                    catch (Exception e)
-                    {
-                        await SendNotificationAsync("module-parsing-error-exception", NotificationType.Error, $"Failed to read SubModule.xml at path '{subModulePath}'!\n{e}", 3000);
-                        continue;
-                    }
-                    if (string.IsNullOrEmpty(moduleInfoExtended.Id))
-                    {
-                        await SendNotificationAsync("module-parsing-error-invalid-module-id", NotificationType.Error, $"SubModule.xml has an invalid Id at path '{subModulePath}'!", 3000);
-                        continue;
-                    }
-
-                    yield return new ModuleInfoExtendedWithMetadata(moduleInfoExtended, modulePathProvider.ModuleProviderType, subModulePath);
-                }
+                moduleInfoExtended = ModuleInfoExtended.FromXml(ReaderUtils.Read(data));
             }
-        }
+            catch (Exception e)
+            {
+                await SendNotificationAsync("module-parsing-error-exception", NotificationType.Error, $"Failed to read SubModule.xml at path '{subModulePath}'!\n{e}", 3000);
+                continue;
+            }
+            if (string.IsNullOrEmpty(moduleInfoExtended.Id))
+            {
+                await SendNotificationAsync("module-parsing-error-invalid-module-id", NotificationType.Error, $"SubModule.xml has an invalid Id at path '{subModulePath}'!", 3000);
+                continue;
+            }
 
+            yield return new ModuleInfoExtendedWithMetadata(moduleInfoExtended, modulePathProvider.ModuleProviderType, subModulePath);
+        }
     }
 
     /// <summary>

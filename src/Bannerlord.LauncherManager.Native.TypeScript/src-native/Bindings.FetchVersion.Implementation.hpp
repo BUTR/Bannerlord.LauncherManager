@@ -20,8 +20,8 @@ Value GetChangeSetWrapped(const CallbackInfo &info)
         const auto env = info.Env();
         const auto gameFolderPath = info[0].As<String>();
         const auto libAssembly = info[1].As<String>();
-        const auto gameFolderPathCopy = CopyWithFree(gameFolderPath.Utf16Value());
-        const auto libAssemblyCopy = CopyWithFree(libAssembly.Utf16Value());
+        const auto gameFolderPathCopy = CopyWithFree(gameFolderPath);
+        const auto libAssemblyCopy = CopyWithFree(libAssembly);
         return ThrowOrReturnUInt32(env, bfv_get_change_set(gameFolderPathCopy.get(), libAssemblyCopy.get()));
     });
 }
@@ -33,8 +33,8 @@ Value GetVersionWrapped(const CallbackInfo &info)
         const auto env = info.Env();
         const auto gameFolderPath = info[0].As<String>();
         const auto libAssembly = info[1].As<String>();
-        const auto gameFolderPathCopy = CopyWithFree(gameFolderPath.Utf16Value());
-        const auto libAssemblyCopy = CopyWithFree(libAssembly.Utf16Value());
+        const auto gameFolderPathCopy = CopyWithFree(gameFolderPath);
+        const auto libAssemblyCopy = CopyWithFree(libAssembly);
         return ThrowOrReturnString(env, bfv_get_version(gameFolderPathCopy.get(), libAssemblyCopy.get()));
     });
 }
@@ -46,8 +46,8 @@ Value GetVersionTypeWrapped(const CallbackInfo &info)
         const auto env = info.Env();
         const auto gameFolderPath = info[0].As<String>();
         const auto libAssembly = info[1].As<String>();
-        const auto gameFolderPathCopy = CopyWithFree(gameFolderPath.Utf16Value());
-        const auto libAssemblyCopy = CopyWithFree(libAssembly.Utf16Value());
+        const auto gameFolderPathCopy = CopyWithFree(gameFolderPath);
+        const auto libAssemblyCopy = CopyWithFree(libAssembly);
         return ThrowOrReturnUInt32(env, bfv_get_version_type(gameFolderPathCopy.get(), libAssemblyCopy.get()));
     });
 }

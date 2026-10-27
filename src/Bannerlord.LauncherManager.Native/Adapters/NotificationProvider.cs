@@ -33,7 +33,7 @@ internal sealed unsafe class NotificationProvider : INotificationProvider
 
         try
         {
-            var tcs = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             SendNotificationNative(id, type.ToStringFast().ToLowerInvariant(), message, displayMs, tcs);
             return tcs.Task;
         }

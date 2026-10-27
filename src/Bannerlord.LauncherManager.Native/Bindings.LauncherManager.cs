@@ -19,19 +19,19 @@ public static partial class Bindings
 {
     [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_ptr* CreateHandler(param_ptr* p_owner,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_set_game_parameters,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_set_game_parameters,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_send_notification,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_send_dialog,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_data*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_send_dialog,
         delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_get_install_path,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_read_file_content,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_data*, param_int, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_write_file_content,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_read_directory_file_list,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_read_directory_list,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_get_all_module_view_models,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_get_module_view_models,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_set_module_view_models,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_get_options,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_get_state)
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_read_directory_file_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_read_directory_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_get_all_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_get_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_data*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_set_module_view_models,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_get_options,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_get_state)
     {
 #if DEBUG
         using var logger = LogMethod();
@@ -163,7 +163,7 @@ public static partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_test_module", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_json* TestModule(param_ptr* p_handle, param_json* p_files)
+    public static unsafe return_value_data* TestModule(param_ptr* p_handle, param_data* p_files)
     {
 #if DEBUG
         using var logger = LogMethod(p_files);
@@ -173,26 +173,26 @@ public static partial class Bindings
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_data.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             //if (p_files is null)
             //    return return_value_json.AsValue(SupportedResult.AsNotSupported, CustomSourceGenerationContext.SupportedResult, false);
 
-            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray);
+            var files = DeserializeJsonNative(p_files, CustomSourceGenerationContext.StringArray);
 
             var result = handler.TestModuleContent(files);
 
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.SupportedResult, false);
+            return JsonValue(result, CustomSourceGenerationContext.SupportedResult, false);
         }
         catch (Exception e)
         {
             logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_data.AsException(e, false);
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_install_module", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_json* InstallModule(param_ptr* p_handle, param_json* p_files, param_json* p_module_infos)
+    public static unsafe return_value_data* InstallModule(param_ptr* p_handle, param_data* p_files, param_data* p_module_infos)
     {
 #if DEBUG
         using var logger = LogMethod(p_files, p_module_infos);
@@ -202,24 +202,24 @@ public static partial class Bindings
         try
         {
             if (p_handle is null || LauncherManagerHandlerNative.FromPointer(p_handle) is not { } handler)
-                return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
+                return return_value_data.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
             //if (p_files is null || p_module_infos is null)
             //    return return_value_json.AsValue(InstallResult.AsInvalid, CustomSourceGenerationContext.InstallResult, false);
 
-            var files = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_files, CustomSourceGenerationContext.StringArray)
+            var files = DeserializeJsonNative(p_files, CustomSourceGenerationContext.StringArray)
                 .Where(x => x != null!).ToArray();
-            var moduleInfos = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray)
+            var moduleInfos = DeserializeJsonNative(p_module_infos, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadataArray)
                 .Where(x => x != null!).ToArray();
 
             var result = handler.InstallModuleContent(files, moduleInfos);
 
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.InstallResult, false);
+            return JsonValue(result, CustomSourceGenerationContext.InstallResult, false);
         }
         catch (Exception e)
         {
             logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_data.AsException(e, false);
         }
     }
 
@@ -414,7 +414,7 @@ public static partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_modules_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* GetModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* GetModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod();
@@ -438,22 +438,22 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
                         logger.Log("Cancelled");
                     }
                     else
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -468,7 +468,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_all_modules_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* GetAllModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* GetAllModulesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod();
@@ -492,22 +492,22 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
                         logger.Log("Cancelled");
                     }
                     else
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(result.Result, CustomSourceGenerationContext.IReadOnlyListModuleInfoExtendedWithMetadata, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -809,7 +809,7 @@ public static partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_validate_module_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* SortHelperValidateModuleAsync(param_ptr* p_handle, param_json* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* SortHelperValidateModuleAsync(param_ptr* p_handle, param_data* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_module_view_model);
@@ -824,7 +824,7 @@ public static partial class Bindings
             //if (p_module_view_model is null)
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.StringArray, false);
 
-            var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
+            var moduleViewModel = DeserializeJsonNative(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
             handler.GetModuleViewModelsAsync().ContinueWith(result =>
             {
@@ -838,12 +838,12 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.StringArray, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.StringArray, false));
                         logger.Log("Cancelled");
                     }
                     else
@@ -851,12 +851,12 @@ public static partial class Bindings
                         var modules = result.Result?.ToArray() ?? [];
                         var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
                         var validateResult = SortHelper.ValidateModule(modules, lookup, moduleViewModel).ToArray();
-                        p_callback(p_callback_handler, return_value_json.AsValue(validateResult, CustomSourceGenerationContext.StringArray, false));
+                        p_callback(p_callback_handler, JsonValue(validateResult, CustomSourceGenerationContext.StringArray, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -871,7 +871,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_toggle_module_selection_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* SortHelperToggleModuleSelectionAsync(param_ptr* p_handle, param_json* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* SortHelperToggleModuleSelectionAsync(param_ptr* p_handle, param_data* p_module_view_model, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_module_view_model);
@@ -886,7 +886,7 @@ public static partial class Bindings
             //if (p_module_view_model is null)
             //    return return_value_json.AsValue([], CustomSourceGenerationContext.StringArray, false);
 
-            var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
+            var moduleViewModel = DeserializeJsonNative(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
             handler.GetModuleViewModelsAsync().ContinueWith(result =>
             {
@@ -900,12 +900,12 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.ModuleViewModel, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.ModuleViewModel, false));
                         logger.Log("Cancelled");
                     }
                     else
@@ -913,12 +913,12 @@ public static partial class Bindings
                         var modules = result.Result?.ToArray() ?? [];
                         var lookup = modules.ToDictionary(x => x.ModuleInfoExtended.Id, x => x);
                         SortHelper.ToggleModuleSelection(modules, lookup, moduleViewModel);
-                        p_callback(p_callback_handler, return_value_json.AsValue(moduleViewModel, CustomSourceGenerationContext.ModuleViewModel, false));
+                        p_callback(p_callback_handler, JsonValue(moduleViewModel, CustomSourceGenerationContext.ModuleViewModel, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -933,7 +933,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_sort_helper_change_module_position_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* SortHelperChangeModulePositionAsync(param_ptr* p_handle, param_json* p_module_view_model, param_int insertIndex, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
+    public static unsafe return_value_async* SortHelperChangeModulePositionAsync(param_ptr* p_handle, param_data* p_module_view_model, param_int insertIndex, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_module_view_model, &insertIndex);
@@ -951,7 +951,7 @@ public static partial class Bindings
             //if (p_module_view_model is null)
             //    return return_value_bool.AsValue(false, false);
 
-            var moduleViewModel = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
+            var moduleViewModel = DeserializeJsonNative(p_module_view_model, CustomSourceGenerationContext.ModuleViewModel);
 
             handler.GetModuleViewModelsAsync().ContinueWith(result =>
             {
@@ -1024,7 +1024,7 @@ public static partial class Bindings
 
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_files_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* GetSaveFilesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* GetSaveFilesAsync(param_ptr* p_handle, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod();
@@ -1048,22 +1048,22 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
                         logger.Log("Cancelled");
                     }
                     else
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(result.Result, CustomSourceGenerationContext.IReadOnlyListSaveMetadata, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -1078,7 +1078,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_get_save_metadata_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* GetSaveMetadataAsync(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* GetSaveMetadataAsync(param_ptr* p_handle, param_string* p_save_file, param_data* p_data, param_int data_len, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_save_file, p_data, &data_len);
@@ -1105,22 +1105,22 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.SaveMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.SaveMetadata, false));
                         logger.Log("Cancelled");
                     }
                     else
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.SaveMetadata, false));
+                        p_callback(p_callback_handler, JsonValue(result.Result, CustomSourceGenerationContext.SaveMetadata, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -1194,7 +1194,7 @@ public static partial class Bindings
     public record OrderByLoadOrderResultNative(bool Result, IReadOnlyList<string>? Issues, IReadOnlyList<ModuleViewModel>? OrderedModuleViewModels);
 
     [UnmanagedCallersOnly(EntryPoint = "ve_order_by_load_order_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* OrderByLoadOrderAsync(param_ptr* p_handle, param_json* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* OrderByLoadOrderAsync(param_ptr* p_handle, param_data* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_load_order);
@@ -1209,7 +1209,7 @@ public static partial class Bindings
             //if (p_load_order is null)
             //    return return_value_json.AsValue(new OrderByLoadOrderResult(false, null, null), CustomSourceGenerationContext.OrderByLoadOrderResult, false);
 
-            var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
+            var loadOrder = DeserializeJsonNative(p_load_order, CustomSourceGenerationContext.LoadOrder);
 
             var loadOrderDict = loadOrder.ToDictionary(x => x.Key, x => x.Value.IsSelected);
             handler.TryOrderByLoadOrderAsync(loadOrder.OrderBy(x => x.Value.Index).Select(x => x.Key), x => loadOrderDict.TryGetValue(x, out var isSelected) && isSelected).ContinueWith(result =>
@@ -1224,12 +1224,12 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
+                        p_callback(p_callback_handler, JsonValue(null, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
                         logger.Log("Cancelled");
                     }
                     else
@@ -1241,12 +1241,12 @@ public static partial class Bindings
                             IsDisabled = x.IsDisabled,
                             Index = x.Index,
                         }).ToArray());
-                        p_callback(p_callback_handler, return_value_json.AsValue(orderByLoadOrderResult, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
+                        p_callback(p_callback_handler, JsonValue(orderByLoadOrderResult, CustomSourceGenerationContext.OrderByLoadOrderResultNative, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });
@@ -1318,7 +1318,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_set_game_parameter_load_order_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* SetGameParameterLoadOrderAsync(param_ptr* p_handle, param_json* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
+    public static unsafe return_value_async* SetGameParameterLoadOrderAsync(param_ptr* p_handle, param_data* p_load_order, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_load_order);
@@ -1333,7 +1333,7 @@ public static partial class Bindings
             //if (p_load_order is null)
             //    return return_value_void.AsValue(false);
 
-            var loadOrder = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_load_order, CustomSourceGenerationContext.LoadOrder);
+            var loadOrder = DeserializeJsonNative(p_load_order, CustomSourceGenerationContext.LoadOrder);
 
             handler.SetGameParameterLoadOrderAsync(loadOrder).ContinueWith(result =>
             {
@@ -1570,7 +1570,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_is_obfuscated_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* IsObfuscatedAsync(param_ptr* p_handle, param_json* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
+    public static unsafe return_value_async* IsObfuscatedAsync(param_ptr* p_handle, param_data* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_module);
@@ -1583,7 +1583,7 @@ public static partial class Bindings
                 return return_value_async.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
 
-            var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata);
+            var module = DeserializeJsonNative(p_module, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata);
 
             handler.IsObfuscatedAsync(module).ContinueWith(result =>
             {
@@ -1627,7 +1627,7 @@ public static partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "ve_scan_mod_async", CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe return_value_async* ScanModAsync(param_ptr* p_handle, param_json* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
+    public static unsafe return_value_async* ScanModAsync(param_ptr* p_handle, param_data* p_module, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void> p_callback)
     {
 #if DEBUG
         using var logger = LogMethod(p_module);
@@ -1640,7 +1640,7 @@ public static partial class Bindings
                 return return_value_async.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
 
 
-            var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata);
+            var module = DeserializeJsonNative(p_module, CustomSourceGenerationContext.ModuleInfoExtendedWithMetadata);
 
             handler.ScanModAsync(module).ContinueWith(result =>
             {
@@ -1654,22 +1654,22 @@ public static partial class Bindings
                 {
                     if (result.Exception is not null)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        p_callback(p_callback_handler, return_value_data.AsException(result.Exception, false));
                         logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(null, false));
+                        p_callback(p_callback_handler, return_value_data.AsValue(null, 0, false));
                         logger.Log("Cancelled");
                     }
                     else
                     {
-                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.ListScanResultDto, false));
+                        p_callback(p_callback_handler, JsonValue(result.Result, CustomSourceGenerationContext.ListScanResultDto, false));
                     }
                 }
                 catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    p_callback(p_callback_handler, return_value_data.AsException(e, false));
                     logger.LogException(e);
                 }
             });

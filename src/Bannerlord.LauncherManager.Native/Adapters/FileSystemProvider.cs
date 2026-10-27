@@ -42,7 +42,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
         try
         {
-            var tcs = new TaskCompletionSource<byte[]?>();
+            var tcs = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
             ReadFileContentNative(filePath, offset, length, tcs);
             return tcs.Task;
         }
@@ -63,7 +63,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
         try
         {
-            var tcs = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             WriteFileContentNative(filePath, data, data?.Length ?? 0, tcs);
             return tcs.Task;
         }
@@ -84,7 +84,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
         try
         {
-            var tcs = new TaskCompletionSource<string[]?>();
+            var tcs = new TaskCompletionSource<string[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
             ReadDirectoryFileListNative(directoryPath, tcs);
             return tcs.Task;
         }
@@ -105,7 +105,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
         try
         {
-            var tcs = new TaskCompletionSource<string[]?>();
+            var tcs = new TaskCompletionSource<string[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
             ReadDirectoryListNative(directoryPath, tcs);
             return tcs.Task;
         }
@@ -141,7 +141,16 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
             logger.LogResult(result);
-            result.SetAsData(tcs);
+            // The bytes are the JS buffer's, lent for this call: copied, not freed
+            if (pResult->Error is not null)
+            {
+                using var hError = new SafeStringMallocHandle(pResult->Error, true);
+                tcs.TrySetException(new NativeCallException(new string(hError)));
+            }
+            else
+            {
+                tcs.TrySetResult(pResult->Value is null ? null : new ReadOnlySpan<byte>(pResult->Value, pResult->Length).ToArray());
+            }
             handle.Free();
         }
         catch (Exception e)
@@ -240,7 +249,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void ReadDirectoryFileListNativeCallback(param_ptr* pOwner, return_value_json* pResult)
+    public static unsafe void ReadDirectoryFileListNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
@@ -264,7 +273,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
             logger.LogResult(result);
-            result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.StringArray);
+            Bindings.SetAsJsonNative(result, tcs, Bindings.CustomSourceGenerationContext.StringArray);
             handle.Free();
         }
         catch (Exception e)
@@ -301,7 +310,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void ReadDirectoryListNativeCallback(param_ptr* pOwner, return_value_json* pResult)
+    public static unsafe void ReadDirectoryListNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
@@ -325,7 +334,7 @@ internal sealed class FileSystemProvider : IFileSystemProvider
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
             logger.LogResult(result);
-            result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.StringArray);
+            Bindings.SetAsJsonNative(result, tcs, Bindings.CustomSourceGenerationContext.StringArray);
             handle.Free();
         }
         catch (Exception e)

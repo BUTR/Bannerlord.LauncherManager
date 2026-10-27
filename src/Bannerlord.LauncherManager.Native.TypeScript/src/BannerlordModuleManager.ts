@@ -1,4 +1,6 @@
 import * as types from './types';
+import { getModuleListAddon, modulesAt } from './moduleLists';
+import { ModuleValidator } from './ModuleValidator';
 
 export class BannerlordModuleManager {
     private static addon: types.IBannerlordModuleManager;
@@ -12,14 +14,20 @@ export class BannerlordModuleManager {
         }
     }
 
+    /**
+     * The module list parsed once for several calls, see ModuleValidator. The calls below parse it on every call.
+     * Dispose the validator when done, or `using` it
+     */
+    public static createValidator(modules: types.ModuleInfoExtended[]): ModuleValidator {
+        return new ModuleValidator(modules);
+    }
+
     public static sort(unsorted: types.ModuleInfoExtended[]): types.ModuleInfoExtended[] {
-        BannerlordModuleManager.initialize();
-        return BannerlordModuleManager.addon.sort(unsorted);
+        return modulesAt(unsorted, getModuleListAddon().sort(unsorted));
     }
 
     public static sortWithOptions(unsorted: types.ModuleInfoExtended[], options: types.ModuleSorterOptions): types.ModuleInfoExtended[] {
-        BannerlordModuleManager.initialize();
-        return BannerlordModuleManager.addon.sortWithOptions(unsorted, options);
+        return modulesAt(unsorted, getModuleListAddon().sortWithOptions(unsorted, options));
     }
 
     public static areAllDependenciesOfModulePresent(unsorted: types.ModuleInfoExtended[], module: types.ModuleInfoExtended): boolean {
@@ -28,13 +36,11 @@ export class BannerlordModuleManager {
     }
 
     public static getDependentModulesOf(source: types.ModuleInfoExtended[], module: types.ModuleInfoExtended): types.ModuleInfoExtended[] {
-        BannerlordModuleManager.initialize();
-        return BannerlordModuleManager.addon.getDependentModulesOf(source, module);
+        return modulesAt(source, getModuleListAddon().getDependentModulesOf(source, module));
     }
 
     public static getDependentModulesOfWithOptions(source: types.ModuleInfoExtended[], module: types.ModuleInfoExtended, options: types.ModuleSorterOptions): types.ModuleInfoExtended[] {
-        BannerlordModuleManager.initialize();
-        return BannerlordModuleManager.addon.getDependentModulesOfWithOptions(source, module, options);
+        return modulesAt(source, getModuleListAddon().getDependentModulesOfWithOptions(source, module, options));
     }
 
     public static validateLoadOrder(source: types.ModuleInfoExtended[], targetModule: types.ModuleInfoExtended): types.ModuleIssue[] {

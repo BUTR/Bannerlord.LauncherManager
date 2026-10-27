@@ -444,6 +444,62 @@ public class HandlerTests
     }
 
     [Test]
+    public async Task ModuleProvider_ReadsOverlap_Test()
+    {
+        // The host completes its reads later and in any order: the reads overlap, the modules keep the folders' order
+        const int moduleCount = 40;
+        var modulesPath = Path.Combine("Game", Constants.ModulesFolder);
+        var moduleFolders = Enumerable.Range(0, moduleCount).Select(i => Path.Combine(modulesPath, $"M{i:00}")).ToArray();
+        var pending = new List<(string FilePath, Action<byte[]?> Callback)>();
+
+        var handler = new LauncherManagerHandlerExposer(
+            dialogProviderProvider: new CallbackDialogProvider(
+                sendDialog: null!
+            ),
+            fileSystemProvider: new CallbackFileSystemProvider(
+                readFileContent: (filePath, _, _, callback) => pending.Add((filePath, callback)),
+                writeFileContent: null!,
+                readDirectoryFileList: (directory, callback) => callback([Path.Combine(directory, Constants.SubModuleName)]),
+                readDirectoryList: (directory, callback) => callback(directory == modulesPath ? moduleFolders : null)
+            ),
+            gameInfoProvider: new CallbackGameInfoProvider(
+                getInstallPath: callback => callback("Game")
+            ),
+            notificationProviderProvider: new CallbackNotificationProvider(
+                sendNotification: (id, type, message, ms) => { }
+            ),
+            launcherStateUProvider: new CallbackLauncherStateProvider(
+                setGameParameters: null!,
+                getOptions: null!,
+                getState: null!
+            ),
+            loadOrderStateProvider: new CallbackLoadOrderStateProvider(
+                getAllModuleViewModels: null!,
+                getModuleViewModels: null!,
+                setModuleViewModels: null!)
+        );
+
+        var modulesTask = handler.GetModulesAsync();
+        var mostInFlight = 0;
+        while (!modulesTask.IsCompleted)
+        {
+            Assert.That(pending, Is.Not.Empty, "Waits for a read that wasn't started");
+            mostInFlight = Math.Max(mostInFlight, pending.Count);
+            var reads = pending.ToArray();
+            pending.Clear();
+            foreach (var (filePath, callback) in reads.Reverse())
+            {
+                var id = Path.GetFileName(Path.GetDirectoryName(filePath));
+                callback(System.Text.Encoding.UTF8.GetBytes($"<Module><Id value=\"{id}\"/><Name value=\"{id}\"/><Version value=\"v1.0.0\"/></Module>"));
+            }
+        }
+        var modules = await modulesTask;
+
+        Assert.That(mostInFlight, Is.GreaterThan(1).And.LessThanOrEqualTo(16));
+        Assert.That(modules.Select(x => x.Id), Is.EqualTo(moduleFolders.Select(Path.GetFileName)));
+    }
+
+    [Test]
     public void Handler_TestModule_tTest()
     {
         var moduleFolder = "Test\\";

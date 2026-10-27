@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bannerlord.LauncherManager.Utils;
 
@@ -20,6 +21,10 @@ internal static class VortexFolderTag
 
     // The file list holds full paths
     public static bool IsIn(string[] files) => files.Any(x => Path.GetFileName(x) == FileName);
+
+    // A module folder with the file list IsIn takes
+    public static async Task<(string Folder, string[] Files)> ListAsync(LauncherManagerHandler handler, string folder) =>
+        (folder, await handler.ReadDirectoryFileListAsync(folder) ?? []);
 }
 
 internal class MainModuleProvider : IModulePathProvider
@@ -40,9 +45,9 @@ internal class MainModuleProvider : IModulePathProvider
         var directories = await _handler.ReadDirectoryListAsync(Path.Combine(installPath, Constants.ModulesFolder));
         if (directories is null) throw new DirectoryNotFoundException($"installPath: {installPath}. Modules directory not found!");
         //if (directories is null) yield break;
-        foreach (var moduleFolder in directories)
+        // The folders' listings overlap, see ReadAhead
+        await foreach (var (moduleFolder, files) in directories.ToAsyncEnumerable().SelectInOrderAsync(folder => VortexFolderTag.ListAsync(_handler, folder)))
         {
-            var files = await _handler.ReadDirectoryFileListAsync(moduleFolder) ?? [];
             if (!VortexFolderTag.IsIn(files))
                 yield return moduleFolder;
         }
@@ -103,9 +108,9 @@ internal class VortexModuleProvider : IModulePathProvider
         var directories = await _handler.ReadDirectoryListAsync(Path.Combine(installPath, Constants.ModulesFolder));
         if (directories is null) yield break;
 
-        foreach (var moduleFolder in directories)
+        // The folders' listings overlap, see ReadAhead
+        await foreach (var (moduleFolder, files) in directories.ToAsyncEnumerable().SelectInOrderAsync(folder => VortexFolderTag.ListAsync(_handler, folder)))
         {
-            var files = await _handler.ReadDirectoryFileListAsync(moduleFolder) ?? [];
             if (VortexFolderTag.IsIn(files))
                 yield return moduleFolder;
         }

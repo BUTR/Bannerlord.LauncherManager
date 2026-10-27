@@ -31,7 +31,7 @@ template <typename T> struct deleter
 
 using del_void = std::unique_ptr<return_value_void, common_deallocor<return_value_void>>;
 using del_string = std::unique_ptr<return_value_string, common_deallocor<return_value_string>>;
-using del_json = std::unique_ptr<return_value_json, common_deallocor<return_value_json>>;
+using del_data = std::unique_ptr<return_value_data, common_deallocor<return_value_data>>;
 using del_bool = std::unique_ptr<return_value_bool, common_deallocor<return_value_bool>>;
 using del_int32 = std::unique_ptr<return_value_int32, common_deallocor<return_value_int32>>;
 using del_uint32 = std::unique_ptr<return_value_uint32, common_deallocor<return_value_uint32>>;
@@ -66,6 +66,68 @@ inline char16_t *const Copy(const std::u16string str)
     std::memmove(dst, src, srcByteLength);
     dst[srcChar16Length] = '\0';
     return dst;
+}
+
+// A JS string straight into native memory: Utf16Value() would make a std::u16string to copy from first, 1.5 MB more
+// for the JSON of a 300 module list
+inline char16_t *const Copy(const String &str)
+{
+    const auto env = str.Env();
+    size_t length = 0;
+    NAPI_THROW_IF_FAILED(env, napi_get_value_string_utf16(env, str, nullptr, 0, &length), nullptr);
+
+    auto dst = static_cast<char16_t *const>(common_alloc((length + 1) * sizeof(char16_t)));
+    if (dst == nullptr)
+    {
+        Logger::Log(__FUNCTION__, "Failed to allocate memory");
+        throw std::bad_alloc();
+    }
+    size_t copied = 0;
+    const auto status = napi_get_value_string_utf16(env, str, dst, length + 1, &copied);
+    if (status != napi_ok)
+    {
+        common_dealloc(dst);
+        NAPI_THROW_IF_FAILED(env, status, nullptr);
+    }
+    return dst;
+}
+
+// A JS string as null-terminated UTF-8 in native memory, the way the native side reads JSON: V8 writes it straight from
+// its own encoding, nothing converts it again
+inline uint8_t *const CopyUtf8(const String &str, size_t *const length = nullptr)
+{
+    const auto env = str.Env();
+    size_t utf8Length = 0;
+    NAPI_THROW_IF_FAILED(env, napi_get_value_string_utf8(env, str, nullptr, 0, &utf8Length), nullptr);
+
+    auto dst = static_cast<uint8_t *const>(common_alloc(utf8Length + 1));
+    if (dst == nullptr)
+    {
+        Logger::Log(__FUNCTION__, "Failed to allocate memory");
+        throw std::bad_alloc();
+    }
+    size_t copied = 0;
+    const auto status = napi_get_value_string_utf8(env, str, reinterpret_cast<char *>(dst), utf8Length + 1, &copied);
+    if (status != napi_ok)
+    {
+        common_dealloc(dst);
+        NAPI_THROW_IF_FAILED(env, status, nullptr);
+    }
+    if (length != nullptr)
+    {
+        *length = copied;
+    }
+    return dst;
+}
+
+inline std::unique_ptr<uint8_t[], common_deallocor<uint8_t>> CopyUtf8WithFree(const String &str)
+{
+    return std::unique_ptr<uint8_t[], common_deallocor<uint8_t>>(CopyUtf8(str));
+}
+
+inline std::unique_ptr<char16_t[], common_deallocor<char16_t>> CopyWithFree(const String &str)
+{
+    return std::unique_ptr<char16_t[], common_deallocor<char16_t>>(Copy(str));
 }
 
 inline std::unique_ptr<uint8_t[], common_deallocor<uint8_t>> CopyWithFree(const uint8_t *const data, size_t length)

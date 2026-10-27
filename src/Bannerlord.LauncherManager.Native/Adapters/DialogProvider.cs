@@ -34,7 +34,7 @@ internal sealed class DialogProvider : IDialogProvider
 
         try
         {
-            var tcs = new TaskCompletionSource<string>();
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
             SendDialogNative(type.ToStringFast().ToLowerInvariant(), title, message, filters, tcs);
             return tcs.Task;
         }
@@ -92,12 +92,12 @@ internal sealed class DialogProvider : IDialogProvider
 
         fixed (char* pType = type)
         fixed (char* pTitle = title)
-        fixed (char* pFilters = BUTR.NativeAOT.Shared.Utils.SerializeJson(filters, Bindings.CustomSourceGenerationContext.IReadOnlyListDialogFileFilter))
         fixed (char* pMessage = message)
         {
             try
             {
-                using var result = SafeStructMallocHandle.Create(_sendDialog(_pOwner, (param_string*) pType, (param_string*) pTitle, (param_string*) pMessage, (param_json*) pFilters, (param_ptr*) GCHandle.ToIntPtr(handle), &SendDialogNativeCallback), true);
+                using var pFilters = Bindings.SerializeJsonNativeHandle(filters, Bindings.CustomSourceGenerationContext.IReadOnlyListDialogFileFilter);
+                using var result = SafeStructMallocHandle.Create(_sendDialog(_pOwner, (param_string*) pType, (param_string*) pTitle, (param_string*) pMessage, (param_data*) pFilters, (param_ptr*) GCHandle.ToIntPtr(handle), &SendDialogNativeCallback), true);
                 logger.LogResult(result);
                 result.ValueAsVoid();
             }

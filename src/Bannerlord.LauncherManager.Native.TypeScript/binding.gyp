@@ -27,6 +27,7 @@
             ],
             "defines": [
                 "NAPI_CPP_EXCEPTIONS",
+                "NAPI_VERSION=10",
                 "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING"
             ],
             "cflags!": [ "-fno-exceptions" ],

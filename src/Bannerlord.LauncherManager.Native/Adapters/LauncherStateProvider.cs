@@ -139,11 +139,11 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         fixed (char* pExecutable = executable)
-        fixed (char* pGameParameters = BUTR.NativeAOT.Shared.Utils.SerializeJson(gameParameters, Bindings.CustomSourceGenerationContext.IReadOnlyListString))
         {
             try
             {
-                using var result = SafeStructMallocHandle.Create(_setGameParameters(_pOwner, (param_string*) pExecutable, (param_json*) pGameParameters, (param_ptr*) GCHandle.ToIntPtr(handle), &SetGameParametersNativeCallback), true);
+                using var pGameParameters = Bindings.SerializeJsonNativeHandle(gameParameters, Bindings.CustomSourceGenerationContext.IReadOnlyListString);
+                using var result = SafeStructMallocHandle.Create(_setGameParameters(_pOwner, (param_string*) pExecutable, (param_data*) pGameParameters, (param_ptr*) GCHandle.ToIntPtr(handle), &SetGameParametersNativeCallback), true);
                 logger.LogResult(result);
                 result.ValueAsVoid();
             }
@@ -157,7 +157,7 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetOptionsNativeCallback(param_ptr* pOwner, return_value_json* pResult)
+    public static unsafe void GetOptionsNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
@@ -181,7 +181,7 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
             logger.LogResult(result);
-            result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherOptions);
+            Bindings.SetAsJsonNative(result, tcs, Bindings.CustomSourceGenerationContext.LauncherOptions);
             handle.Free();
         }
         catch (Exception e)
@@ -215,7 +215,7 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetStateNativeCallback(param_ptr* pOwner, return_value_json* pResult)
+    public static unsafe void GetStateNativeCallback(param_ptr* pOwner, return_value_data* pResult)
     {
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
@@ -239,7 +239,7 @@ internal sealed class LauncherStateProvider : ILauncherStateProvider
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
             logger.LogResult(result);
-            result.SetAsJson(tcs, Bindings.CustomSourceGenerationContext.LauncherState);
+            Bindings.SetAsJsonNative(result, tcs, Bindings.CustomSourceGenerationContext.LauncherState);
             handle.Free();
         }
         catch (Exception e)

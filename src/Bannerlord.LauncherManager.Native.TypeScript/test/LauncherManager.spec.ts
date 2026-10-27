@@ -3,7 +3,7 @@ import { Dirent } from 'node:fs';
 import { FileHandle, open, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'path';
 import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../src/types';
-import { NativeLauncherManager, allocAliveCount, allocWithoutOwnership, types } from '../src';
+import { NativeLauncherManager, allocAliveCount, types } from '../src';
 import { GAME_ROOT } from './testData';
 
 const isDebug = process.argv[2] == "Debug";
@@ -43,7 +43,7 @@ test('Main', async (t) => {
           const stats = await fileHandle.stat();
           length = stats.size;
         }
-        const buffer = allocWithoutOwnership(length) ?? new Uint8Array(length);
+        const buffer = new Uint8Array(length);
         await fileHandle.read(buffer, 0, length, offset);
         return buffer;
       } finally {

@@ -4,6 +4,7 @@ export * from "./Common";
 export * from "./BannerlordModuleManager";
 export * from "./FetchBannerlordVersion";
 export * from "./LauncherManager";
+export * from "./ModuleValidator";
 export * from "./Logger";
 export * from "./Utils";
 

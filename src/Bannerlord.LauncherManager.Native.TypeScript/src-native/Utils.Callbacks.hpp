@@ -79,11 +79,12 @@ template <> struct ResultCallbackTraits<return_value_void>
     }
 };
 
-template <> struct ResultCallbackTraits<return_value_json>
+// JSON as UTF-8, see Bindings.Json.cs
+template <> struct ResultCallbackTraits<return_value_data>
 {
-    using deleter_type = del_json;
+    using deleter_type = del_data;
     static constexpr bool has_value = true;
-    static void resolve(LoggerScope &callbackLogger, const Napi::Env &env, Napi::Function &jsCallback, return_value_json *returnData)
+    static void resolve(LoggerScope &callbackLogger, const Napi::Env &env, Napi::Function &jsCallback, return_value_data *returnData)
     {
         const auto isError = Napi::Boolean::New(env, false);
         if (returnData->value == nullptr)
@@ -98,8 +99,7 @@ template <> struct ResultCallbackTraits<return_value_json>
 #if _DEBUG
             callbackLogger.Log("Result is not null");
 #endif
-            const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
-            jsCallback.Call({isError, JSONParse(Napi::String::New(env, resultStr.get()))});
+            jsCallback.Call({isError, JSONParseOwned(env, returnData->value, static_cast<size_t>(returnData->length))});
         }
     }
 };
@@ -203,7 +203,7 @@ inline void HandleVoidResultCallback(param_ptr *p_owner, return_value_void *retu
     HandleResultCallback(__FUNCTION__, p_owner, returnData);
 }
 
-inline void HandleJsonResultCallback(param_ptr *p_owner, return_value_json *returnData)
+inline void HandleJsonResultCallback(param_ptr *p_owner, return_value_data *returnData)
 {
     HandleResultCallback(__FUNCTION__, p_owner, returnData);
 }
@@ -238,11 +238,6 @@ template <> inline return_value_string *CreateErrorResult(const std::u16string &
     return Create(return_value_string{Copy(errorMsg), nullptr});
 }
 
-template <> inline return_value_json *CreateErrorResult(const std::u16string &errorMsg)
-{
-    return Create(return_value_json{Copy(errorMsg), nullptr});
-}
-
 template <> inline return_value_data *CreateErrorResult(const std::u16string &errorMsg)
 {
     return Create(return_value_data{Copy(errorMsg), nullptr, 0});
@@ -256,6 +251,9 @@ template <> inline return_value_void *CreateErrorResult(const std::u16string &er
 // Generic template for handling Promise or immediate value results
 // TReturnValue: the return value type (e.g., return_value_string, return_value_json)
 // TConverter: callable that converts Napi::Value to TReturnValue*
+// A waiting background thread is released once the JS function was called, not when its promise settles: the result
+// goes to p_callback, and the arguments were JS values before the call. So the native side can have several calls in
+// flight, like reads ahead
 template <typename TReturnValue, typename TConverter>
 inline void HandlePromiseOrValue(const Napi::Env &env, const Napi::Value &jsResult, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, TReturnValue *),
                                  TConverter converter, std::mutex *mtx = nullptr, std::condition_variable *cv = nullptr, bool *completed = nullptr,
@@ -279,13 +277,12 @@ inline void HandlePromiseOrValue(const Napi::Env &env, const Napi::Value &jsResu
         const auto promise = jsResult.As<Napi::Object>();
         const auto then = promise.Get("then").As<Napi::Function>();
 
-        auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, converter, signalCompletion](const Napi::CallbackInfo &info) {
+        auto onResolve = Napi::Function::New(env, [p_callback_handler, p_callback, converter](const Napi::CallbackInfo &info) {
             const auto resolvedValue = info[0];
             p_callback(p_callback_handler, converter(resolvedValue));
-            signalCompletion();
         });
 
-        auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback, signalCompletion](const Napi::CallbackInfo &info) {
+        auto onReject = Napi::Function::New(env, [p_callback_handler, p_callback](const Napi::CallbackInfo &info) {
             const auto error = info[0];
             std::u16string errorMsg = u"Promise rejected";
             if (error.IsObject())
@@ -297,10 +294,10 @@ inline void HandlePromiseOrValue(const Napi::Env &env, const Napi::Value &jsResu
                 }
             }
             p_callback(p_callback_handler, CreateErrorResult<TReturnValue>(errorMsg));
-            signalCompletion();
         });
 
         then.Call(promise, {onResolve, onReject});
+        signalCompletion();
     }
     else
     {
@@ -316,7 +313,7 @@ inline void HandleStringPromiseOrValue(const Napi::Env &env, const Napi::Value &
     HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback, ConvertToStringResult, mtx, cv, completed, result);
 }
 
-inline void HandleJsonPromiseOrValue(const Napi::Env &env, const Napi::Value &jsResult, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_json *),
+inline void HandleJsonPromiseOrValue(const Napi::Env &env, const Napi::Value &jsResult, param_ptr *p_callback_handler, void (*p_callback)(param_ptr *, return_value_data *),
                                      std::mutex *mtx = nullptr, std::condition_variable *cv = nullptr, bool *completed = nullptr, return_value_void **result = nullptr)
 {
     HandlePromiseOrValue(env, jsResult, p_callback_handler, p_callback, ConvertToJsonResult, mtx, cv, completed, result);

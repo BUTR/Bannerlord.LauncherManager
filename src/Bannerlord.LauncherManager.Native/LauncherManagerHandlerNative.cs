@@ -2,6 +2,7 @@
 using Bannerlord.LauncherManager.External.UI;
 using Bannerlord.LauncherManager.Localization;
 using Bannerlord.LauncherManager.Models;
+using Bannerlord.LauncherManager.Utils;
 
 using BUTR.NativeAOT.Shared;
 
@@ -91,28 +92,26 @@ internal sealed partial class LauncherManagerHandlerNative : LauncherManagerHand
 
     public override async Task<IReadOnlyList<SaveMetadata>> GetSaveFilesAsync()
     {
-        async IAsyncEnumerable<SaveMetadata> GetSaveFilesInternal()
+        // The saves' reads overlap, see ReadAhead
+        return await (await ReadDirectoryFileListAsync(SavePath) ?? []).ToAsyncEnumerable()
+            .SelectInOrderAsync(ReadSaveFileMetadataAsync)
+            .OfType<SaveMetadata>()
+            .ToArrayAsync();
+    }
+
+    private async Task<SaveMetadata?> ReadSaveFileMetadataAsync(string filePath)
+    {
+        if (await ReadFileContentAsync(filePath, 0, 4) is not { } lengthData) return null;
+        var length = BitConverter.ToInt32(lengthData, 0);
+        if (length > 5 * 1024 * 1024) return null; // 5MB JSON? Orly?
+        if (await ReadFileContentAsync(filePath, 4, length) is not { } jsonData) return null;
+
+        try
         {
-            foreach (var filePath in await ReadDirectoryFileListAsync(SavePath) ?? [])
-            {
-                if (await ReadFileContentAsync(filePath, 0, 4) is not { } lengthData) continue;
-                var length = BitConverter.ToInt32(lengthData, 0);
-                if (length > 5 * 1024 * 1024) continue; // 5MB JSON? Orly?
-                if (await ReadFileContentAsync(filePath, 4, length) is not { } jsonData) continue;
-
-                SaveMetadata? saveMetadata;
-                try
-                {
-                    var metadata = JsonSerializer.Deserialize(jsonData, Bindings.CustomSourceGenerationContext.TWSaveMetadata);
-                    saveMetadata = metadata is not null ? new SaveMetadata(Path.GetFileNameWithoutExtension(filePath), metadata) : null;
-                }
-                catch (JsonException) { saveMetadata = null; }
-                if (saveMetadata is null) continue;
-
-                yield return saveMetadata;
-            }
+            var metadata = JsonSerializer.Deserialize(jsonData, Bindings.CustomSourceGenerationContext.TWSaveMetadata);
+            return metadata is not null ? new SaveMetadata(Path.GetFileNameWithoutExtension(filePath), metadata) : null;
         }
-        return await GetSaveFilesInternal().ToArrayAsync();
+        catch (JsonException) { return null; }
     }
 
     public override Task<string?> GetSaveFilePathAsync(string saveFile)

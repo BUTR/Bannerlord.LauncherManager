@@ -78,13 +78,32 @@ internal static partial class Utils2
 
     public static unsafe SafeStringMallocHandle ToString(string value) => BUTR.NativeAOT.Shared.Utils.Copy(value, true);
     public static unsafe ReadOnlySpan<char> ToSpan(param_string* value) => new SafeStringMallocHandle((char*) value, false).ToSpan();
-    public static SafeStringMallocHandle ToJson<T>(T? value) where T : class => BUTR.NativeAOT.Shared.Utils.SerializeJsonCopy(value, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T))!, true);
+    // JSON crosses as UTF-8: a parameter null-terminated, a result in a return_value_data
+    public static unsafe SafeDataMallocHandle ToJson<T>(T? value) where T : class =>
+        value is null ? SafeDataMallocHandle.Create(null, 0, true) : SafeDataMallocHandle.Create(ToUtf8(value, out var length), length, true);
 
-    public static unsafe T? GetResult<T>(return_value_json* ret) where T : class
+    public static unsafe return_value_data* ToJsonValue<T>(T? value) where T : class =>
+        value is null ? return_value_data.AsValue(null, 0, false) : return_value_data.AsValue(ToUtf8(value, out var length), length, false);
+
+    private static unsafe byte* ToUtf8<T>(T value, out int length)
+    {
+        var utf8 = JsonSerializer.SerializeToUtf8Bytes(value, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T))!);
+        var json = (byte*) Allocator.Alloc((nuint) utf8.Length + 1);
+        utf8.CopyTo(new Span<byte>(json, utf8.Length));
+        json[utf8.Length] = 0;
+        length = utf8.Length;
+        return json;
+    }
+
+    public static unsafe T? GetResult<T>(return_value_data* ret) where T : class
     {
         using var result = SafeStructMallocHandle.Create(ret, true);
-        return result.ValueAsJson((JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T))!);
+        using var json = result.ValueAsData();
+        return json.IsInvalid ? null : JsonSerializer.Deserialize(json.ToSpan(), (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T))!);
     }
+
+    // Sorting and the dependency lookups return the modules' positions in the list they got
+    public static unsafe T[] GetModules<T>(return_value_data* ret, T[] source) => GetResult<int[]>(ret)!.Select(i => source[i]).ToArray();
     public static unsafe string GetResult(return_value_string* ret)
     {
         using var result = SafeStructMallocHandle.Create(ret, true);
@@ -127,10 +146,16 @@ internal static partial class Utils2
         using var result = SafeStructMallocHandle.Create(ret, true);
         result.SetAsVoid(tcs);
     }
-    public static unsafe void GetResult<T>(return_value_json* ret, TaskCompletionSource<T?> tcs) where T : class
+    public static unsafe void GetResult<T>(return_value_data* ret, TaskCompletionSource<T?> tcs) where T : class
     {
-        using var result = SafeStructMallocHandle.Create(ret, true);
-        result.SetAsJson(tcs, (JsonTypeInfo<T>) CustomSourceGenerationContext.GetTypeInfo(typeof(T))!);
+        try
+        {
+            tcs.TrySetResult(GetResult<T>(ret));
+        }
+        catch (Exception e)
+        {
+            tcs.TrySetException(e);
+        }
     }
     public static unsafe void GetResult(return_value_string* ret, TaskCompletionSource<string?> tcs)
     {

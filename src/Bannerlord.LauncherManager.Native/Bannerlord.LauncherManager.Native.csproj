@@ -50,6 +50,15 @@
     <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
   </PropertyGroup>
 
+  <!--
+    The GC sizes gen0 from the CPU's cache, tens of MB on a big CPU, and keeps what it committed: after the hot paths it
+    held 18 MB for 2.5 MB live. A 2 MB budget holds ~10 MB, at no measured cost. Hexadecimal; the name is case
+    sensitive here, an env var DOTNET_GCGen0MaxBudget overrides it
+  -->
+  <ItemGroup>
+    <IlcArg Include="--runtimeopt:GCGen0MaxBudget=200000" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="Bannerlord.LauncherManager.Native.h">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

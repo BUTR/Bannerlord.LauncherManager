@@ -1,7 +1,7 @@
 import test from 'ava';
 
 import { harmonyXml, uiExtenderExXml, invalidXml, harmonySubModuleXml } from './testData';
-import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType } from '../src/types';
+import { IEnableDisableManager, IValidationManager, ApplicationVersion, ApplicationVersionType, LoadType, ModuleInfoExtended } from '../src/types';
 import { BannerlordModuleManager, allocAliveCount } from '../src';
 
 const isDebug = process.argv[2] == "Debug";
@@ -121,7 +121,15 @@ test('Main', async (t) => {
       return false;
     }
   };
-  const validationResult1 = BannerlordModuleManager.validateModule(unsortedInvalid, uiExtenderEx, validationManager);
+  // The validation only asks whether the modules that matter to it are selected, since Bannerlord.ModuleManager
+  // 6.0.251. One that declares UIExtenderEx incompatible does, it isn't selected, so it's no issue
+  const declaringUIExtenderExIncompatible: ModuleInfoExtended = {
+    ...harmony,
+    id: 'Declares.UIExtenderEx.Incompatible',
+    name: 'Declares UIExtenderEx Incompatible',
+    dependentModuleMetadatas: [{ ...uiExtenderEx.dependentModuleMetadatas[0], id: uiExtenderEx.id, loadType: LoadType.None, isOptional: false, isIncompatible: true }],
+  };
+  const validationResult1 = BannerlordModuleManager.validateModule([...unsortedInvalid, declaringUIExtenderExIncompatible], uiExtenderEx, validationManager);
   if (validationResult1 === null || !Array.isArray(validationResult1)) {
     t.fail();
     return;

@@ -32,7 +32,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "lib": [
-      "ES2019"
+      "ES2019",
+      "ES2021.WeakRef",
+      "ESNext.Disposable"
     ],
     "types": [
       "node"

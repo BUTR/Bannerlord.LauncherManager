@@ -8,10 +8,6 @@ using namespace Napi;
 using namespace Bannerlord::LauncherManager::Native;
 namespace Bindings::Common
 {
-Value AllocWithOwnership(const CallbackInfo &info);
-
-Value AllocWithoutOwnership(const CallbackInfo &info);
-
 Value AllocAliveCount(const CallbackInfo &info);
 
 Object Init(const Env env, Object exports);

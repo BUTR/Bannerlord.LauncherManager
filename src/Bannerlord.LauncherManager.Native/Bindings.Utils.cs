@@ -14,7 +14,7 @@ namespace Bannerlord.LauncherManager.Native;
 public static unsafe partial class Bindings
 {
     [UnmanagedCallersOnly(EntryPoint = "utils_is_load_order_correct", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
-    public static return_value_json* IsLoadOrderCorrect([IsConst<IsPtrConst>] param_json* p_modules)
+    public static return_value_data* IsLoadOrderCorrect([IsConst<IsPtrConst>] param_data* p_modules)
     {
 #if DEBUG
         using var logger = LogMethod(p_modules);
@@ -26,22 +26,21 @@ public static unsafe partial class Bindings
             //if (p_modules is null)
             //    return return_value_json.AsValue(["Invalid module list!"], CustomSourceGenerationContext.StringArray, false);
 
-            var modules = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_modules, CustomSourceGenerationContext.ModuleInfoExtendedArray)
-                .Where(x => x != null!).ToArray();
+            var modules = DeserializeModules(p_modules);
 
             var result = LoadOrderChecker.IsLoadOrderCorrect(modules).ToArray();
 
-            return return_value_json.AsValue(result, CustomSourceGenerationContext.StringArray, false);
+            return JsonValue(result, CustomSourceGenerationContext.StringArray, false);
         }
         catch (Exception e)
         {
             logger.LogException(e);
-            return return_value_json.AsException(e, false);
+            return return_value_data.AsException(e, false);
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "utils_get_dependency_hint", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
-    public static return_value_string* GetDependencyHint([IsConst<IsPtrConst>] param_json* p_module)
+    public static return_value_string* GetDependencyHint([IsConst<IsPtrConst>] param_data* p_module)
     {
 #if DEBUG
         using var logger = LogMethod(p_module);
@@ -53,7 +52,7 @@ public static unsafe partial class Bindings
             //if (p_module is null)
             //    return return_value_string.AsValue(string.Empty, false);
 
-            var module = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
+            var module = DeserializeJsonNative(p_module, CustomSourceGenerationContext.ModuleInfoExtended);
 
             var result = ModuleDependencyConstructor.GetDependencyHint(module);
 
@@ -66,7 +65,7 @@ public static unsafe partial class Bindings
         }
     }
     [UnmanagedCallersOnly(EntryPoint = "utils_render_module_issue", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
-    public static return_value_string* RenderModuleIssue([IsConst<IsPtrConst>] param_json* p_module_issue)
+    public static return_value_string* RenderModuleIssue([IsConst<IsPtrConst>] param_data* p_module_issue)
     {
 #if DEBUG
         using var logger = LogMethod(p_module_issue);
@@ -75,7 +74,7 @@ public static unsafe partial class Bindings
 #endif
         try
         {
-            var moduleIssue = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_module_issue, CustomSourceGenerationContext.ModuleIssue);
+            var moduleIssue = DeserializeJsonNative(p_module_issue, CustomSourceGenerationContext.ModuleIssue);
 
             var result = ModuleIssueRenderer.Render(moduleIssue);
 
@@ -134,7 +133,7 @@ public static unsafe partial class Bindings
     }
 
     [UnmanagedCallersOnly(EntryPoint = "utils_localize_string", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_string* LocalizeString(param_string* p_template, param_json* p_values)
+    public static return_value_string* LocalizeString(param_string* p_template, param_data* p_values)
     {
 #if DEBUG
         using var logger = LogMethod(p_template, p_values);
@@ -147,7 +146,7 @@ public static unsafe partial class Bindings
             //    return return_value_string.AsValue(string.Empty, false);
 
             var template = new string(param_string.ToSpan(p_template));
-            var values = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_values, CustomSourceGenerationContext.DictionaryStringString);
+            var values = DeserializeJsonNative(p_values, CustomSourceGenerationContext.DictionaryStringString);
 
             var result = new BUTRTextObject(template, values).ToString();
 
