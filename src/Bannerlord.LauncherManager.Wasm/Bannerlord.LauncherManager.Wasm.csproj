@@ -1,0 +1,121 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The whole app compiled ahead of time into one WebAssembly file by NativeAOT-LLVM, the experimental WebAssembly
+    backend of NativeAOT (https://github.com/dotnet/runtimelab/tree/feature/NativeAOT-LLVM). It builds with the .NET 10
+    SDK and its wasm-tools workload, which brings the Emscripten it links with, see global.json.
+    dotnet publish -c Release writes launchermanager.wasm and the JS that hosts it, see the TypeScript package's build.js
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Bannerlord.LauncherManager.Wasm</RootNamespace>
+    <!-- Every export is browser-only, the analyzer would flag each one -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+
+    <VersionOverride>0</VersionOverride>
+    <Version>3.0.$(VersionOverride)</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IlcLlvmVersion>10.0.0-rc.1.26357.1</IlcLlvmVersion>
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json</RestoreAdditionalProjectSources>
+
+    <PublishTrimmed>true</PublishTrimmed>
+    <UseAppHost>false</UseAppHost>
+    <!-- [JSExport] and [JSImport], hosted by dotnet.js like the official browser runtime -->
+    <DotNetJsApi>true</DotNetJsApi>
+    <WasmEnableLegacyJsInterop>false</WasmEnableLegacyJsInterop>
+    <!-- The official WebAssembly SDK would build its Mono runtime instead -->
+    <UsingBrowserRuntimeWorkload>false</UsingBrowserRuntimeWorkload>
+    <EmccFlags>$(EmccFlags) -O3</EmccFlags>
+    <ExecutableExtensionName Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExecutableExtensionName>
+    <IlcHostPackagePath Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(Pkgruntime_win-x64_Microsoft_DotNet_ILCompiler_LLVM)</IlcHostPackagePath>
+    <IlcHostPackagePath Condition="!$([MSBuild]::IsOSPlatform('Windows'))">$(Pkgruntime_linux-x64_Microsoft_DotNet_ILCompiler_LLVM)</IlcHostPackagePath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DebugType>none</DebugType>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantTimezone>true</InvariantTimezone>
+    <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <StackTraceSupport>false</StackTraceSupport>
+    <TrimMode>full</TrimMode>
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+    <DebuggerSupport>false</DebuggerSupport>
+    <DynamicCodeSupport>false</DynamicCodeSupport>
+    <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <MetricsSupport>false</MetricsSupport>
+    <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+    <StartupHookSupport>false</StartupHookSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+    <WasmEmitSourceMap>false</WasmEmitSourceMap>
+    <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+  </PropertyGroup>
+
+  <!--
+    WebAssembly has no virtual memory, the memory the GC reserves for its segments is real memory. With the default
+    segments it takes ~60 MB at startup, with 4 MB ones 20 MB, measured as fast. GCSegmentSize is hexadecimal
+  -->
+  <PropertyGroup>
+    <LmGcSegmentSize Condition="'$(LmGcSegmentSize)' == ''">400000</LmGcSegmentSize>
+    <LmGcGen0Size Condition="'$(LmGcGen0Size)' == ''">1048576</LmGcGen0Size>
+  </PropertyGroup>
+  <ItemGroup>
+    <IlcArg Include="--runtimeopt:GCSegmentSize=$(LmGcSegmentSize)" />
+    <RuntimeHostConfigurationOption Include="System.GC.Gen0Size" Value="$(LmGcGen0Size)" />
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="9" />
+  </ItemGroup>
+
+  <!-- The parts of the native bindings that don't touch pointers -->
+  <ItemGroup>
+    <Compile Include="..\Bannerlord.LauncherManager.Native\Bindings.Common.cs" Link="Native\Bindings.Common.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\ModuleLists.cs" Link="Native\ModuleLists.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\SourceGenerationContext.cs" Link="Native\SourceGenerationContext.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\LauncherManagerHandlerNative.MLVScan.cs" Link="Native\LauncherManagerHandlerNative.MLVScan.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\LauncherManagerHandlerNative.Obfuscation.cs" Link="Native\LauncherManagerHandlerNative.Obfuscation.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\Models\ModuleViewModel.cs" Link="Native\Models\ModuleViewModel.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\Utils\AssemblyScanner2.cs" Link="Native\Utils\AssemblyScanner2.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\Utils\ModScanner.cs" Link="Native\Utils\ModScanner.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\Utils\NativeJson.cs" Link="Native\Utils\NativeJson.cs" />
+    <Compile Include="..\Bannerlord.LauncherManager.Native\Utils\ReaderUtils2.cs" Link="Native\Utils\ReaderUtils2.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bannerlord.LauncherManager\Bannerlord.LauncherManager.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="$(IlcLlvmVersion)" />
+    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="$(IlcLlvmVersion)" GeneratePathProperty="true" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="$(IlcLlvmVersion)" GeneratePathProperty="true" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+    <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_LLVM_ROOT=$(EmscriptenUpstreamBinPath)" />
+    <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_BINARYEN_ROOT=$(EmscriptenSdkToolsPath)" />
+    <EmscriptenEnvVars Include="DOTNET_EMSCRIPTEN_NODE_JS=$(EmscriptenNodeBinPath)node$(ExecutableExtensionName)" />
+    <EmscriptenEnvVars Include="EM_CACHE=$(EmscriptenCacheSdkCacheDir)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FetchBannerlordVersion" Version="1.0.7.49" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="MLVScan.Core" Version="1.9.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+  </ItemGroup>
+
+</Project>

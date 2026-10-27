@@ -1,0 +1,108 @@
+name: Publish WASM NPM and GPR
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/publish-wasm-ts.yml'
+      - 'src/Bannerlord.LauncherManager/**.*'
+      - 'src/Bannerlord.LauncherManager.Localization/**.*'
+      - 'src/Bannerlord.LauncherManager.Models/**.*'
+      # The WASM project compiles some of the native project's files
+      - 'src/Bannerlord.LauncherManager.Native/**.*'
+      - 'src/Bannerlord.LauncherManager.Wasm/**.*'
+      - 'src/Bannerlord.LauncherManager.Wasm.TypeScript/**.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The runtime targets .NET 11, still a preview SDK
+      - name: Setup .NET 11
+        uses: actions/setup-dotnet@master
+        with:
+          dotnet-version: 11.0.x
+          dotnet-quality: preview
+
+      # The profile-guided AOT build needs the WebAssembly toolchain, Emscripten included
+      - run: dotnet workload install wasm-tools
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: |
+          cd ./src/Bannerlord.LauncherManager.Wasm.TypeScript && `
+          npm version $(node -p "require('./package.json').version = `
+          require('./package.json').version.split('.')[0]+'.' + `
+          require('./package.json').version.split('.')[1]+'.' + `
+          $(git rev-list --no-merges --count master)") --no-git-tag-version --allow-same-version;
+
+      - run: cd ./src/Bannerlord.LauncherManager.Wasm.TypeScript && npm ci
+
+      - run: cd ./src/Bannerlord.LauncherManager.Wasm.TypeScript && npm run build
+
+      - run: cd ./src/Bannerlord.LauncherManager.Wasm.TypeScript && npm test
+
+      # The package as it will be published, with the versioned package.json. WebAssembly has nothing to sign
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-wasm
+          path: |
+            src/Bannerlord.LauncherManager.Wasm.TypeScript/package.json
+            src/Bannerlord.LauncherManager.Wasm.TypeScript/README.md
+            src/Bannerlord.LauncherManager.Wasm.TypeScript/LICENSE
+            src/Bannerlord.LauncherManager.Wasm.TypeScript/dist/main/
+            src/Bannerlord.LauncherManager.Wasm.TypeScript/dist/framework/
+          if-no-files-found: error
+
+  # Published from this workflow, the npm trusted publishing policy of @butr/vortexextensionwasm names it
+  publish:
+    name: Publish on NPM and GPR
+    needs: [build]
+    runs-on: windows-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    steps:
+      - name: Download the package
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-wasm
+          path: ./package
+
+      - name: Setup Node.js for NPM publish
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org/
+          scope: '@butr'
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Publish to NPM (trusted publishing)
+        run: cd ./package && npm publish
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://npm.pkg.github.com/
+          scope: '@butr'
+      - run: cd ./package && npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

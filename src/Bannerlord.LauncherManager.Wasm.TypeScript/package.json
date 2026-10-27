@@ -1,0 +1,58 @@
+{
+  "name": "@butr/vortexextensionwasm",
+  "version": "1.0.0",
+  "description": "The LauncherManager as WebAssembly, with the API of @butr/vortexextensionnative",
+  "main": "dist/main/index.js",
+  "typings": "dist/main/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:BUTR/Bannerlord.LauncherManager.git",
+    "directory": "src/Bannerlord.LauncherManager.Wasm.TypeScript"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "bannerlord",
+    "modulemanager",
+    "wasm"
+  ],
+  "author": "BUTR",
+  "license": "MIT",
+  "homepage": "https://github.com/BUTR/Bannerlord.LauncherManager#readme",
+  "bugs": {
+    "url": "https://github.com/BUTR/Bannerlord.LauncherManager/issues"
+  },
+  "scripts": {
+    "clean": "node build.js clean",
+    "build": "node build.js build",
+    "build-dotnet": "node build.js build-dotnet",
+    "build-ts": "node build.js build-ts",
+    "test": "node build.js test"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ava": "^6.4.1",
+    "rolldown": "^1.0.0-rc.6",
+    "typescript": "^5.7.3"
+  },
+  "files": [
+    "dist/main",
+    "dist/runtime",
+    "LICENSE",
+    "README.md"
+  ],
+  "ava": {
+    "failFast": false,
+    "timeout": "60s",
+    "files": [
+      "dist/test/**/*.spec.js"
+    ],
+    "require": [
+      "./test/_force-exit.js"
+    ]
+  }
+}
