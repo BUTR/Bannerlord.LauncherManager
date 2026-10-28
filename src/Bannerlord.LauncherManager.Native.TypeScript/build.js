@@ -9,7 +9,7 @@
  * Configuration: Release (default) or Debug
  */
 
-const { execFileSync, execSync, spawn } = require("child_process");
+const { execSync, spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -260,23 +260,6 @@ function findVcpkg() {
 }
 
 /**
- * vcpkg reads the port versions of vcpkg.json's builtin-baseline from its own git history. A clone older than the
- * baseline, like the one GitHub's runner images have, fetches it first. Fetching doesn't change the checkout
- * @param {string} vcpkg - The vcpkg executable, in its clone's root
- */
-function ensureVcpkgBaseline(vcpkg) {
-  const baseline = JSON.parse(fs.readFileSync("vcpkg.json", "utf8"))["builtin-baseline"];
-  const root = path.dirname(vcpkg);
-  try {
-    // Without a shell: cmd.exe would take ^ as its escape character
-    execFileSync("git", ["-C", root, "cat-file", "-e", `${baseline}^{commit}`], { stdio: "ignore" });
-  } catch {
-    console.log(`  vcpkg doesn't have the baseline ${baseline} yet, fetching it`);
-    execCommand(`git -C "${root}" fetch --quiet origin`);
-  }
-}
-
-/**
  * The vcpkg triplet of the static libraries binding.gyp links, its CRT matches node-gyp's (/MT)
  */
 const VCPKG_TRIPLET = process.platform === "win32" ? "x64-windows-static" : "x64-linux";
@@ -456,9 +439,8 @@ async function main() {
     // Native libraries of vcpkg.json, ISA-L for the deflate compression. vcpkg reuses what it built before
     if (["build", "test", "build-napi"].includes(type)) {
       console.log(`Installing native libraries (${VCPKG_TRIPLET})`);
-      const vcpkg = findVcpkg();
-      ensureVcpkgBaseline(vcpkg);
-      execCommand(`"${vcpkg}" install --triplet ${VCPKG_TRIPLET} --x-install-root=vcpkg_installed`);
+      // vcpkg-configuration.json pins the registry, any vcpkg fetches it: a developer's, the runner's, Visual Studio's
+      execCommand(`"${findVcpkg()}" install --triplet ${VCPKG_TRIPLET} --x-install-root=vcpkg_installed`);
       console.log("");
     }
 
