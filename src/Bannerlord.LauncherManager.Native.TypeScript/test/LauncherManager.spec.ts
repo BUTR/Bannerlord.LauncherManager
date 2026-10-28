@@ -2,11 +2,19 @@ import test from 'ava';
 import { Dirent } from 'node:fs';
 import { FileHandle, open, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'path';
+import { setFlagsFromString } from 'v8';
+import { runInNewContext } from 'vm';
 import { LauncherOptions, LauncherState, LoadOrder, ModuleViewModel, NotificationType, DialogType } from '../src/types';
 import { NativeLauncherManager, allocAliveCount, types } from '../src';
 import { GAME_ROOT } from './testData';
 
 const isDebug = process.argv[2] == "Debug";
+
+// gc() without --expose-gc, which ava's worker threads don't take: the flag is set at runtime, a new context has gc
+const collectGarbage = (): void => {
+  setFlagsFromString('--expose-gc');
+  (runInNewContext('gc') as () => void)();
+};
 
 test('Main', async (t) => {
   const gamePath = GAME_ROOT;
@@ -168,6 +176,11 @@ test('Main', async (t) => {
 
   if (isDebug)
     t.deepEqual(allocAliveCount(), 0); // manager is alive
+
+  // The manager's thread-safe functions keep the worker's event loop alive until it's collected, which V8 does on its
+  // own seconds later, a minute and more on a busy runner: ava times out waiting for the worker to exit. Collected now
+  manager = undefined!;
+  collectGarbage();
 
   t.pass();
 });
