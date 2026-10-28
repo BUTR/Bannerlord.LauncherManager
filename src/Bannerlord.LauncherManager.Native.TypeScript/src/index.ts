@@ -2,6 +2,7 @@ import * as types from "./types";
 
 export * from "./Common";
 export * from "./BannerlordModuleManager";
+export * from "./Compression";
 export * from "./FetchBannerlordVersion";
 export * from "./LauncherManager";
 export * from "./ModuleValidator";

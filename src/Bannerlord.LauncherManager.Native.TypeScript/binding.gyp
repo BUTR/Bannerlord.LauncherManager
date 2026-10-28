@@ -11,14 +11,41 @@
             ],
             "conditions": [
                 ["OS=='win'", {
+                    "include_dirs": [
+                        "<(module_root_dir)/vcpkg_installed/x64-windows-static/include"
+                    ],
                     "libraries": [
                         "<(module_root_dir)/Bannerlord.LauncherManager.Native.lib"
-                    ]
+                    ],
+                    "configurations": {
+                        "Debug": {
+                            "msvs_settings": {
+                                "VCLinkerTool": {
+                                    "AdditionalDependencies": [
+                                        "<(module_root_dir)/vcpkg_installed/x64-windows-static/debug/lib/isa-l_static.lib"
+                                    ]
+                                }
+                            }
+                        },
+                        "Release": {
+                            "msvs_settings": {
+                                "VCLinkerTool": {
+                                    "AdditionalDependencies": [
+                                        "<(module_root_dir)/vcpkg_installed/x64-windows-static/lib/isa-l_static.lib"
+                                    ]
+                                }
+                            }
+                        }
+                    }
                 }],
                 ["OS=='linux'", {
+                    "include_dirs": [
+                        "<(module_root_dir)/vcpkg_installed/x64-linux/include"
+                    ],
                     "libraries": [
                         "-L<(module_root_dir)",
-                        "-l:Bannerlord.LauncherManager.Native.so"
+                        "-l:Bannerlord.LauncherManager.Native.so",
+                        "<(module_root_dir)/vcpkg_installed/x64-linux/lib/libisal.a"
                     ],
                     "ldflags": [
                         "-Wl,-rpath,<(module_root_dir)"

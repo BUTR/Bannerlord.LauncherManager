@@ -242,6 +242,28 @@ function execCommand(command, options = {}) {
 }
 
 /**
+ * The vcpkg the native libraries are installed with: VCPKG_ROOT, then the one GitHub's runners have, then PATH's
+ * @returns {string} The vcpkg executable
+ */
+function findVcpkg() {
+  const exe = process.platform === "win32" ? "vcpkg.exe" : "vcpkg";
+  for (const root of [process.env["VCPKG_ROOT"], process.env["VCPKG_INSTALLATION_ROOT"]]) {
+    if (root !== undefined && fs.existsSync(path.join(root, exe))) {
+      return path.join(root, exe);
+    }
+  }
+  if (commandExists("vcpkg")) {
+    return "vcpkg";
+  }
+  throw new Error("vcpkg not found. Install it from https://vcpkg.io, or set VCPKG_ROOT");
+}
+
+/**
+ * The vcpkg triplet of the static libraries binding.gyp links, its CRT matches node-gyp's (/MT)
+ */
+const VCPKG_TRIPLET = process.platform === "win32" ? "x64-windows-static" : "x64-linux";
+
+/**
  * Main build function
  */
 async function main() {
@@ -410,6 +432,13 @@ async function main() {
         await sign("Bannerlord.LauncherManager.Native.dll");
       }
 
+      console.log("");
+    }
+
+    // Native libraries of vcpkg.json, ISA-L for the deflate compression. vcpkg reuses what it built before
+    if (["build", "test", "build-napi"].includes(type)) {
+      console.log(`Installing native libraries (${VCPKG_TRIPLET})`);
+      execCommand(`"${findVcpkg()}" install --triplet ${VCPKG_TRIPLET} --x-install-root=vcpkg_installed`);
       console.log("");
     }
 

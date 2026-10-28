@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "launchermanager-native",
+  "description": "Native libraries linked statically into launchermanager.node",
+  "builtin-baseline": "15b12b99a227d51e21c86dffd40385439eac87a0",
+  "dependencies": [
+    "isal"
+  ]
+}

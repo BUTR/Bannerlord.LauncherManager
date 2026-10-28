@@ -14,12 +14,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 # Set include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/x64-windows-static/include
   ${CMAKE_JS_INC}
 )
 
-# Set linker libraries
+# Set linker libraries, ISA-L as build.js installs it from vcpkg.json
 target_link_libraries(${PROJECT_NAME} PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/Bannerlord.LauncherManager.Native.lib
+  debug ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/x64-windows-static/debug/lib/isa-l_static.lib
+  optimized ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed/x64-windows-static/lib/isa-l_static.lib
   ${CMAKE_JS_LIB}
 )
 

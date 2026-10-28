@@ -1,6 +1,7 @@
 #define NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED // Thanks Electron
 
 #include "Bindings.Common.Implementation.hpp"
+#include "Bindings.Compression.Implementation.hpp"
 #include "Bindings.FetchVersion.Implementation.hpp"
 #include "Bindings.LauncherManager.Implementation.hpp"
 #include "Bindings.Logging.Implementation.hpp"
@@ -19,6 +20,7 @@ Object InitAll(const Env env, const Object exports)
     Bindings::ModuleManager::Init(env, exports);
     Bindings::LauncherManager::Init(env, exports);
     Bindings::Utils::Init(env, exports);
+    Bindings::Compression::Init(env, exports);
     return exports;
 }
 

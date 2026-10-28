@@ -7,3 +7,4 @@ coverage
 *.tgz
 *.log
 Bannerlord.LauncherManager.Native.*
+vcpkg_installed
